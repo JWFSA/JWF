@@ -11,6 +11,7 @@ export default function LoginPage() {
   const [form, setForm] = useState({ login: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [errorVisible, setErrorVisible] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -24,6 +25,8 @@ export default function LoginPage() {
       router.push('/dashboard');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Error al iniciar sesión');
+      setErrorVisible(true);
+      setTimeout(() => setErrorVisible(false), 5000);
     } finally {
       setLoading(false);
     }
@@ -81,8 +84,8 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {error && (
-            <p className="text-red-500 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+          {errorVisible && (
+            <p className="text-red-500 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-center">
               {error}
             </p>
           )}

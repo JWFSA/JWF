@@ -10,7 +10,7 @@ const login = async (login, password) => {
             o."OPER_EMPR" AS oper_empr, o."OPER_SUC" AS oper_suc,
             o."OPER_IND_DESC" AS oper_ind_desc, o."OPER_PASSWORD" AS oper_password
      FROM gen_operador o
-     WHERE o."OPER_LOGIN" = $1 AND o."OPER_IND_DESC" = 'N'`,
+     WHERE o."OPER_LOGIN" = $1`,
     [login]
   );
 
@@ -27,6 +27,10 @@ const login = async (login, password) => {
   const valid = await bcrypt.compare(password, operador.oper_password);
   if (!valid) {
     throw { status: 401, message: 'Credenciales inválidas' };
+  }
+
+  if (operador.oper_ind_desc === 'S') {
+    throw { status: 401, message: 'Tu cuenta está desactivada. Contactá al administrador.' };
   }
 
   const rolesResult = await pool.query(

@@ -15,7 +15,8 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (res) => res,
   (error) => {
-    if (error.response?.status === 401 || error.response?.status === 403) {
+    const isLoginRequest = error.config?.url?.includes('/auth/login');
+    if (!isLoginRequest && (error.response?.status === 401 || error.response?.status === 403)) {
       localStorage.removeItem('jwf_token');
       window.location.href = '/login';
     }
