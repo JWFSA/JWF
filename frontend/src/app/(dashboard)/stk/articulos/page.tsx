@@ -3,7 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
-import { Plus, Search, Pencil, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { Pencil } from 'lucide-react';
+import PrimaryAddButton from '@/components/ui/PrimaryAddButton';
+import SearchField from '@/components/ui/SearchField';
+import TablePagination from '@/components/ui/TablePagination';
 import { getArticulos } from '@/services/stk';
 
 export default function ArticulosPage() {
@@ -32,28 +35,12 @@ export default function ArticulosPage() {
           <h1 className="text-xl font-semibold text-gray-800">Artículos</h1>
           <p className="text-sm text-gray-500 mt-0.5">Catálogo de artículos y productos</p>
         </div>
-        <Link
-          href="/stk/articulos/nuevo"
-          className="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition"
-        >
-          <Plus size={16} />
-          <span className="hidden sm:inline">Nuevo artículo</span>
-          <span className="sm:hidden">Nuevo</span>
-        </Link>
+        <PrimaryAddButton label="Nuevo artículo" shortLabel="Nuevo" href="/stk/articulos/nuevo" />
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
         <div className="p-4 border-b border-gray-100">
-          <div className="relative w-full sm:w-72">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar artículos..."
-              className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-            />
-          </div>
+          <SearchField value={search} onChange={setSearch} placeholder="Buscar artículos..." />
         </div>
 
         <div className="overflow-x-auto">
@@ -102,29 +89,14 @@ export default function ArticulosPage() {
         </div>
 
         {pagination && (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t border-gray-100 text-sm text-gray-500">
-            <div className="flex items-center gap-2">
-              <span>{pagination.total} registros</span>
-              <select
-                value={limit}
-                onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }}
-                className="border border-gray-200 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-              >
-                <option value={20}>20 por página</option>
-                <option value={50}>50 por página</option>
-                <option value={100}>100 por página</option>
-              </select>
-            </div>
-            {pagination.totalPages > 1 && (
-              <div className="flex items-center gap-1">
-                <button onClick={() => setPage(1)} disabled={page === 1} className="p-1 rounded hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed" title="Primera página"><ChevronsLeft size={16} /></button>
-                <button onClick={() => setPage((p) => p - 1)} disabled={page === 1} className="p-1 rounded hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed" title="Página anterior"><ChevronLeft size={16} /></button>
-                <span className="px-2">Página {page} de {pagination.totalPages}</span>
-                <button onClick={() => setPage((p) => p + 1)} disabled={page === pagination.totalPages} className="p-1 rounded hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed" title="Página siguiente"><ChevronRight size={16} /></button>
-                <button onClick={() => setPage(pagination.totalPages)} disabled={page === pagination.totalPages} className="p-1 rounded hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed" title="Última página"><ChevronsRight size={16} /></button>
-              </div>
-            )}
-          </div>
+          <TablePagination
+            total={pagination.total}
+            page={page}
+            limit={limit}
+            totalPages={pagination.totalPages}
+            onPageChange={setPage}
+            onLimitChange={(n) => { setLimit(n); setPage(1); }}
+          />
         )}
       </div>
     </div>

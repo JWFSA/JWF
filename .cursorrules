@@ -1,0 +1,4 @@
+# Commits y Git
+
+- Los mensajes de commit deben estar en **español** (título y cuerpo). Evitar inglés salvo nombres de APIs, archivos o términos sin traducción clara.
+- Estilo: imperativo o descriptivo breve (ej.: «Añade paginación en monedas», «Corrige encoding en depósitos»).

@@ -2,11 +2,14 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient, useQueries } from '@tanstack/react-query';
-import { Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Plus, Pencil, Trash2, Save } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 import { getDepositos, createDeposito, updateDeposito, deleteDeposito } from '@/services/stk';
 import { getEmpresas, getSucursales } from '@/services/gen';
 import type { Deposito } from '@/types/stk';
-import Modal from '@/components/ui/Modal';
+import FormModal from '@/components/ui/FormModal';
+import PrimaryAddButton from '@/components/ui/PrimaryAddButton';
+import SearchField from '@/components/ui/SearchField';
+import TablePagination from '@/components/ui/TablePagination';
 
 type ModalState = null | 'nuevo' | Deposito;
 
@@ -120,19 +123,12 @@ export default function DepositosPage() {
           <h1 className="text-xl font-semibold text-gray-800">Depósitos</h1>
           <p className="text-sm text-gray-500 mt-0.5">Almacenes y depósitos por empresa y sucursal</p>
         </div>
-        <button onClick={openNuevo} className="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition">
-          <Plus size={16} /><span className="hidden sm:inline">Nuevo depósito</span><span className="sm:hidden">Nuevo</span>
-        </button>
+        <PrimaryAddButton label="Nuevo depósito" shortLabel="Nuevo" onClick={openNuevo} />
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
         <div className="p-4 border-b border-gray-100">
-          <div className="relative w-full sm:w-72">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar depósito..."
-              className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" />
-          </div>
+          <SearchField value={search} onChange={setSearch} placeholder="Buscar depósito..." />
         </div>
 
         <div className="overflow-x-auto">
@@ -174,76 +170,58 @@ export default function DepositosPage() {
         </div>
 
         {pagination && (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t border-gray-100 text-sm text-gray-500">
-            <div className="flex items-center gap-2">
-              <span>{pagination.total} registros</span>
-              <select value={limit} onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }}
-                className="border border-gray-200 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
-                <option value={20}>20 por p?gina</option>
-                <option value={50}>50 por p?gina</option>
-                <option value={100}>100 por p?gina</option>
-              </select>
-            </div>
-            {pagination.totalPages > 1 && (
-              <div className="flex items-center gap-1">
-                <button onClick={() => setPage(1)} disabled={page === 1} className="p-1 rounded hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed" title="Primera p?gina"><ChevronsLeft size={16} /></button>
-                <button onClick={() => setPage((p) => p - 1)} disabled={page === 1} className="p-1 rounded hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed" title="P?gina anterior"><ChevronLeft size={16} /></button>
-                <span className="px-2">P?gina {page} de {pagination.totalPages}</span>
-                <button onClick={() => setPage((p) => p + 1)} disabled={page === pagination.totalPages} className="p-1 rounded hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed" title="P?gina siguiente"><ChevronRight size={16} /></button>
-                <button onClick={() => setPage(pagination.totalPages)} disabled={page === pagination.totalPages} className="p-1 rounded hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed" title="?ltima p?gina"><ChevronsRight size={16} /></button>
-              </div>
-            )}
-          </div>
+          <TablePagination
+            total={pagination.total}
+            page={page}
+            limit={limit}
+            totalPages={pagination.totalPages}
+            onPageChange={setPage}
+            onLimitChange={(n) => { setLimit(n); setPage(1); }}
+          />
         )}
       </div>
 
       {modal !== null && (
-        <Modal
+        <FormModal
           title={modal === 'nuevo' ? 'Nuevo depósito' : `Editar: ${(modal as Deposito).dep_desc}`}
           onClose={() => setModal(null)}
+          onSubmit={handleSubmit}
+          isPending={isPending}
+          error={error}
         >
-          <div className="space-y-4">
-            {modal === 'nuevo' && (
-              <>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Empresa <span className="text-red-500">*</span></label>
-                  <select value={form.dep_empr}
-                    onChange={(e) => setForm({ ...form, dep_empr: Number(e.target.value), dep_suc: 0 })}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
-                    <option value={0}>Seleccionar empresa...</option>
-                    {empresas.map((e) => (
-                      <option key={e.empr_codigo} value={e.empr_codigo}>{e.empr_razon_social}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Sucursal <span className="text-red-500">*</span></label>
-                  <select value={form.dep_suc}
-                    onChange={(e) => setForm({ ...form, dep_suc: Number(e.target.value) })}
-                    disabled={!form.dep_empr}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50">
-                    <option value={0}>Seleccionar sucursal...</option>
-                    {sucursales.map((s) => (
-                      <option key={s.suc_codigo} value={s.suc_codigo}>{s.suc_desc}</option>
-                    ))}
-                  </select>
-                </div>
-              </>
-            )}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Descripci?n <span className="text-red-500">*</span></label>
-              <input value={form.dep_desc} onChange={(e) => setForm({ ...form, dep_desc: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
-            </div>
-            {error && <p className="text-red-500 text-sm bg-red-50 border border-red-200 rounded px-3 py-2">{error}</p>}
+          {modal === 'nuevo' && (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Empresa <span className="text-red-500">*</span></label>
+                <select value={form.dep_empr}
+                  onChange={(e) => setForm({ ...form, dep_empr: Number(e.target.value), dep_suc: 0 })}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
+                  <option value={0}>Seleccionar empresa...</option>
+                  {empresas.map((e) => (
+                    <option key={e.empr_codigo} value={e.empr_codigo}>{e.empr_razon_social}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Sucursal <span className="text-red-500">*</span></label>
+                <select value={form.dep_suc}
+                  onChange={(e) => setForm({ ...form, dep_suc: Number(e.target.value) })}
+                  disabled={!form.dep_empr}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50">
+                  <option value={0}>Seleccionar sucursal...</option>
+                  {sucursales.map((s) => (
+                    <option key={s.suc_codigo} value={s.suc_codigo}>{s.suc_desc}</option>
+                  ))}
+                </select>
+              </div>
+            </>
+          )}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Descripción <span className="text-red-500">*</span></label>
+            <input value={form.dep_desc} onChange={(e) => setForm({ ...form, dep_desc: e.target.value })}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
           </div>
-          <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 mt-5">
-            <button onClick={() => setModal(null)} className="w-full sm:w-auto px-4 py-2 text-sm border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">Cancelar</button>
-            <button onClick={handleSubmit} disabled={isPending} className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 text-sm bg-primary-600 hover:bg-primary-700 text-white rounded-lg disabled:opacity-50">
-              <Save size={14} />{isPending ? 'Guardando...' : 'Guardar'}
-            </button>
-          </div>
-        </Modal>
+        </FormModal>
       )}
     </div>
   );

@@ -2,10 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Plus, Pencil, Trash2, Save } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
+import TablePagination from '@/components/ui/TablePagination';
 import { getMarcas, createMarca, updateMarca, deleteMarca } from '@/services/stk';
 import type { Marca } from '@/types/stk';
-import Modal from '@/components/ui/Modal';
+import FormModal from '@/components/ui/FormModal';
+import PrimaryAddButton from '@/components/ui/PrimaryAddButton';
+import SearchField from '@/components/ui/SearchField';
 
 const empty = { marc_desc: '' };
 
@@ -55,19 +58,12 @@ export default function MarcasPage() {
           <h1 className="text-xl font-semibold text-gray-800">Marcas</h1>
           <p className="text-sm text-gray-500 mt-0.5">Marcas de productos</p>
         </div>
-        <button onClick={openNueva} className="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition">
-          <Plus size={16} /><span className="hidden sm:inline">Nueva marca</span><span className="sm:hidden">Nueva</span>
-        </button>
+        <PrimaryAddButton label="Nueva marca" shortLabel="Nueva" onClick={openNueva} />
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
         <div className="p-4 border-b border-gray-100">
-          <div className="relative w-full sm:w-72">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar marca..."
-              className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" />
-          </div>
+          <SearchField value={search} onChange={setSearch} placeholder="Buscar marca..." />
         </div>
 
         <div className="overflow-x-auto">
@@ -101,46 +97,31 @@ export default function MarcasPage() {
         </div>
 
         {pagination && (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t border-gray-100 text-sm text-gray-500">
-            <div className="flex items-center gap-2">
-              <span>{pagination.total} registros</span>
-              <select value={limit} onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }}
-                className="border border-gray-200 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
-                <option value={20}>20 por página</option>
-                <option value={50}>50 por página</option>
-                <option value={100}>100 por página</option>
-              </select>
-            </div>
-            {pagination.totalPages > 1 && (
-              <div className="flex items-center gap-1">
-                <button onClick={() => setPage(1)} disabled={page === 1} className="p-1 rounded hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed" title="Primera página"><ChevronsLeft size={16} /></button>
-                <button onClick={() => setPage((p) => p - 1)} disabled={page === 1} className="p-1 rounded hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed" title="Página anterior"><ChevronLeft size={16} /></button>
-                <span className="px-2">Página {page} de {pagination.totalPages}</span>
-                <button onClick={() => setPage((p) => p + 1)} disabled={page === pagination.totalPages} className="p-1 rounded hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed" title="Página siguiente"><ChevronRight size={16} /></button>
-                <button onClick={() => setPage(pagination.totalPages)} disabled={page === pagination.totalPages} className="p-1 rounded hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed" title="Última página"><ChevronsRight size={16} /></button>
-              </div>
-            )}
-          </div>
+          <TablePagination
+            total={pagination.total}
+            page={page}
+            limit={limit}
+            totalPages={pagination.totalPages}
+            onPageChange={setPage}
+            onLimitChange={(n) => { setLimit(n); setPage(1); }}
+          />
         )}
       </div>
 
       {modal !== null && (
-        <Modal title={modal === 'nueva' ? 'Nueva marca' : `Editar: ${(modal as Marca).marc_desc}`} onClose={() => setModal(null)}>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Descripción <span className="text-red-500">*</span></label>
-              <input value={form.marc_desc} onChange={(e) => setForm({ marc_desc: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
-            </div>
-            {error && <p className="text-red-500 text-sm bg-red-50 border border-red-200 rounded px-3 py-2">{error}</p>}
+        <FormModal
+          title={modal === 'nueva' ? 'Nueva marca' : `Editar: ${(modal as Marca).marc_desc}`}
+          onClose={() => setModal(null)}
+          onSubmit={handleSubmit}
+          isPending={isPending}
+          error={error}
+        >
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Descripción <span className="text-red-500">*</span></label>
+            <input value={form.marc_desc} onChange={(e) => setForm({ marc_desc: e.target.value })}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
           </div>
-          <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 mt-5">
-            <button onClick={() => setModal(null)} className="w-full sm:w-auto px-4 py-2 text-sm border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">Cancelar</button>
-            <button onClick={handleSubmit} disabled={isPending} className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 text-sm bg-primary-600 hover:bg-primary-700 text-white rounded-lg disabled:opacity-50">
-              <Save size={14} />{isPending ? 'Guardando...' : 'Guardar'}
-            </button>
-          </div>
-        </Modal>
+        </FormModal>
       )}
     </div>
   );

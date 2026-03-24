@@ -4,8 +4,9 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getProgramas, createPrograma, updatePrograma, deletePrograma, getSistemas } from '@/services/gen';
 import type { Programa } from '@/types/gen';
-import Modal from '@/components/ui/Modal';
-import { Plus, Pencil, Trash2, Save } from 'lucide-react';
+import FormModal from '@/components/ui/FormModal';
+import PrimaryAddButton from '@/components/ui/PrimaryAddButton';
+import { Pencil, Trash2 } from 'lucide-react';
 
 const empty = { prog_desc: '', prog_sistema: 0 };
 
@@ -47,9 +48,7 @@ export default function ProgramasPage() {
           <h1 className="text-xl font-semibold text-gray-800">Programas</h1>
           <p className="text-sm text-gray-500 mt-0.5">Funcionalidades del sistema por módulo</p>
         </div>
-        <button onClick={openNuevo} className="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition">
-          <Plus size={16} /><span className="hidden sm:inline">Nuevo programa</span><span className="sm:hidden">Nuevo</span>
-        </button>
+        <PrimaryAddButton label="Nuevo programa" shortLabel="Nuevo" onClick={openNuevo} />
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
@@ -100,32 +99,29 @@ export default function ProgramasPage() {
       </div>
 
       {modal !== null && (
-        <Modal title={modal === 'nuevo' ? 'Nuevo programa' : `Editar: ${(modal as Programa).prog_desc}`} onClose={() => setModal(null)}>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Descripción <span className="text-red-500">*</span></label>
-              <input value={form.prog_desc} onChange={(e) => setForm({ ...form, prog_desc: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Sistema <span className="text-red-500">*</span></label>
-              <select value={form.prog_sistema} onChange={(e) => setForm({ ...form, prog_sistema: Number(e.target.value) })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
-                <option value={0}>Seleccionar sistema...</option>
-                {sistemas.map((s) => (
-                  <option key={s.sist_codigo} value={s.sist_codigo}>{s.sist_desc}</option>
-                ))}
-              </select>
-            </div>
-            {error && <p className="text-red-500 text-sm bg-red-50 border border-red-200 rounded px-3 py-2">{error}</p>}
+        <FormModal
+          title={modal === 'nuevo' ? 'Nuevo programa' : `Editar: ${(modal as Programa).prog_desc}`}
+          onClose={() => setModal(null)}
+          onSubmit={handleSubmit}
+          isPending={isPending}
+          error={error}
+        >
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Descripción <span className="text-red-500">*</span></label>
+            <input value={form.prog_desc} onChange={(e) => setForm({ ...form, prog_desc: e.target.value })}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
           </div>
-          <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 mt-5">
-            <button onClick={() => setModal(null)} className="w-full sm:w-auto px-4 py-2 text-sm border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">Cancelar</button>
-            <button onClick={handleSubmit} disabled={isPending} className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 text-sm bg-primary-600 hover:bg-primary-700 text-white rounded-lg disabled:opacity-50">
-              <Save size={14} />{isPending ? 'Guardando...' : 'Guardar'}
-            </button>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Sistema <span className="text-red-500">*</span></label>
+            <select value={form.prog_sistema} onChange={(e) => setForm({ ...form, prog_sistema: Number(e.target.value) })}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
+              <option value={0}>Seleccionar sistema...</option>
+              {sistemas.map((s) => (
+                <option key={s.sist_codigo} value={s.sist_codigo}>{s.sist_desc}</option>
+              ))}
+            </select>
           </div>
-        </Modal>
+        </FormModal>
       )}
     </div>
   );
