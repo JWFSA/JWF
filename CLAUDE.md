@@ -293,3 +293,54 @@ Todos los componentes deben ser responsive. Reglas:
 | `bcryptjs`               | Hash de passwords (backend)      |
 | `jsonwebtoken`           | JWT (backend)                    |
 | `pg`                     | Cliente PostgreSQL (backend)     |
+
+---
+
+## Convención de Commits — Español
+
+Todos los commits deben seguir el formato de **Conventional Commits** en **español**:
+
+```
+<tipo>(<alcance>): <descripción>
+
+<cuerpo opcional>
+
+<pie opcional>
+```
+
+### Tipos de commit
+
+| Tipo       | Uso                                          | Ejemplo                                  |
+|-----------|----------------------------------------------|------------------------------------------|
+| **feat**  | Nueva funcionalidad                          | `feat(gen): agregar pantalla de roles`   |
+| **fix**   | Corrección de bug                            | `fix(auth): corregir validación de token` |
+| **chore** | Cambios que no afectan código (deps, config)| `chore: actualizar .gitignore`           |
+| **docs**  | Cambios en documentación                     | `docs: actualizar README`                |
+| **style** | Formato, sin cambiar lógica (espacios, etc) | `style: ajustar indentación`             |
+| **refactor** | Refactorizar código sin cambiar funcionalidad | `refactor(gen): simplificar servicio de operadores` |
+| **perf**  | Mejora de rendimiento                        | `perf: optimizar queries de base de datos` |
+| **test**  | Agregar o modificar tests                    | `test(auth): agregar pruebas de login`   |
+
+### Alcance (opcional pero recomendado)
+
+Usar el módulo o componente afectado:
+- Backend: `auth`, `gen`, `fac`, `fin`, `stk`, `per`
+- Frontend: componente o pantalla (`operadores`, `roles`, etc.)
+- Infraestructura: `db`, `config`, `docker`
+
+### Ejemplos correctos
+
+```
+feat(gen): implementar CRUD de operadores
+fix(auth): permitir login con email y usuario
+chore: instalar dependencia de validación
+docs(backend): documentar estructura de carpetas
+refactor(operadores): extraer lógica de validación a service
+perf(maestros): agregar índices a tabla de países
+```
+
+### Notas
+- Usar imperativo ("agregar", "corregir", no "agregado", "corregido")
+- Primera línea max 50 caracteres
+- **Siempre en español** para mantener coherencia con el proyecto
+- Si lo consideras necesario, agregar descripción adicional después de una línea en blanco
