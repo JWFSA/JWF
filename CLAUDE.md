@@ -181,6 +181,21 @@ NEXT_PUBLIC_API_URL=http://localhost:3001/api
 
 ## Convenciones de código
 
+### CRUD completo (OBLIGATORIO en todas las entidades)
+Toda entidad del sistema debe tener CRUD completo — sin excepciones. Esto incluye entidades "simples" como catálogos, maestros y tablas de referencia.
+
+**Backend:** implementar siempre `getAll`, `getById`, `create`, `update`, `remove` en el service. El controller expone los 5 endpoints: `GET /`, `GET /:id`, `POST /`, `PUT /:id`, `DELETE /:id`.
+
+**Frontend:** implementar siempre:
+- Lista con búsqueda + paginación + botón "Nuevo"
+- Página o modal de creación
+- Página o modal de edición (con datos precargados)
+- Acción de eliminación con confirmación
+
+**Formulario vs modal:** usar página separada (`/nuevo`, `/[id]`) cuando el formulario tiene más de 4 campos. Usar modal inline cuando es simple (1-3 campos, como nombre o código+descripción).
+
+**Delete:** siempre pedir confirmación con `confirm()`. Si la entidad tiene dependencias en otras tablas, manejar el error 409 del backend mostrando un mensaje claro al usuario.
+
 ### Backend
 - Patrón: `Controller → Service → DB` — los controllers solo manejan request/response, la lógica va en services
 - Códigos auto-incrementales: se calculan con `SELECT COALESCE(MAX(campo), 0) + 1`

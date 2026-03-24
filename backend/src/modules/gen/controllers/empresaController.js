@@ -18,4 +18,37 @@ const getSucursales = async (req, res, next) => {
   try { res.json(await empresaService.getSucursales(req.params.id)); } catch (err) { next(err); }
 };
 
-module.exports = { getAll, getById, getSucursales };
+const create = async (req, res, next) => {
+  try {
+    if (!req.body.empr_razon_social) return res.status(400).json({ message: 'La razón social es requerida' });
+    res.status(201).json(await empresaService.create(req.body));
+  } catch (err) { next(err); }
+};
+
+const update = async (req, res, next) => {
+  try {
+    res.json(await empresaService.update(req.params.id, req.body));
+  } catch (err) { next(err); }
+};
+
+const createSucursal = async (req, res, next) => {
+  try {
+    if (!req.body.suc_desc) return res.status(400).json({ message: 'La descripción es requerida' });
+    res.status(201).json(await empresaService.createSucursal(req.params.id, req.body));
+  } catch (err) { next(err); }
+};
+
+const updateSucursal = async (req, res, next) => {
+  try {
+    res.json(await empresaService.updateSucursal(req.params.id, req.params.sucId, req.body));
+  } catch (err) { next(err); }
+};
+
+const deleteSucursal = async (req, res, next) => {
+  try {
+    await empresaService.deleteSucursal(req.params.id, req.params.sucId);
+    res.status(204).end();
+  } catch (err) { next(err); }
+};
+
+module.exports = { getAll, getById, getSucursales, create, update, createSucursal, updateSucursal, deleteSucursal };

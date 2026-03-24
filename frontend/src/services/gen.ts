@@ -1,5 +1,7 @@
 import api from '@/lib/api';
-import type { Operador, Rol, Empresa, Sucursal, Sistema, Programa, Moneda, Paginated } from '@/types/gen';
+import type { Operador, Rol, Empresa, Sucursal, Sistema, Programa, Moneda, Pais, Departamento, Seccion, Paginated } from '@/types/gen';
+
+export type { Pais, Departamento, Seccion };
 
 export interface ListParams {
   page?: number;
@@ -57,27 +59,57 @@ export const getEmpresas = (params?: ListParams) =>
 export const getEmpresa = (id: number) =>
   api.get<Empresa>(`/gen/empresas/${id}`).then((r) => r.data);
 
+export const createEmpresa = (data: Partial<Empresa>) =>
+  api.post<Empresa>('/gen/empresas', data).then((r) => r.data);
+
+export const updateEmpresa = (id: number, data: Partial<Empresa>) =>
+  api.put<Empresa>(`/gen/empresas/${id}`, data).then((r) => r.data);
+
 export const getSucursales = (empresaId: number) =>
   api.get<Sucursal[]>(`/gen/empresas/${empresaId}/sucursales`).then((r) => r.data);
 
+export const createSucursal = (empresaId: number, data: Partial<Sucursal>) =>
+  api.post<Sucursal[]>(`/gen/empresas/${empresaId}/sucursales`, data).then((r) => r.data);
+
+export const updateSucursal = (empresaId: number, sucId: number, data: Partial<Sucursal>) =>
+  api.put<Sucursal[]>(`/gen/empresas/${empresaId}/sucursales/${sucId}`, data).then((r) => r.data);
+
+export const deleteSucursal = (empresaId: number, sucId: number) =>
+  api.delete(`/gen/empresas/${empresaId}/sucursales/${sucId}`);
+
 // Maestros
-export const getMonedas = () =>
-  api.get<Moneda[]>('/gen/maestros/monedas').then((r) => r.data);
+// Monedas
+export const getMonedas    = () => api.get<Moneda[]>('/gen/maestros/monedas').then((r) => r.data);
+export const createMoneda  = (data: Partial<Moneda>) => api.post<Moneda>('/gen/maestros/monedas', data).then((r) => r.data);
+export const updateMoneda  = (id: number, data: Partial<Moneda>) => api.put<Moneda>(`/gen/maestros/monedas/${id}`, data).then((r) => r.data);
+export const deleteMoneda  = (id: number) => api.delete(`/gen/maestros/monedas/${id}`);
 
-export const getPaises = () =>
-  api.get('/gen/maestros/paises').then((r) => r.data);
+// Países
+export const getPaises     = () => api.get<Pais[]>('/gen/maestros/paises').then((r) => r.data);
+export const createPais    = (data: Partial<Pais>) => api.post<Pais>('/gen/maestros/paises', data).then((r) => r.data);
+export const updatePais    = (id: number, data: Partial<Pais>) => api.put<Pais>(`/gen/maestros/paises/${id}`, data).then((r) => r.data);
+export const deletePais    = (id: number) => api.delete(`/gen/maestros/paises/${id}`);
 
-export const getCiudades = () =>
-  api.get('/gen/maestros/ciudades').then((r) => r.data);
+// Ciudades
+export const getCiudades   = () => api.get<{ ciudad_codigo: number; ciudad_desc: string }[]>('/gen/maestros/ciudades').then((r) => r.data);
 
-export const getDepartamentos = () =>
-  api.get('/gen/maestros/departamentos').then((r) => r.data);
+// Departamentos
+export const getDepartamentos    = () => api.get<Departamento[]>('/gen/maestros/departamentos').then((r) => r.data);
+export const createDepartamento  = (data: Partial<Departamento>) => api.post<Departamento>('/gen/maestros/departamentos', data).then((r) => r.data);
+export const updateDepartamento  = (id: number, data: Partial<Departamento>) => api.put<Departamento>(`/gen/maestros/departamentos/${id}`, data).then((r) => r.data);
+export const deleteDepartamento  = (id: number) => api.delete(`/gen/maestros/departamentos/${id}`);
 
-export const getSecciones = (dpto?: number) =>
-  api.get('/gen/maestros/secciones', { params: dpto ? { dpto } : {} }).then((r) => r.data);
+// Secciones
+export const getSecciones        = (dpto?: number) => api.get<Seccion[]>('/gen/maestros/secciones', { params: dpto ? { dpto } : {} }).then((r) => r.data);
+export const createSeccion       = (dpto: number, data: Partial<Seccion>) => api.post<Seccion[]>(`/gen/maestros/departamentos/${dpto}/secciones`, data).then((r) => r.data);
+export const updateSeccion       = (dpto: number, id: number, data: Partial<Seccion>) => api.put<Seccion[]>(`/gen/maestros/departamentos/${dpto}/secciones/${id}`, data).then((r) => r.data);
+export const deleteSeccion       = (dpto: number, id: number) => api.delete(`/gen/maestros/departamentos/${dpto}/secciones/${id}`);
 
-export const getSistemas = () =>
-  api.get<Sistema[]>('/gen/maestros/sistemas').then((r) => r.data);
+// Sistemas
+export const getSistemas   = () => api.get<Sistema[]>('/gen/maestros/sistemas').then((r) => r.data);
 
-export const getProgramas = (sistema?: number) =>
-  api.get<Programa[]>('/gen/maestros/programas', { params: sistema ? { sistema } : {} }).then((r) => r.data);
+// Programas
+export const getProgramas  = (sistema?: number) => api.get<Programa[]>('/gen/maestros/programas', { params: sistema ? { sistema } : {} }).then((r) => r.data);
+export const createPrograma = (data: Partial<Programa>) => api.post<Programa>('/gen/maestros/programas', data).then((r) => r.data);
+export const updatePrograma = (id: number, data: Partial<Programa>) => api.put<Programa>(`/gen/maestros/programas/${id}`, data).then((r) => r.data);
+export const deletePrograma = (id: number) => api.delete(`/gen/maestros/programas/${id}`);

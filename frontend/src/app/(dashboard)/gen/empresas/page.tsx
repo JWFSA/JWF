@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { getEmpresas } from '@/services/gen';
-import { Building2, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { Building2, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Plus } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
@@ -27,9 +27,17 @@ export default function EmpresasPage() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Empresas</h1>
-        <p className="text-sm text-gray-500">Empresas registradas en el sistema</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Empresas</h1>
+          <p className="text-sm text-gray-500">Empresas registradas en el sistema</p>
+        </div>
+        <Link href="/gen/empresas/nuevo"
+          className="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition">
+          <Plus size={16} />
+          <span className="hidden sm:inline">Nueva empresa</span>
+          <span className="sm:hidden">Nueva</span>
+        </Link>
       </div>
 
       <div className="mb-4">

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Users, Building2, Shield, Globe, Settings, LayoutDashboard, ChevronDown, X } from 'lucide-react';
+import { Users, Building2, Shield, Globe, Settings, LayoutDashboard, ChevronDown, X, Package, Warehouse, Tag, Layers, BookOpen, DollarSign, MapPin, Map, Code } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import Image from 'next/image';
@@ -17,10 +17,25 @@ const menu = [
     label: 'General',
     icon: Settings,
     children: [
-      { label: 'Operadores', href: '/gen/operadores', icon: Users },
-      { label: 'Roles', href: '/gen/roles', icon: Shield },
-      { label: 'Empresas', href: '/gen/empresas', icon: Building2 },
-      { label: 'Sistemas', href: '/gen/sistemas', icon: Globe },
+      { label: 'Operadores',   href: '/gen/operadores',   icon: Users },
+      { label: 'Roles',        href: '/gen/roles',        icon: Shield },
+      { label: 'Empresas',     href: '/gen/empresas',     icon: Building2 },
+      { label: 'Sistemas',     href: '/gen/sistemas',     icon: Globe },
+      { label: 'Programas',    href: '/gen/programas',    icon: Code },
+      { label: 'Monedas',      href: '/gen/monedas',      icon: DollarSign },
+      { label: 'Países',       href: '/gen/paises',       icon: MapPin },
+      { label: 'Departamentos',href: '/gen/departamentos',icon: Map },
+    ],
+  },
+  {
+    label: 'Stock',
+    icon: Package,
+    children: [
+      { label: 'Artículos', href: '/stk/articulos', icon: Layers },
+      { label: 'Depósitos', href: '/stk/depositos', icon: Warehouse },
+      { label: 'Líneas', href: '/stk/lineas', icon: BookOpen },
+      { label: 'Marcas', href: '/stk/marcas', icon: Tag },
+      { label: 'Rubros', href: '/stk/rubros', icon: BookOpen },
     ],
   },
 ];

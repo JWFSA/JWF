@@ -24,6 +24,7 @@ export interface Empresa {
   empr_razon_social: string;
   empr_dir: string | null;
   empr_tel: string | null;
+  empr_fax: string | null;
   empr_ruc: string | null;
   empr_localidad: string | null;
   empr_correo_elect: string | null;
@@ -32,12 +33,31 @@ export interface Empresa {
 }
 
 export interface Sucursal {
+  suc_empr?: number;
   suc_codigo: number;
   suc_desc: string;
   suc_dir: string | null;
   suc_tel: string | null;
+  suc_fax: string | null;
   suc_localidad: string | null;
   suc_ind_casa_central: 'S' | 'N' | null;
+}
+
+export interface Pais {
+  pais_codigo: number;
+  pais_desc: string;
+  pais_nacionalidad: string | null;
+}
+
+export interface Departamento {
+  dpto_codigo: number;
+  dpto_desc: string;
+}
+
+export interface Seccion {
+  secc_dpto: number;
+  secc_codigo: number;
+  secc_desc: string;
 }
 
 export interface Sistema {

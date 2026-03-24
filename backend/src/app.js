@@ -8,6 +8,7 @@ require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 const pool = require('./config/db');
 const errorHandler = require('./middlewares/errorHandler');
 const genRoutes = require('./modules/gen/routes');
+const stkRoutes = require('./modules/stk/routes');
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use(morgan('dev'));
 app.use(express.json());
 
 app.use('/api/gen', genRoutes);
+app.use('/api/stk', stkRoutes);
 
 app.get('/api/health', async (req, res) => {
   try {

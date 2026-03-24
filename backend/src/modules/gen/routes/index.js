@@ -27,17 +27,49 @@ router.delete('/roles/:id', verifyToken, rolCtrl.remove);
 router.put('/roles/:id/programas', verifyToken, rolCtrl.assignProgramas);
 
 // Empresas
-router.get('/empresas', verifyToken, empresaCtrl.getAll);
-router.get('/empresas/:id', verifyToken, empresaCtrl.getById);
-router.get('/empresas/:id/sucursales', verifyToken, empresaCtrl.getSucursales);
+router.get('/empresas',                              verifyToken, empresaCtrl.getAll);
+router.get('/empresas/:id',                          verifyToken, empresaCtrl.getById);
+router.post('/empresas',                             verifyToken, empresaCtrl.create);
+router.put('/empresas/:id',                          verifyToken, empresaCtrl.update);
+router.get('/empresas/:id/sucursales',               verifyToken, empresaCtrl.getSucursales);
+router.post('/empresas/:id/sucursales',              verifyToken, empresaCtrl.createSucursal);
+router.put('/empresas/:id/sucursales/:sucId',        verifyToken, empresaCtrl.updateSucursal);
+router.delete('/empresas/:id/sucursales/:sucId',     verifyToken, empresaCtrl.deleteSucursal);
 
-// Maestros (catálogos)
-router.get('/maestros/monedas', verifyToken, maestrosCtrl.getMonedas);
-router.get('/maestros/paises', verifyToken, maestrosCtrl.getPaises);
-router.get('/maestros/ciudades', verifyToken, maestrosCtrl.getCiudades);
-router.get('/maestros/departamentos', verifyToken, maestrosCtrl.getDepartamentos);
-router.get('/maestros/secciones', verifyToken, maestrosCtrl.getSecciones);
-router.get('/maestros/sistemas', verifyToken, maestrosCtrl.getSistemas);
-router.get('/maestros/programas', verifyToken, maestrosCtrl.getProgramas);
+// Monedas
+router.get('/maestros/monedas',       verifyToken, maestrosCtrl.getMonedas);
+router.post('/maestros/monedas',      verifyToken, maestrosCtrl.createMoneda);
+router.put('/maestros/monedas/:id',   verifyToken, maestrosCtrl.updateMoneda);
+router.delete('/maestros/monedas/:id',verifyToken, maestrosCtrl.deleteMoneda);
+
+// Países
+router.get('/maestros/paises',        verifyToken, maestrosCtrl.getPaises);
+router.post('/maestros/paises',       verifyToken, maestrosCtrl.createPais);
+router.put('/maestros/paises/:id',    verifyToken, maestrosCtrl.updatePais);
+router.delete('/maestros/paises/:id', verifyToken, maestrosCtrl.deletePais);
+
+// Ciudades
+router.get('/maestros/ciudades',      verifyToken, maestrosCtrl.getCiudades);
+
+// Departamentos
+router.get('/maestros/departamentos',          verifyToken, maestrosCtrl.getDepartamentos);
+router.post('/maestros/departamentos',         verifyToken, maestrosCtrl.createDepartamento);
+router.put('/maestros/departamentos/:id',      verifyToken, maestrosCtrl.updateDepartamento);
+router.delete('/maestros/departamentos/:id',   verifyToken, maestrosCtrl.deleteDepartamento);
+
+// Secciones
+router.get('/maestros/secciones',                        verifyToken, maestrosCtrl.getSecciones);
+router.post('/maestros/departamentos/:dpto/secciones',   verifyToken, maestrosCtrl.createSeccion);
+router.put('/maestros/departamentos/:dpto/secciones/:id',verifyToken, maestrosCtrl.updateSeccion);
+router.delete('/maestros/departamentos/:dpto/secciones/:id',verifyToken, maestrosCtrl.deleteSeccion);
+
+// Sistemas
+router.get('/maestros/sistemas',      verifyToken, maestrosCtrl.getSistemas);
+
+// Programas
+router.get('/maestros/programas',          verifyToken, maestrosCtrl.getProgramas);
+router.post('/maestros/programas',         verifyToken, maestrosCtrl.createPrograma);
+router.put('/maestros/programas/:id',      verifyToken, maestrosCtrl.updatePrograma);
+router.delete('/maestros/programas/:id',   verifyToken, maestrosCtrl.deletePrograma);
 
 module.exports = router;
