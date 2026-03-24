@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState, useEffect, useMemo } from 'react';
+import { useQuery, useMutation, useQueryClient, useQueries } from '@tanstack/react-query';
 import { Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Plus, Pencil, Trash2, Save } from 'lucide-react';
 import { getDepositos, createDeposito, updateDeposito, deleteDeposito } from '@/services/stk';
 import { getEmpresas, getSucursales } from '@/services/gen';
@@ -35,7 +35,6 @@ export default function DepositosPage() {
   const { data: empresasData } = useQuery({
     queryKey: ['empresas', { all: true }],
     queryFn: () => getEmpresas({ all: true }),
-    enabled: modal !== null,
   });
 
   const { data: sucursales = [] } = useQuery({
@@ -47,6 +46,34 @@ export default function DepositosPage() {
   const empresas = empresasData?.data ?? [];
   const depositos = data?.data ?? [];
   const pagination = data?.pagination;
+
+  const uniqueEmprIds = useMemo(
+    () => Array.from(new Set(depositos.map((d) => d.dep_empr))).sort((a, b) => a - b),
+    [depositos],
+  );
+
+  const sucursalesTablaQueries = useQueries({
+    queries: uniqueEmprIds.map((emprId) => ({
+      queryKey: ['sucursales', emprId],
+      queryFn: () => getSucursales(emprId),
+    })),
+  });
+
+  const empresaNombrePorId = useMemo(() => {
+    const m = new Map<number, string>();
+    for (const e of empresas) m.set(e.empr_codigo, e.empr_razon_social);
+    return m;
+  }, [empresas]);
+
+  const sucursalNombrePorEmprSuc = useMemo(() => {
+    const m = new Map<string, string>();
+    uniqueEmprIds.forEach((emprId, i) => {
+      const list = sucursalesTablaQueries[i]?.data;
+      if (!list) return;
+      for (const s of list) m.set(`${emprId}-${s.suc_codigo}`, s.suc_desc);
+    });
+    return m;
+  }, [uniqueEmprIds, sucursalesTablaQueries]);
 
   const inv = () => qc.invalidateQueries({ queryKey: ['depositos'] });
 
@@ -126,14 +153,18 @@ export default function DepositosPage() {
                 <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400">Sin resultados</td></tr>
               ) : depositos.map((d) => (
                 <tr key={`${d.dep_empr}-${d.dep_suc}-${d.dep_codigo}`} className="hover:bg-gray-50 transition">
-                  <td className="px-4 py-3 text-gray-500 hidden md:table-cell">{d.dep_empr}</td>
-                  <td className="px-4 py-3 text-gray-500 hidden md:table-cell">{d.dep_suc}</td>
+                  <td className="px-4 py-3 text-gray-700 hidden md:table-cell">
+                    {empresaNombrePorId.get(d.dep_empr) ?? d.dep_empr}
+                  </td>
+                  <td className="px-4 py-3 text-gray-700 hidden md:table-cell">
+                    {sucursalNombrePorEmprSuc.get(`${d.dep_empr}-${d.dep_suc}`) ?? d.dep_suc}
+                  </td>
                   <td className="px-4 py-3 font-mono text-xs text-gray-500">{d.dep_codigo}</td>
                   <td className="px-4 py-3 font-medium text-gray-800">{d.dep_desc}</td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex justify-end gap-2">
                       <button onClick={() => openEditar(d)} className="text-gray-400 hover:text-primary-600 transition"><Pencil size={14} /></button>
-                      <button onClick={() => { if (confirm('¿Eliminar este depósito?')) deleteMut.mutate({ empr: d.dep_empr, suc: d.dep_suc, codigo: d.dep_codigo }); }} className="text-gray-400 hover:text-red-500 transition"><Trash2 size={14} /></button>
+                      <button onClick={() => { if (confirm('?Eliminar este depósito?')) deleteMut.mutate({ empr: d.dep_empr, suc: d.dep_suc, codigo: d.dep_codigo }); }} className="text-gray-400 hover:text-red-500 transition"><Trash2 size={14} /></button>
                     </div>
                   </td>
                 </tr>
@@ -148,18 +179,18 @@ export default function DepositosPage() {
               <span>{pagination.total} registros</span>
               <select value={limit} onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }}
                 className="border border-gray-200 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
-                <option value={20}>20 por página</option>
-                <option value={50}>50 por página</option>
-                <option value={100}>100 por página</option>
+                <option value={20}>20 por p?gina</option>
+                <option value={50}>50 por p?gina</option>
+                <option value={100}>100 por p?gina</option>
               </select>
             </div>
             {pagination.totalPages > 1 && (
               <div className="flex items-center gap-1">
-                <button onClick={() => setPage(1)} disabled={page === 1} className="p-1 rounded hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed" title="Primera página"><ChevronsLeft size={16} /></button>
-                <button onClick={() => setPage((p) => p - 1)} disabled={page === 1} className="p-1 rounded hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed" title="Página anterior"><ChevronLeft size={16} /></button>
-                <span className="px-2">Página {page} de {pagination.totalPages}</span>
-                <button onClick={() => setPage((p) => p + 1)} disabled={page === pagination.totalPages} className="p-1 rounded hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed" title="Página siguiente"><ChevronRight size={16} /></button>
-                <button onClick={() => setPage(pagination.totalPages)} disabled={page === pagination.totalPages} className="p-1 rounded hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed" title="Última página"><ChevronsRight size={16} /></button>
+                <button onClick={() => setPage(1)} disabled={page === 1} className="p-1 rounded hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed" title="Primera p?gina"><ChevronsLeft size={16} /></button>
+                <button onClick={() => setPage((p) => p - 1)} disabled={page === 1} className="p-1 rounded hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed" title="P?gina anterior"><ChevronLeft size={16} /></button>
+                <span className="px-2">P?gina {page} de {pagination.totalPages}</span>
+                <button onClick={() => setPage((p) => p + 1)} disabled={page === pagination.totalPages} className="p-1 rounded hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed" title="P?gina siguiente"><ChevronRight size={16} /></button>
+                <button onClick={() => setPage(pagination.totalPages)} disabled={page === pagination.totalPages} className="p-1 rounded hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed" title="?ltima p?gina"><ChevronsRight size={16} /></button>
               </div>
             )}
           </div>
@@ -200,7 +231,7 @@ export default function DepositosPage() {
               </>
             )}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Descripción <span className="text-red-500">*</span></label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Descripci?n <span className="text-red-500">*</span></label>
               <input value={form.dep_desc} onChange={(e) => setForm({ ...form, dep_desc: e.target.value })}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
             </div>
