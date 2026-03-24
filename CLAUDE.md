@@ -1,4 +1,4 @@
-# CLAUDE.md — JWF ERP
+# CLAUDE.md — JWF
 
 Instrucciones y conocimiento del proyecto para Claude Code. Se carga automáticamente en cada conversación.
 

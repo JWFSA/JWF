@@ -48,7 +48,7 @@ export default function Sidebar({ onClose }: Props) {
       <div className="px-5 py-5 border-b border-gray-700 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Image src="/logo.png" alt="Logo" width={28} height={28} className="object-contain" />
-          <span className="text-xl font-bold text-white">JWF ERP</span>
+          <span className="text-xl font-bold text-white">JWF</span>
         </div>
         <button
           onClick={onClose}

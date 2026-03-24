@@ -24,7 +24,7 @@ export default function DashboardPage() {
         <h1 className="text-2xl font-bold text-gray-800">
           Bienvenido{user ? `, ${user.nombre}` : ''}
         </h1>
-        <p className="text-gray-500 text-sm mt-1">Panel de control JWF ERP</p>
+        <p className="text-gray-500 text-sm mt-1">Panel de control JWF</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

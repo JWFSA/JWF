@@ -6,7 +6,7 @@ import Providers from '@/components/layout/Providers';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'JWF ERP',
+  title: 'JWF',
   description: 'Sistema de gestión empresarial JWF',
 };
 

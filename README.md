@@ -1,4 +1,4 @@
-# JWF ERP
+# JWF
 
 Sistema de gestión empresarial - Reemplazo del sistema legacy.
 
