@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Pencil, Trash2 } from 'lucide-react';
 import TablePagination from '@/components/ui/TablePagination';
+import DataTable from '@/components/ui/DataTable';
 import { getMarcas, createMarca, updateMarca, deleteMarca } from '@/services/stk';
 import type { Marca } from '@/types/stk';
 import FormModal from '@/components/ui/FormModal';
@@ -66,35 +66,18 @@ export default function MarcasPage() {
           <SearchField value={search} onChange={setSearch} placeholder="Buscar marca..." />
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[300px] text-sm">
-            <thead>
-              <tr className="border-b border-gray-100 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
-                <th className="px-4 py-3 w-24">Código</th>
-                <th className="px-4 py-3">Descripción</th>
-                <th className="px-4 py-3 w-20"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {isLoading ? (
-                <tr><td colSpan={3} className="px-4 py-8 text-center text-gray-400">Cargando...</td></tr>
-              ) : marcas.length === 0 ? (
-                <tr><td colSpan={3} className="px-4 py-8 text-center text-gray-400">Sin resultados</td></tr>
-              ) : marcas.map((m) => (
-                <tr key={m.marc_codigo} className="hover:bg-gray-50 transition">
-                  <td className="px-4 py-3 font-mono text-xs text-gray-500">{m.marc_codigo}</td>
-                  <td className="px-4 py-3 font-medium text-gray-800">{m.marc_desc}</td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex justify-end gap-2">
-                      <button onClick={() => openEditar(m)} className="text-gray-400 hover:text-primary-600 transition"><Pencil size={14} /></button>
-                      <button onClick={() => { if (confirm('¿Eliminar esta marca?')) deleteMut.mutate(m.marc_codigo); }} className="text-gray-400 hover:text-red-500 transition"><Trash2 size={14} /></button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          isLoading={isLoading}
+          rows={marcas}
+          getRowKey={(m) => m.marc_codigo}
+          onEdit={openEditar}
+          onDelete={(m) => deleteMut.mutate(m.marc_codigo)}
+          deleteConfirmMessage="¿Eliminar esta marca?"
+          columns={[
+            { key: 'codigo', header: 'Código', headerClassName: 'w-24', cell: (m) => m.marc_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
+            { key: 'desc', header: 'Descripción', cell: (m) => m.marc_desc, cellClassName: 'font-medium text-gray-800' },
+          ]}
+        />
 
         {pagination && (
           <TablePagination

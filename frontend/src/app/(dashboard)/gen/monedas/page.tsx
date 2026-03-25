@@ -8,7 +8,7 @@ import FormModal from '@/components/ui/FormModal';
 import PrimaryAddButton from '@/components/ui/PrimaryAddButton';
 import SearchField from '@/components/ui/SearchField';
 import TablePagination from '@/components/ui/TablePagination';
-import { Pencil, Trash2 } from 'lucide-react';
+import DataTable from '@/components/ui/DataTable';
 
 const empty = { mon_desc: '', mon_simbolo: '', mon_tasa_comp: 0, mon_tasa_vta: 0 };
 
@@ -83,41 +83,23 @@ export default function MonedasPage() {
           <SearchField value={search} onChange={setSearch} placeholder="Buscar moneda..." />
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[560px] text-sm">
-            <thead>
-              <tr className="border-b border-gray-100 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
-                <th className="px-4 py-3 w-20">Código</th>
-                <th className="px-4 py-3">Descripción</th>
-                <th className="px-4 py-3 w-16">Símbolo</th>
-                <th className="px-4 py-3 text-right hidden md:table-cell">Tasa compra</th>
-                <th className="px-4 py-3 text-right hidden md:table-cell">Tasa venta</th>
-                <th className="px-4 py-3 w-20"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {isLoading ? (
-                <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">Cargando...</td></tr>
-              ) : filtered.length === 0 ? (
-                <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">Sin registros</td></tr>
-              ) : monedas.map((m) => (
-                <tr key={m.mon_codigo} className="hover:bg-gray-50 transition">
-                  <td className="px-4 py-3 font-mono text-xs text-gray-500">{m.mon_codigo}</td>
-                  <td className="px-4 py-3 font-medium text-gray-800">{m.mon_desc}</td>
-                  <td className="px-4 py-3 text-gray-500">{m.mon_simbolo}</td>
-                  <td className="px-4 py-3 text-right text-gray-600 hidden md:table-cell">{m.mon_tasa_comp?.toLocaleString()}</td>
-                  <td className="px-4 py-3 text-right text-gray-600 hidden md:table-cell">{m.mon_tasa_vta?.toLocaleString()}</td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex justify-end gap-2">
-                      <button onClick={() => openEditar(m)} className="text-gray-400 hover:text-primary-600 transition"><Pencil size={14} /></button>
-                      <button onClick={() => { if (confirm('¿Eliminar esta moneda?')) deleteMut.mutate(m.mon_codigo); }} className="text-gray-400 hover:text-red-500 transition"><Trash2 size={14} /></button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          isLoading={isLoading}
+          rows={monedas}
+          getRowKey={(m) => m.mon_codigo}
+          onEdit={openEditar}
+          onDelete={(m) => deleteMut.mutate(m.mon_codigo)}
+          deleteConfirmMessage="¿Eliminar esta moneda?"
+          tableClassName="w-full min-w-[560px] text-sm"
+          emptyLabel="Sin registros"
+          columns={[
+            { key: 'codigo', header: 'Código', headerClassName: 'w-24', cell: (m) => m.mon_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
+            { key: 'desc', header: 'Descripción', cell: (m) => m.mon_desc, cellClassName: 'font-medium text-gray-800' },
+            { key: 'simbolo', header: 'Símbolo', headerClassName: 'w-16', cell: (m) => m.mon_simbolo, cellClassName: 'text-gray-500' },
+            { key: 'tasa_comp', header: 'Tasa compra', headerClassName: 'text-right hidden md:table-cell', cell: (m) => m.mon_tasa_comp?.toLocaleString(), cellClassName: 'text-right text-gray-600 hidden md:table-cell' },
+            { key: 'tasa_vta', header: 'Tasa venta', headerClassName: 'text-right hidden md:table-cell', cell: (m) => m.mon_tasa_vta?.toLocaleString(), cellClassName: 'text-right text-gray-600 hidden md:table-cell' },
+          ]}
+        />
 
         {!isLoading && (
           <TablePagination

@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Pencil, Trash2 } from 'lucide-react';
 import TablePagination from '@/components/ui/TablePagination';
+import DataTable from '@/components/ui/DataTable';
 import { getRubros, createRubro, updateRubro, deleteRubro } from '@/services/stk';
 import type { Rubro } from '@/types/stk';
 import FormModal from '@/components/ui/FormModal';
@@ -66,43 +66,29 @@ export default function RubrosPage() {
           <SearchField value={search} onChange={setSearch} placeholder="Buscar rubro..." />
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[300px] text-sm">
-            <thead>
-              <tr className="border-b border-gray-100 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
-                <th className="px-4 py-3 w-24">Código</th>
-                <th className="px-4 py-3">Descripción</th>
-                <th className="px-4 py-3 hidden md:table-cell text-center">Ranking</th>
-                <th className="px-4 py-3 w-20"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {isLoading ? (
-                <tr><td colSpan={4} className="px-4 py-8 text-center text-gray-400">Cargando...</td></tr>
-              ) : rubros.length === 0 ? (
-                <tr><td colSpan={4} className="px-4 py-8 text-center text-gray-400">Sin resultados</td></tr>
-              ) : rubros.map((r) => (
-                <tr key={r.rub_codigo} className="hover:bg-gray-50 transition">
-                  <td className="px-4 py-3 font-mono text-xs text-gray-500">{r.rub_codigo}</td>
-                  <td className="px-4 py-3 font-medium text-gray-800">{r.rub_desc}</td>
-                  <td className="px-4 py-3 hidden md:table-cell text-center">
-                    {r.rub_ind_incluir_ranking === 'S' ? (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700">Sí</span>
-                    ) : (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-500">No</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex justify-end gap-2">
-                      <button onClick={() => openEditar(r)} className="text-gray-400 hover:text-primary-600 transition"><Pencil size={14} /></button>
-                      <button onClick={() => { if (confirm('¿Eliminar este rubro?')) deleteMut.mutate(r.rub_codigo); }} className="text-gray-400 hover:text-red-500 transition"><Trash2 size={14} /></button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          isLoading={isLoading}
+          rows={rubros}
+          getRowKey={(r) => r.rub_codigo}
+          onEdit={openEditar}
+          onDelete={(r) => deleteMut.mutate(r.rub_codigo)}
+          deleteConfirmMessage="¿Eliminar este rubro?"
+          columns={[
+            { key: 'codigo', header: 'Código', headerClassName: 'w-24', cell: (r) => r.rub_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
+            { key: 'desc', header: 'Descripción', cell: (r) => r.rub_desc, cellClassName: 'font-medium text-gray-800' },
+            {
+              key: 'ranking',
+              header: 'Ranking',
+              headerClassName: 'hidden md:table-cell text-center',
+              cell: (r) => r.rub_ind_incluir_ranking === 'S' ? (
+                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700">Sí</span>
+              ) : (
+                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-500">No</span>
+              ),
+              cellClassName: 'hidden md:table-cell text-center',
+            },
+          ]}
+        />
 
         {pagination && (
           <TablePagination

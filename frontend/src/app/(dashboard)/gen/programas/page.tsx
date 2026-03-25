@@ -6,7 +6,7 @@ import { getProgramas, createPrograma, updatePrograma, deletePrograma, getSistem
 import type { Programa } from '@/types/gen';
 import FormModal from '@/components/ui/FormModal';
 import PrimaryAddButton from '@/components/ui/PrimaryAddButton';
-import { Pencil, Trash2 } from 'lucide-react';
+import DataTable from '@/components/ui/DataTable';
 
 const empty = { prog_desc: '', prog_sistema: 0 };
 
@@ -65,37 +65,21 @@ export default function ProgramasPage() {
           </select>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[500px] text-sm">
-            <thead>
-              <tr className="border-b border-gray-100 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
-                <th className="px-4 py-3 w-24">Clave</th>
-                <th className="px-4 py-3">Descripción</th>
-                <th className="px-4 py-3 hidden md:table-cell">Sistema</th>
-                <th className="px-4 py-3 w-20"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {isLoading ? (
-                <tr><td colSpan={4} className="px-4 py-8 text-center text-gray-400">Cargando...</td></tr>
-              ) : programas.length === 0 ? (
-                <tr><td colSpan={4} className="px-4 py-8 text-center text-gray-400">Sin registros</td></tr>
-              ) : programas.map((p) => (
-                <tr key={p.prog_clave} className="hover:bg-gray-50 transition">
-                  <td className="px-4 py-3 font-mono text-xs text-gray-500">{p.prog_clave}</td>
-                  <td className="px-4 py-3 font-medium text-gray-800">{p.prog_desc}</td>
-                  <td className="px-4 py-3 text-gray-500 hidden md:table-cell">{p.sist_desc ?? '—'}</td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex justify-end gap-2">
-                      <button onClick={() => openEditar(p)} className="text-gray-400 hover:text-primary-600 transition"><Pencil size={14} /></button>
-                      <button onClick={() => { if (confirm('¿Eliminar este programa?')) deleteMut.mutate(p.prog_clave); }} className="text-gray-400 hover:text-red-500 transition"><Trash2 size={14} /></button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          isLoading={isLoading}
+          rows={programas}
+          getRowKey={(p) => p.prog_clave}
+          onEdit={openEditar}
+          onDelete={(p) => deleteMut.mutate(p.prog_clave)}
+          deleteConfirmMessage="¿Eliminar este programa?"
+          tableClassName="w-full min-w-[500px] text-sm"
+          emptyLabel="Sin registros"
+          columns={[
+            { key: 'clave', header: 'Clave', headerClassName: 'w-24', cell: (p) => p.prog_clave, cellClassName: 'font-mono text-xs text-gray-500' },
+            { key: 'desc', header: 'Descripción', cell: (p) => p.prog_desc, cellClassName: 'font-medium text-gray-800' },
+            { key: 'sistema', header: 'Sistema', headerClassName: 'hidden md:table-cell', cell: (p) => p.sist_desc ?? '—', cellClassName: 'text-gray-500 hidden md:table-cell' },
+          ]}
+        />
       </div>
 
       {modal !== null && (

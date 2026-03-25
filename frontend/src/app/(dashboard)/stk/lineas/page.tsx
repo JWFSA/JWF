@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Pencil, Trash2 } from 'lucide-react';
 import { getLineas, createLinea, updateLinea, deleteLinea } from '@/services/stk';
 import type { Linea } from '@/types/stk';
+import DataTable from '@/components/ui/DataTable';
 import FormModal from '@/components/ui/FormModal';
 import PrimaryAddButton from '@/components/ui/PrimaryAddButton';
 import SearchField from '@/components/ui/SearchField';
@@ -66,35 +66,18 @@ export default function LineasPage() {
           <SearchField value={search} onChange={setSearch} placeholder="Buscar línea..." />
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[300px] text-sm">
-            <thead>
-              <tr className="border-b border-gray-100 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
-                <th className="px-4 py-3 w-24">Código</th>
-                <th className="px-4 py-3">Descripción</th>
-                <th className="px-4 py-3 w-20"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {isLoading ? (
-                <tr><td colSpan={3} className="px-4 py-8 text-center text-gray-400">Cargando...</td></tr>
-              ) : lineas.length === 0 ? (
-                <tr><td colSpan={3} className="px-4 py-8 text-center text-gray-400">Sin resultados</td></tr>
-              ) : lineas.map((l) => (
-                <tr key={l.lin_codigo} className="hover:bg-gray-50 transition">
-                  <td className="px-4 py-3 font-mono text-xs text-gray-500">{l.lin_codigo}</td>
-                  <td className="px-4 py-3 font-medium text-gray-800">{l.lin_desc}</td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex justify-end gap-2">
-                      <button onClick={() => openEditar(l)} className="text-gray-400 hover:text-primary-600 transition"><Pencil size={14} /></button>
-                      <button onClick={() => { if (confirm('¿Eliminar esta línea?')) deleteMut.mutate(l.lin_codigo); }} className="text-gray-400 hover:text-red-500 transition"><Trash2 size={14} /></button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          isLoading={isLoading}
+          rows={lineas}
+          getRowKey={(l) => l.lin_codigo}
+          onEdit={openEditar}
+          onDelete={(l) => deleteMut.mutate(l.lin_codigo)}
+          deleteConfirmMessage="¿Eliminar esta línea?"
+          columns={[
+            { key: 'codigo', header: 'Código', headerClassName: 'w-24', cell: (l) => l.lin_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
+            { key: 'desc', header: 'Descripción', cell: (l) => l.lin_desc, cellClassName: 'font-medium text-gray-800' },
+          ]}
+        />
 
         {pagination && (
           <TablePagination

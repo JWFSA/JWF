@@ -2,14 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import Link from 'next/link';
-import { Pencil } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import PrimaryAddButton from '@/components/ui/PrimaryAddButton';
 import SearchField from '@/components/ui/SearchField';
 import TablePagination from '@/components/ui/TablePagination';
+import DataTable from '@/components/ui/DataTable';
 import { getArticulos } from '@/services/stk';
 
 export default function ArticulosPage() {
+  const router = useRouter();
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -25,7 +26,7 @@ export default function ArticulosPage() {
     queryFn: () => getArticulos({ page, limit, search: debouncedSearch }),
   });
 
-  const articulos = data?.data ?? [];
+  const articulos  = data?.data ?? [];
   const pagination = data?.pagination;
 
   return (
@@ -43,50 +44,32 @@ export default function ArticulosPage() {
           <SearchField value={search} onChange={setSearch} placeholder="Buscar artículos..." />
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[700px] text-sm">
-            <thead>
-              <tr className="border-b border-gray-100 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
-                <th className="px-4 py-3">Código</th>
-                <th className="px-4 py-3">Descripción</th>
-                <th className="px-4 py-3 hidden md:table-cell">Abrev.</th>
-                <th className="px-4 py-3 hidden md:table-cell">UM</th>
-                <th className="px-4 py-3 hidden lg:table-cell">Línea</th>
-                <th className="px-4 py-3 hidden lg:table-cell">Marca</th>
-                <th className="px-4 py-3">Estado</th>
-                <th className="px-4 py-3"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {isLoading ? (
-                <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-400">Cargando...</td></tr>
-              ) : articulos.length === 0 ? (
-                <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-400">Sin resultados</td></tr>
-              ) : articulos.map((a) => (
-                <tr key={a.art_codigo} className="hover:bg-gray-50 transition">
-                  <td className="px-4 py-3 font-mono text-xs text-gray-500">{a.art_codigo}</td>
-                  <td className="px-4 py-3 font-medium text-gray-800">{a.art_desc}</td>
-                  <td className="px-4 py-3 text-gray-500 hidden md:table-cell">{a.art_desc_abrev ?? '—'}</td>
-                  <td className="px-4 py-3 text-gray-500 hidden md:table-cell">{a.art_unid_med ?? '—'}</td>
-                  <td className="px-4 py-3 text-gray-500 hidden lg:table-cell">{a.lin_desc ?? '—'}</td>
-                  <td className="px-4 py-3 text-gray-500 hidden lg:table-cell">{a.marc_desc ?? '—'}</td>
-                  <td className="px-4 py-3">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                      a.art_est === 'A' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
-                    }`}>
-                      {a.art_est === 'A' ? 'Activo' : 'Inactivo'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <Link href={`/stk/articulos/${a.art_codigo}`} className="inline-flex items-center gap-1 text-primary-600 hover:text-primary-800 text-xs font-medium">
-                      <Pencil size={13} /> Editar
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          isLoading={isLoading}
+          rows={articulos}
+          getRowKey={(a) => a.art_codigo}
+          onEdit={(a) => router.push(`/stk/articulos/${a.art_codigo}`)}
+          tableClassName="w-full min-w-[700px] text-sm"
+          columns={[
+            { key: 'codigo', header: 'Código', headerClassName: 'w-24', cell: (a) => a.art_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
+            { key: 'desc', header: 'Descripción', cell: (a) => a.art_desc, cellClassName: 'font-medium text-gray-800' },
+            { key: 'abrev', header: 'Abrev.', headerClassName: 'hidden md:table-cell', cell: (a) => a.art_desc_abrev ?? '—', cellClassName: 'text-gray-500 hidden md:table-cell' },
+            { key: 'um', header: 'UM', headerClassName: 'hidden md:table-cell', cell: (a) => a.art_unid_med ?? '—', cellClassName: 'text-gray-500 hidden md:table-cell' },
+            { key: 'linea', header: 'Línea', headerClassName: 'hidden lg:table-cell', cell: (a) => a.lin_desc ?? '—', cellClassName: 'text-gray-500 hidden lg:table-cell' },
+            { key: 'marca', header: 'Marca', headerClassName: 'hidden lg:table-cell', cell: (a) => a.marc_desc ?? '—', cellClassName: 'text-gray-500 hidden lg:table-cell' },
+            {
+              key: 'estado',
+              header: 'Estado',
+              cell: (a) => (
+                <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                  a.art_est === 'A' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+                }`}>
+                  {a.art_est === 'A' ? 'Activo' : 'Inactivo'}
+                </span>
+              ),
+            },
+          ]}
+        />
 
         {pagination && (
           <TablePagination

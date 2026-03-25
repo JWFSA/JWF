@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient, useQueries } from '@tanstack/react-query';
-import { Pencil, Trash2 } from 'lucide-react';
 import { getDepositos, createDeposito, updateDeposito, deleteDeposito } from '@/services/stk';
 import { getEmpresas, getSucursales } from '@/services/gen';
 import type { Deposito } from '@/types/stk';
@@ -10,6 +9,7 @@ import FormModal from '@/components/ui/FormModal';
 import PrimaryAddButton from '@/components/ui/PrimaryAddButton';
 import SearchField from '@/components/ui/SearchField';
 import TablePagination from '@/components/ui/TablePagination';
+import DataTable from '@/components/ui/DataTable';
 
 type ModalState = null | 'nuevo' | Deposito;
 
@@ -131,43 +131,21 @@ export default function DepositosPage() {
           <SearchField value={search} onChange={setSearch} placeholder="Buscar depósito..." />
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[400px] text-sm">
-            <thead>
-              <tr className="border-b border-gray-100 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
-                <th className="px-4 py-3 hidden md:table-cell">Empresa</th>
-                <th className="px-4 py-3 hidden md:table-cell">Sucursal</th>
-                <th className="px-4 py-3 w-24">Código</th>
-                <th className="px-4 py-3">Descripción</th>
-                <th className="px-4 py-3 w-20"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {isLoading ? (
-                <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400">Cargando...</td></tr>
-              ) : depositos.length === 0 ? (
-                <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400">Sin resultados</td></tr>
-              ) : depositos.map((d) => (
-                <tr key={`${d.dep_empr}-${d.dep_suc}-${d.dep_codigo}`} className="hover:bg-gray-50 transition">
-                  <td className="px-4 py-3 text-gray-700 hidden md:table-cell">
-                    {empresaNombrePorId.get(d.dep_empr) ?? d.dep_empr}
-                  </td>
-                  <td className="px-4 py-3 text-gray-700 hidden md:table-cell">
-                    {sucursalNombrePorEmprSuc.get(`${d.dep_empr}-${d.dep_suc}`) ?? d.dep_suc}
-                  </td>
-                  <td className="px-4 py-3 font-mono text-xs text-gray-500">{d.dep_codigo}</td>
-                  <td className="px-4 py-3 font-medium text-gray-800">{d.dep_desc}</td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex justify-end gap-2">
-                      <button onClick={() => openEditar(d)} className="text-gray-400 hover:text-primary-600 transition"><Pencil size={14} /></button>
-                      <button onClick={() => { if (confirm('?Eliminar este depósito?')) deleteMut.mutate({ empr: d.dep_empr, suc: d.dep_suc, codigo: d.dep_codigo }); }} className="text-gray-400 hover:text-red-500 transition"><Trash2 size={14} /></button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          isLoading={isLoading}
+          rows={depositos}
+          getRowKey={(d) => `${d.dep_empr}-${d.dep_suc}-${d.dep_codigo}`}
+          onEdit={openEditar}
+          onDelete={(d) => deleteMut.mutate({ empr: d.dep_empr, suc: d.dep_suc, codigo: d.dep_codigo })}
+          deleteConfirmMessage="¿Eliminar este depósito?"
+          tableClassName="w-full min-w-[400px] text-sm"
+          columns={[
+            { key: 'empresa', header: 'Empresa', headerClassName: 'hidden md:table-cell', cell: (d) => empresaNombrePorId.get(d.dep_empr) ?? d.dep_empr, cellClassName: 'text-gray-700 hidden md:table-cell' },
+            { key: 'sucursal', header: 'Sucursal', headerClassName: 'hidden md:table-cell', cell: (d) => sucursalNombrePorEmprSuc.get(`${d.dep_empr}-${d.dep_suc}`) ?? d.dep_suc, cellClassName: 'text-gray-700 hidden md:table-cell' },
+            { key: 'codigo', header: 'Código', headerClassName: 'w-24', cell: (d) => d.dep_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
+            { key: 'desc', header: 'Descripción', cell: (d) => d.dep_desc, cellClassName: 'font-medium text-gray-800' },
+          ]}
+        />
 
         {pagination && (
           <TablePagination

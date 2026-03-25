@@ -6,7 +6,8 @@ import { getEmpresa, getSucursales, createSucursal, updateSucursal, deleteSucurs
 import type { Sucursal } from '@/types/gen';
 import Link from 'next/link';
 import { useState } from 'react';
-import { ArrowLeft, Building2, Phone, MapPin, Star, Pencil, Plus, Trash2, X, Save } from 'lucide-react';
+import { ArrowLeft, Building2, Phone, MapPin, Star, Pencil, Plus, X, Save } from 'lucide-react';
+import DataTable from '@/components/ui/DataTable';
 
 function Field({ label, value }: { label: string; value?: string | null }) {
   if (!value) return null;
@@ -128,33 +129,37 @@ export default function EmpresaPage() {
           </button>
         </div>
 
-        {sucursales.length === 0 ? (
-          <p className="text-sm text-gray-400">Sin sucursales registradas.</p>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-            {sucursales.map((s) => (
-              <div key={s.suc_codigo} className="border border-gray-100 rounded-lg p-4 text-sm">
-                <div className="flex items-start justify-between gap-2 mb-2">
-                  <div className="flex items-center gap-2">
-                    <p className="font-medium text-gray-800">{s.suc_desc}</p>
-                    {s.suc_ind_casa_central === 'S' && (
-                      <span className="flex items-center gap-1 text-xs text-yellow-600 bg-yellow-50 px-1.5 py-0.5 rounded-full shrink-0">
-                        <Star size={10} /> Casa central
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex gap-2 shrink-0">
-                    <button onClick={() => openEditar(s)} className="text-gray-400 hover:text-primary-600 transition"><Pencil size={13} /></button>
-                    <button onClick={() => { if (confirm('¿Eliminar esta sucursal?')) deleteMut.mutate(s.suc_codigo); }} className="text-gray-400 hover:text-red-500 transition"><Trash2 size={13} /></button>
-                  </div>
-                </div>
-                {s.suc_dir      && <p className="text-xs text-gray-500 flex items-center gap-1"><MapPin size={11} />{s.suc_dir}</p>}
-                {s.suc_tel      && <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5"><Phone size={11} />{s.suc_tel}</p>}
-                {s.suc_localidad && <p className="text-xs text-gray-400 mt-0.5">{s.suc_localidad}</p>}
-              </div>
-            ))}
-          </div>
-        )}
+        <DataTable
+          isLoading={false}
+          rows={sucursales}
+          getRowKey={(s) => s.suc_codigo}
+          onEdit={openEditar}
+          onDelete={(s) => deleteMut.mutate(s.suc_codigo)}
+          deleteConfirmMessage="¿Eliminar esta sucursal?"
+          emptyLabel="Sin sucursales registradas."
+          tableClassName="w-full text-sm min-w-[400px]"
+          columns={[
+            { key: 'codigo', header: 'Cód.', headerClassName: 'w-16', cell: (s) => s.suc_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
+            {
+              key: 'desc',
+              header: 'Nombre',
+              cell: (s) => (
+                <span className="flex items-center gap-2">
+                  {s.suc_desc}
+                  {s.suc_ind_casa_central === 'S' && (
+                    <span className="flex items-center gap-1 text-xs text-yellow-600 bg-yellow-50 px-1.5 py-0.5 rounded-full shrink-0">
+                      <Star size={10} /> Casa central
+                    </span>
+                  )}
+                </span>
+              ),
+              cellClassName: 'font-medium text-gray-800',
+            },
+            { key: 'dir', header: 'Dirección', headerClassName: 'hidden md:table-cell', cell: (s) => s.suc_dir ?? '—', cellClassName: 'text-gray-500 hidden md:table-cell' },
+            { key: 'tel', header: 'Teléfono', headerClassName: 'hidden md:table-cell', cell: (s) => s.suc_tel ?? '—', cellClassName: 'text-gray-500 hidden md:table-cell' },
+            { key: 'localidad', header: 'Localidad', headerClassName: 'hidden lg:table-cell', cell: (s) => s.suc_localidad ?? '—', cellClassName: 'text-gray-400 hidden lg:table-cell' },
+          ]}
+        />
       </div>
 
       {/* Modal sucursal */}

@@ -1,15 +1,16 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 import { getRoles, createRol, deleteRol } from '@/services/gen';
-import { Trash2, Edit2 } from 'lucide-react';
+import DataTable from '@/components/ui/DataTable';
 import PrimaryAddButton from '@/components/ui/PrimaryAddButton';
 import SearchField from '@/components/ui/SearchField';
 import TablePagination from '@/components/ui/TablePagination';
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 
 export default function RolesPage() {
+  const router = useRouter();
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -92,49 +93,19 @@ export default function RolesPage() {
           <SearchField value={search} onChange={setSearch} placeholder="Buscar rol..." />
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm min-w-[400px]">
-            <thead>
-              <tr className="text-left text-gray-500 border-b border-gray-100">
-                <th className="px-4 py-3 font-medium">Código</th>
-                <th className="px-4 py-3 font-medium">Nombre</th>
-                <th className="px-4 py-3 font-medium">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading ? (
-                <tr><td colSpan={3} className="px-4 py-8 text-center text-gray-400">Cargando...</td></tr>
-              ) : rows.length === 0 ? (
-                <tr><td colSpan={3} className="px-4 py-8 text-center text-gray-400">Sin resultados</td></tr>
-              ) : (
-                rows.map((rol) => (
-                  <tr key={rol.rol_codigo} className="border-b border-gray-50 hover:bg-gray-50">
-                    <td className="px-4 py-3 text-gray-500">{rol.rol_codigo}</td>
-                    <td className="px-4 py-3 font-medium text-gray-800">{rol.rol_nombre}</td>
-                    <td className="px-4 py-3">
-                      <div className="flex flex-wrap gap-3">
-                        <Link
-                          href={`/gen/roles/${rol.rol_codigo}`}
-                          className="flex items-center gap-1 text-xs text-primary-600 hover:underline"
-                        >
-                          <Edit2 size={13} /> Editar / Permisos
-                        </Link>
-                        <button
-                          onClick={() => {
-                            if (confirm('¿Eliminar este rol?')) deleteMutation.mutate(rol.rol_codigo);
-                          }}
-                          className="flex items-center gap-1 text-xs text-red-500 hover:underline"
-                        >
-                          <Trash2 size={13} /> Eliminar
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          isLoading={isLoading}
+          rows={rows}
+          getRowKey={(rol) => rol.rol_codigo}
+          onEdit={(rol) => router.push(`/gen/roles/${rol.rol_codigo}`)}
+          onDelete={(rol) => deleteMutation.mutate(rol.rol_codigo)}
+          deleteConfirmMessage="¿Eliminar este rol?"
+          tableClassName="w-full text-sm min-w-[400px]"
+          columns={[
+            { key: 'codigo', header: 'Código', headerClassName: 'w-24', cell: (rol) => rol.rol_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
+            { key: 'nombre', header: 'Nombre', cell: (rol) => rol.rol_nombre, cellClassName: 'font-medium text-gray-800' },
+          ]}
+        />
 
         {pagination && (
           <TablePagination
