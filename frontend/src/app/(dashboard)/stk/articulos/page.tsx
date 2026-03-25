@@ -1,16 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import PrimaryAddButton from '@/components/ui/PrimaryAddButton';
 import SearchField from '@/components/ui/SearchField';
 import TablePagination from '@/components/ui/TablePagination';
 import DataTable from '@/components/ui/DataTable';
-import { getArticulos } from '@/services/stk';
+import { getArticulos, deleteArticulo } from '@/services/stk';
 
 export default function ArticulosPage() {
   const router = useRouter();
+  const qc = useQueryClient();
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -20,6 +21,11 @@ export default function ArticulosPage() {
     const t = setTimeout(() => { setDebouncedSearch(search); setPage(1); }, 400);
     return () => clearTimeout(t);
   }, [search]);
+
+  const deleteMut = useMutation({
+    mutationFn: deleteArticulo,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['articulos'] }),
+  });
 
   const { data, isLoading } = useQuery({
     queryKey: ['articulos', { page, limit, search: debouncedSearch }],
@@ -49,6 +55,8 @@ export default function ArticulosPage() {
           rows={articulos}
           getRowKey={(a) => a.art_codigo}
           onEdit={(a) => router.push(`/stk/articulos/${a.art_codigo}`)}
+          onDelete={(a) => deleteMut.mutate(a.art_codigo)}
+          deleteConfirmMessage="¿Eliminar este artículo?"
           tableClassName="w-full min-w-[700px] text-sm"
           columns={[
             { key: 'codigo', header: 'Código', headerClassName: 'w-24', cell: (a) => a.art_codigo, cellClassName: 'font-mono text-xs text-gray-500' },

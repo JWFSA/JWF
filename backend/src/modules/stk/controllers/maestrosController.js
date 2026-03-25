@@ -23,9 +23,16 @@ const getUnidadesMedida  = async (req, res, next) => { try { res.json(await s.ge
 const createUnidadMedida = async (req, res, next) => { try { if (!req.body.um_codigo) return res.status(400).json({ message: 'El código es requerido' }); res.status(201).json(await s.createUnidadMedida(req.body)); } catch (e) { next(e); } };
 const deleteUnidadMedida = async (req, res, next) => { try { await s.deleteUnidadMedida(req.params.id); res.status(204).end(); } catch (e) { next(e); } };
 
+// Grupos
+const getGrupos          = async (req, res, next) => { try { res.json(await s.getGrupos({ all: req.query.all === 'true', page: parseInt(req.query.page) || 1, limit: parseInt(req.query.limit) || 20, search: req.query.search || '', linea: req.query.linea ? parseInt(req.query.linea) : undefined })); } catch (e) { next(e); } };
+const createGrupo        = async (req, res, next) => { try { if (!req.body.grup_desc) return res.status(400).json({ message: 'La descripción es requerida' }); if (!req.body.grup_linea) return res.status(400).json({ message: 'La línea es requerida' }); res.status(201).json(await s.createGrupo(req.body)); } catch (e) { next(e); } };
+const updateGrupo        = async (req, res, next) => { try { res.json(await s.updateGrupo(req.params.linea, req.params.codigo, req.body)); } catch (e) { next(e); } };
+const deleteGrupo        = async (req, res, next) => { try { await s.deleteGrupo(req.params.linea, req.params.codigo); res.status(204).end(); } catch (e) { next(e); } };
+
 module.exports = {
   getLineas, createLinea, updateLinea, deleteLinea,
   getMarcas, createMarca, updateMarca, deleteMarca,
   getRubros, createRubro, updateRubro, deleteRubro,
   getUnidadesMedida, createUnidadMedida, deleteUnidadMedida,
+  getGrupos, createGrupo, updateGrupo, deleteGrupo,
 };

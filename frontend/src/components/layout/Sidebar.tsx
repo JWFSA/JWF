@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Users, Building2, Shield, Globe, Settings, LayoutDashboard, ChevronDown, X, Package, Warehouse, Tag, Layers, BookOpen, DollarSign, MapPin, Map, Code } from 'lucide-react';
+import { Users, Building2, Shield, Globe, Settings, LayoutDashboard, ChevronDown, X, Package, Warehouse, Tag, Layers, BookOpen, DollarSign, MapPin, Map, Code, Ruler, Grid3x3, Building, Percent, ShoppingCart, UserCheck, MapPinned, LayoutList, Handshake } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import Image from 'next/image';
@@ -23,19 +23,35 @@ const menu = [
       { label: 'Sistemas',     href: '/gen/sistemas',     icon: Globe },
       { label: 'Programas',    href: '/gen/programas',    icon: Code },
       { label: 'Monedas',      href: '/gen/monedas',      icon: DollarSign },
-      { label: 'Países',       href: '/gen/paises',       icon: MapPin },
-      { label: 'Departamentos',href: '/gen/departamentos',icon: Map },
+      { label: 'Países',         href: '/gen/paises',          icon: MapPin },
+      { label: 'Departamentos',  href: '/gen/departamentos',   icon: Map },
+      { label: 'Ciudades',       href: '/gen/ciudades',         icon: Building },
+      { label: 'Impuestos',      href: '/gen/impuestos',        icon: Percent },
+      { label: 'Tipos impuesto', href: '/gen/tipos-impuesto',   icon: Percent },
+    ],
+  },
+  {
+    label: 'Facturación',
+    icon: ShoppingCart,
+    children: [
+      { label: 'Clientes',    href: '/fac/clientes',    icon: UserCheck },
+      { label: 'Vendedores',  href: '/fac/vendedores',  icon: Handshake },
+      { label: 'Zonas',       href: '/fac/zonas',       icon: MapPinned },
+      { label: 'Categorías',  href: '/fac/categorias',  icon: LayoutList },
+      { label: 'Condiciones', href: '/fac/condiciones', icon: BookOpen },
     ],
   },
   {
     label: 'Stock',
     icon: Package,
     children: [
-      { label: 'Artículos', href: '/stk/articulos', icon: Layers },
-      { label: 'Depósitos', href: '/stk/depositos', icon: Warehouse },
-      { label: 'Líneas', href: '/stk/lineas', icon: BookOpen },
-      { label: 'Marcas', href: '/stk/marcas', icon: Tag },
-      { label: 'Rubros', href: '/stk/rubros', icon: BookOpen },
+      { label: 'Artículos',        href: '/stk/articulos',       icon: Layers },
+      { label: 'Depósitos',        href: '/stk/depositos',       icon: Warehouse },
+      { label: 'Líneas',           href: '/stk/lineas',          icon: BookOpen },
+      { label: 'Grupos',           href: '/stk/grupos',          icon: Grid3x3 },
+      { label: 'Marcas',           href: '/stk/marcas',          icon: Tag },
+      { label: 'Rubros',           href: '/stk/rubros',          icon: BookOpen },
+      { label: 'Unidades de medida', href: '/stk/unidades-medida', icon: Ruler },
     ],
   },
 ];

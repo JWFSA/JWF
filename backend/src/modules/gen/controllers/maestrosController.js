@@ -23,7 +23,10 @@ const updatePais      = async (req, res, next) => { try { res.json(await s.updat
 const deletePais      = async (req, res, next) => { try { await s.deletePais(req.params.id); res.status(204).end(); } catch (e) { next(e); } };
 
 // ─── CIUDADES ─────────────────────────────────────────────────────────────────
-const getCiudades     = async (req, res, next) => { try { res.json(await s.getCiudades()); } catch (e) { next(e); } };
+const getCiudades     = async (req, res, next) => { try { res.json(await s.getCiudades({ all: req.query.all === 'true', page: parseInt(req.query.page) || 1, limit: parseInt(req.query.limit) || 20, search: req.query.search || '' })); } catch (e) { next(e); } };
+const createCiudad    = async (req, res, next) => { try { if (!req.body.ciudad_desc) return res.status(400).json({ message: 'La descripción es requerida' }); res.status(201).json(await s.createCiudad(req.body)); } catch (e) { next(e); } };
+const updateCiudad    = async (req, res, next) => { try { res.json(await s.updateCiudad(req.params.id, req.body)); } catch (e) { next(e); } };
+const deleteCiudad    = async (req, res, next) => { try { await s.deleteCiudad(req.params.id); res.status(204).end(); } catch (e) { next(e); } };
 
 // ─── DEPARTAMENTOS ────────────────────────────────────────────────────────────
 const getDepartamentos  = async (req, res, next) => { try { res.json(await s.getDepartamentos()); } catch (e) { next(e); } };
@@ -61,12 +64,26 @@ const createPrograma  = async (req, res, next) => {
 const updatePrograma  = async (req, res, next) => { try { res.json(await s.updatePrograma(req.params.id, req.body)); } catch (e) { next(e); } };
 const deletePrograma  = async (req, res, next) => { try { await s.deletePrograma(req.params.id); res.status(204).end(); } catch (e) { next(e); } };
 
+// ─── IMPUESTOS ────────────────────────────────────────────────────────────────
+const getImpuestos    = async (req, res, next) => { try { res.json(await s.getImpuestos({ all: req.query.all === 'true', page: parseInt(req.query.page) || 1, limit: parseInt(req.query.limit) || 20, search: req.query.search || '' })); } catch (e) { next(e); } };
+const createImpuesto  = async (req, res, next) => { try { if (!req.body.impu_desc) return res.status(400).json({ message: 'La descripción es requerida' }); res.status(201).json(await s.createImpuesto(req.body)); } catch (e) { next(e); } };
+const updateImpuesto  = async (req, res, next) => { try { res.json(await s.updateImpuesto(req.params.id, req.body)); } catch (e) { next(e); } };
+const deleteImpuesto  = async (req, res, next) => { try { await s.deleteImpuesto(req.params.id); res.status(204).end(); } catch (e) { next(e); } };
+
+// ─── TIPOS DE IMPUESTO ────────────────────────────────────────────────────────
+const getTiposImpuesto   = async (req, res, next) => { try { res.json(await s.getTiposImpuesto()); } catch (e) { next(e); } };
+const createTipoImpuesto = async (req, res, next) => { try { if (!req.body.timpu_desc) return res.status(400).json({ message: 'La descripción es requerida' }); res.status(201).json(await s.createTipoImpuesto(req.body)); } catch (e) { next(e); } };
+const updateTipoImpuesto = async (req, res, next) => { try { res.json(await s.updateTipoImpuesto(req.params.id, req.body)); } catch (e) { next(e); } };
+const deleteTipoImpuesto = async (req, res, next) => { try { await s.deleteTipoImpuesto(req.params.id); res.status(204).end(); } catch (e) { next(e); } };
+
 module.exports = {
   getMonedas, createMoneda, updateMoneda, deleteMoneda,
   getPaises, createPais, updatePais, deletePais,
-  getCiudades,
+  getCiudades, createCiudad, updateCiudad, deleteCiudad,
   getDepartamentos, createDepartamento, updateDepartamento, deleteDepartamento,
   getSecciones, createSeccion, updateSeccion, deleteSeccion,
   getSistemas,
   getProgramas, createPrograma, updatePrograma, deletePrograma,
+  getImpuestos, createImpuesto, updateImpuesto, deleteImpuesto,
+  getTiposImpuesto, createTipoImpuesto, updateTipoImpuesto, deleteTipoImpuesto,
 };

@@ -49,7 +49,10 @@ router.put('/maestros/paises/:id',    verifyToken, maestrosCtrl.updatePais);
 router.delete('/maestros/paises/:id', verifyToken, maestrosCtrl.deletePais);
 
 // Ciudades
-router.get('/maestros/ciudades',      verifyToken, maestrosCtrl.getCiudades);
+router.get('/maestros/ciudades',         verifyToken, maestrosCtrl.getCiudades);
+router.post('/maestros/ciudades',        verifyToken, maestrosCtrl.createCiudad);
+router.put('/maestros/ciudades/:id',     verifyToken, maestrosCtrl.updateCiudad);
+router.delete('/maestros/ciudades/:id',  verifyToken, maestrosCtrl.deleteCiudad);
 
 // Departamentos
 router.get('/maestros/departamentos',          verifyToken, maestrosCtrl.getDepartamentos);
@@ -71,5 +74,17 @@ router.get('/maestros/programas',          verifyToken, maestrosCtrl.getPrograma
 router.post('/maestros/programas',         verifyToken, maestrosCtrl.createPrograma);
 router.put('/maestros/programas/:id',      verifyToken, maestrosCtrl.updatePrograma);
 router.delete('/maestros/programas/:id',   verifyToken, maestrosCtrl.deletePrograma);
+
+// Impuestos
+router.get('/maestros/impuestos',         verifyToken, maestrosCtrl.getImpuestos);
+router.post('/maestros/impuestos',        verifyToken, maestrosCtrl.createImpuesto);
+router.put('/maestros/impuestos/:id',     verifyToken, maestrosCtrl.updateImpuesto);
+router.delete('/maestros/impuestos/:id',  verifyToken, maestrosCtrl.deleteImpuesto);
+
+// Tipos de impuesto
+router.get('/maestros/tipos-impuesto',         verifyToken, maestrosCtrl.getTiposImpuesto);
+router.post('/maestros/tipos-impuesto',        verifyToken, maestrosCtrl.createTipoImpuesto);
+router.put('/maestros/tipos-impuesto/:id',     verifyToken, maestrosCtrl.updateTipoImpuesto);
+router.delete('/maestros/tipos-impuesto/:id',  verifyToken, maestrosCtrl.deleteTipoImpuesto);
 
 module.exports = router;

@@ -44,3 +44,11 @@ export interface Rubro {
 export interface UnidadMedida {
   um_codigo: string;
 }
+
+export interface Grupo {
+  grup_linea: number;
+  grup_codigo: number;
+  grup_desc: string;
+  grup_coeficiente: number;
+  lin_desc?: string;
+}

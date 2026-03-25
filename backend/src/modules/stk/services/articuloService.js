@@ -124,4 +124,8 @@ const update = async (id, data) => {
   return getById(id);
 };
 
-module.exports = { getAll, getById, create, update };
+const remove = async (id) => {
+  await pool.query('DELETE FROM stk_articulo WHERE "ART_CODIGO" = $1', [id]);
+};
+
+module.exports = { getAll, getById, create, update, remove };

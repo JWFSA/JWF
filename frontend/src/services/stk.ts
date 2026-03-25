@@ -1,5 +1,5 @@
 import api from '@/lib/api';
-import type { Articulo, Deposito, Linea, Marca, Rubro, UnidadMedida, Paginated } from '@/types/stk';
+import type { Articulo, Deposito, Linea, Marca, Rubro, UnidadMedida, Grupo, Paginated } from '@/types/stk';
 import type { ListParams } from '@/services/gen';
 
 // Líneas
@@ -31,6 +31,12 @@ export const createDeposito = (data: Partial<Deposito>) => api.post<Deposito>('/
 export const updateDeposito = (empr: number, suc: number, codigo: number, data: Partial<Deposito>) => api.put<Deposito>(`/stk/depositos/${empr}/${suc}/${codigo}`, data).then((r) => r.data);
 export const deleteDeposito = (empr: number, suc: number, codigo: number) => api.delete(`/stk/depositos/${empr}/${suc}/${codigo}`);
 
+// Grupos
+export const getGrupos    = (params?: ListParams & { linea?: number }) => api.get<Paginated<Grupo>>('/stk/maestros/grupos', { params }).then((r) => r.data);
+export const createGrupo  = (data: Partial<Grupo>) => api.post<Grupo>('/stk/maestros/grupos', data).then((r) => r.data);
+export const updateGrupo  = (linea: number, codigo: number, data: Partial<Grupo>) => api.put<Grupo>(`/stk/maestros/grupos/${linea}/${codigo}`, data).then((r) => r.data);
+export const deleteGrupo  = (linea: number, codigo: number) => api.delete(`/stk/maestros/grupos/${linea}/${codigo}`);
+
 // Artículos
 export const getArticulos = (params?: ListParams) =>
   api.get<Paginated<Articulo>>('/stk/articulos', { params }).then((r) => r.data);
@@ -43,3 +49,6 @@ export const createArticulo = (data: Partial<Articulo>) =>
 
 export const updateArticulo = (id: number, data: Partial<Articulo>) =>
   api.put<Articulo>(`/stk/articulos/${id}`, data).then((r) => r.data);
+
+export const deleteArticulo = (id: number) =>
+  api.delete(`/stk/articulos/${id}`);

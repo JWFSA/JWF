@@ -1,0 +1,193 @@
+'use client';
+
+import { useQuery } from '@tanstack/react-query';
+import { getZonas, getCategorias } from '@/services/fac';
+import { getPaises, getMonedas } from '@/services/gen';
+
+export interface ClienteFormData {
+  cli_nom: string;
+  cli_ruc: string;
+  cli_tel: string;
+  cli_fax: string;
+  cli_email: string;
+  cli_dir2: string;
+  cli_localidad: string;
+  cli_zona: number | '';
+  cli_categ: number | '';
+  cli_pais: number | '';
+  cli_mon: number | '';
+  cli_est_cli: 'A' | 'I';
+  cli_imp_lim_cr: number;
+  cli_bloq_lim_cr: 'S' | 'N';
+  cli_max_dias_atraso: number;
+  cli_ind_potencial: 'S' | 'N';
+  cli_obs: string;
+  cli_pers_contacto: string;
+}
+
+export const emptyCliente: ClienteFormData = {
+  cli_nom: '', cli_ruc: '', cli_tel: '', cli_fax: '', cli_email: '',
+  cli_dir2: '', cli_localidad: '', cli_zona: '', cli_categ: '', cli_pais: '', cli_mon: '',
+  cli_est_cli: 'A', cli_imp_lim_cr: 0, cli_bloq_lim_cr: 'N',
+  cli_max_dias_atraso: 0, cli_ind_potencial: 'N', cli_obs: '', cli_pers_contacto: '',
+};
+
+interface Props {
+  form: ClienteFormData;
+  onChange: (f: ClienteFormData) => void;
+  error: string;
+  isPending: boolean;
+  onSubmit: () => void;
+  onCancel: () => void;
+  isEdit?: boolean;
+}
+
+export default function ClienteForm({ form, onChange, error, isPending, onSubmit, onCancel, isEdit }: Props) {
+  const set = (patch: Partial<ClienteFormData>) => onChange({ ...form, ...patch });
+
+  const { data: zonasData } = useQuery({ queryKey: ['zonas', { all: true }], queryFn: () => getZonas({ all: true }) });
+  const { data: catsData }  = useQuery({ queryKey: ['categorias', { all: true }], queryFn: () => getCategorias({ all: true }) });
+  const { data: paisesData } = useQuery({ queryKey: ['paises', { all: true }], queryFn: () => getPaises({ all: true }) });
+  const { data: monedasData } = useQuery({ queryKey: ['monedas'], queryFn: getMonedas });
+
+  const zonas    = zonasData?.data ?? [];
+  const cats     = catsData?.data ?? [];
+  const paises   = paisesData?.data ?? [];
+  const monedas  = Array.isArray(monedasData) ? monedasData : (monedasData as any)?.data ?? [];
+
+  const input = 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500';
+  const sel   = `${input}`;
+
+  return (
+    <div className="space-y-6">
+      {error && <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>}
+
+      {/* Datos principales */}
+      <section>
+        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Datos principales</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="sm:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Nombre / Razón social <span className="text-red-500">*</span></label>
+            <input value={form.cli_nom} onChange={(e) => set({ cli_nom: e.target.value })} className={input} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">RUC / C.I.</label>
+            <input value={form.cli_ruc} onChange={(e) => set({ cli_ruc: e.target.value })} className={input} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Persona de contacto</label>
+            <input value={form.cli_pers_contacto} onChange={(e) => set({ cli_pers_contacto: e.target.value })} className={input} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+            <input value={form.cli_tel} onChange={(e) => set({ cli_tel: e.target.value })} className={input} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Fax</label>
+            <input value={form.cli_fax} onChange={(e) => set({ cli_fax: e.target.value })} className={input} />
+          </div>
+          <div className="sm:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <input type="email" value={form.cli_email} onChange={(e) => set({ cli_email: e.target.value })} className={input} />
+          </div>
+        </div>
+      </section>
+
+      {/* Dirección */}
+      <section>
+        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Dirección</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="sm:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
+            <input value={form.cli_dir2} onChange={(e) => set({ cli_dir2: e.target.value })} className={input} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Localidad</label>
+            <input value={form.cli_localidad} onChange={(e) => set({ cli_localidad: e.target.value })} className={input} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">País</label>
+            <select value={form.cli_pais} onChange={(e) => set({ cli_pais: e.target.value ? Number(e.target.value) : '' })} className={sel}>
+              <option value="">Sin especificar</option>
+              {paises.map((p: any) => <option key={p.pais_codigo} value={p.pais_codigo}>{p.pais_desc}</option>)}
+            </select>
+          </div>
+        </div>
+      </section>
+
+      {/* Clasificación */}
+      <section>
+        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Clasificación</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Zona</label>
+            <select value={form.cli_zona} onChange={(e) => set({ cli_zona: e.target.value ? Number(e.target.value) : '' })} className={sel}>
+              <option value="">Sin zona</option>
+              {zonas.map((z) => <option key={z.zona_codigo} value={z.zona_codigo}>{z.zona_desc}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
+            <select value={form.cli_categ} onChange={(e) => set({ cli_categ: e.target.value ? Number(e.target.value) : '' })} className={sel}>
+              <option value="">Sin categoría</option>
+              {cats.map((c) => <option key={c.fcat_codigo} value={c.fcat_codigo}>{c.fcat_desc}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Moneda</label>
+            <select value={form.cli_mon} onChange={(e) => set({ cli_mon: e.target.value ? Number(e.target.value) : '' })} className={sel}>
+              <option value="">Sin moneda</option>
+              {monedas.map((m: any) => <option key={m.mon_codigo} value={m.mon_codigo}>{m.mon_desc}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+            <select value={form.cli_est_cli} onChange={(e) => set({ cli_est_cli: e.target.value as 'A' | 'I' })} className={sel}>
+              <option value="A">Activo</option>
+              <option value="I">Inactivo</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      {/* Crédito */}
+      <section>
+        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Crédito</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Límite de crédito</label>
+            <input type="number" step="0.01" value={form.cli_imp_lim_cr} onChange={(e) => set({ cli_imp_lim_cr: Number(e.target.value) })} className={input} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Días máx. de atraso</label>
+            <input type="number" value={form.cli_max_dias_atraso} onChange={(e) => set({ cli_max_dias_atraso: Number(e.target.value) })} className={input} />
+          </div>
+          <div className="flex items-center gap-3">
+            <input type="checkbox" id="bloq" checked={form.cli_bloq_lim_cr === 'S'} onChange={(e) => set({ cli_bloq_lim_cr: e.target.checked ? 'S' : 'N' })} className="h-4 w-4 rounded border-gray-300 text-primary-600" />
+            <label htmlFor="bloq" className="text-sm text-gray-700">Bloquear por límite de crédito</label>
+          </div>
+          <div className="flex items-center gap-3">
+            <input type="checkbox" id="potencial" checked={form.cli_ind_potencial === 'S'} onChange={(e) => set({ cli_ind_potencial: e.target.checked ? 'S' : 'N' })} className="h-4 w-4 rounded border-gray-300 text-primary-600" />
+            <label htmlFor="potencial" className="text-sm text-gray-700">Cliente potencial</label>
+          </div>
+        </div>
+      </section>
+
+      {/* Observaciones */}
+      <section>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Observaciones</label>
+        <textarea rows={3} value={form.cli_obs} onChange={(e) => set({ cli_obs: e.target.value })}
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none" />
+      </section>
+
+      <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-2 border-t border-gray-100">
+        <button onClick={onCancel} className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+          Cancelar
+        </button>
+        <button onClick={onSubmit} disabled={isPending} className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 disabled:opacity-50 transition">
+          {isPending ? 'Guardando...' : isEdit ? 'Guardar cambios' : 'Crear cliente'}
+        </button>
+      </div>
+    </div>
+  );
+}

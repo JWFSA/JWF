@@ -95,12 +95,160 @@ const deletePais = async (codigo) => {
 
 // ─── CIUDADES ────────────────────────────────────────────────────────────────
 
-const getCiudades = async () => {
+const getCiudades = async ({ page = 1, limit = 20, search = '', all = false } = {}) => {
+  const params = search ? [`%${search}%`] : [];
+  const where  = search ? `WHERE "CIUDAD_DESC" ILIKE $1` : '';
+  const countRes = await pool.query(`SELECT COUNT(*) FROM gen_ciudad ${where}`, params);
+  const total = parseInt(countRes.rows[0].count);
+  const select = `SELECT "CIUDAD_CODIGO" AS ciudad_codigo, "CIUDAD_DESC" AS ciudad_desc FROM gen_ciudad ${where} ORDER BY "CIUDAD_DESC"`;
+  if (all) {
+    const { rows } = await pool.query(select, params);
+    return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
+  }
+  const offset = (page - 1) * limit;
+  const { rows } = await pool.query(`${select} LIMIT $${params.length + 1} OFFSET $${params.length + 2}`, [...params, limit, offset]);
+  return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+};
+
+const getCiudad = async (codigo) => {
+  const { rows } = await pool.query(`SELECT "CIUDAD_CODIGO" AS ciudad_codigo, "CIUDAD_DESC" AS ciudad_desc FROM gen_ciudad WHERE "CIUDAD_CODIGO" = $1`, [codigo]);
+  if (!rows.length) throw { status: 404, message: 'Ciudad no encontrada' };
+  return rows[0];
+};
+
+const createCiudad = async (data) => {
+  const { rows } = await pool.query('SELECT COALESCE(MAX("CIUDAD_CODIGO"), 0) + 1 AS next FROM gen_ciudad');
+  const codigo = rows[0].next;
+  await pool.query(`INSERT INTO gen_ciudad ("CIUDAD_CODIGO","CIUDAD_DESC") VALUES ($1,$2)`, [codigo, data.ciudad_desc]);
+  return getCiudad(codigo);
+};
+
+const updateCiudad = async (codigo, data) => {
+  await pool.query('UPDATE gen_ciudad SET "CIUDAD_DESC" = $1 WHERE "CIUDAD_CODIGO" = $2', [data.ciudad_desc, codigo]);
+  return getCiudad(codigo);
+};
+
+const deleteCiudad = async (codigo) => {
+  await pool.query('DELETE FROM gen_ciudad WHERE "CIUDAD_CODIGO" = $1', [codigo]);
+};
+
+// ─── IMPUESTOS ───────────────────────────────────────────────────────────────
+
+const getImpuestos = async ({ page = 1, limit = 20, search = '', all = false } = {}) => {
+  const params = search ? [`%${search}%`] : [];
+  const where  = search ? `WHERE "IMPU_DESC" ILIKE $1` : '';
+  const countRes = await pool.query(`SELECT COUNT(*) FROM gen_impuesto ${where}`, params);
+  const total = parseInt(countRes.rows[0].count);
+  const select = `SELECT "IMPU_CODIGO" AS impu_codigo, "IMPU_DESC" AS impu_desc,
+    "IMPU_PORCENTAJE" AS impu_porcentaje, "IMPU_INCLUIDO" AS impu_incluido,
+    "IMPU_PORC_BASE_IMPONIBLE" AS impu_porc_base_imponible, "IMPU_COD_SET" AS impu_cod_set
+    FROM gen_impuesto ${where} ORDER BY "IMPU_CODIGO"`;
+  if (all) {
+    const { rows } = await pool.query(select, params);
+    return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
+  }
+  const offset = (page - 1) * limit;
+  const { rows } = await pool.query(`${select} LIMIT $${params.length + 1} OFFSET $${params.length + 2}`, [...params, limit, offset]);
+  return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+};
+
+const getImpuesto = async (codigo) => {
   const { rows } = await pool.query(
-    `SELECT "CIUDAD_CODIGO" AS ciudad_codigo, "CIUDAD_DESC" AS ciudad_desc
-     FROM gen_ciudad ORDER BY "CIUDAD_DESC"`
+    `SELECT "IMPU_CODIGO" AS impu_codigo, "IMPU_DESC" AS impu_desc,
+     "IMPU_PORCENTAJE" AS impu_porcentaje, "IMPU_INCLUIDO" AS impu_incluido,
+     "IMPU_PORC_BASE_IMPONIBLE" AS impu_porc_base_imponible, "IMPU_COD_SET" AS impu_cod_set
+     FROM gen_impuesto WHERE "IMPU_CODIGO" = $1`, [codigo]);
+  if (!rows.length) throw { status: 404, message: 'Impuesto no encontrado' };
+  return rows[0];
+};
+
+const createImpuesto = async (data) => {
+  const { rows } = await pool.query('SELECT COALESCE(MAX("IMPU_CODIGO"), 0) + 1 AS next FROM gen_impuesto');
+  const codigo = rows[0].next;
+  await pool.query(
+    `INSERT INTO gen_impuesto ("IMPU_CODIGO","IMPU_DESC","IMPU_PORCENTAJE","IMPU_INCLUIDO","IMPU_PORC_BASE_IMPONIBLE","IMPU_COD_SET")
+     VALUES ($1,$2,$3,$4,$5,$6)`,
+    [codigo, data.impu_desc, data.impu_porcentaje ?? 0, data.impu_incluido ?? 'N', data.impu_porc_base_imponible ?? 100, data.impu_cod_set ?? 1]
+  );
+  return getImpuesto(codigo);
+};
+
+const updateImpuesto = async (codigo, data) => {
+  const fields = []; const params = [];
+  const map = {
+    impu_desc: '"IMPU_DESC"', impu_porcentaje: '"IMPU_PORCENTAJE"',
+    impu_incluido: '"IMPU_INCLUIDO"', impu_porc_base_imponible: '"IMPU_PORC_BASE_IMPONIBLE"',
+    impu_cod_set: '"IMPU_COD_SET"',
+  };
+  for (const [k, col] of Object.entries(map)) {
+    if (data[k] !== undefined) { params.push(data[k]); fields.push(`${col} = $${params.length}`); }
+  }
+  if (!fields.length) return getImpuesto(codigo);
+  params.push(codigo);
+  await pool.query(`UPDATE gen_impuesto SET ${fields.join(', ')} WHERE "IMPU_CODIGO" = $${params.length}`, params);
+  return getImpuesto(codigo);
+};
+
+const deleteImpuesto = async (codigo) => {
+  await pool.query('DELETE FROM gen_impuesto WHERE "IMPU_CODIGO" = $1', [codigo]);
+};
+
+// ─── TIPOS DE IMPUESTO ───────────────────────────────────────────────────────
+
+const getTiposImpuesto = async () => {
+  const { rows } = await pool.query(
+    `SELECT "TIMPU_CODIGO" AS timpu_codigo, "TIMPU_DESC" AS timpu_desc,
+     "TIMPU_IVA_N" AS timpu_iva_n, "TIMPU_IRP_RPS_N" AS timpu_irp_rps_n,
+     "TIMPU_IRE_SIMPLE_N" AS timpu_ire_simple_n,
+     "TIMPU_IND_IMPUTA_EXENTA" AS timpu_ind_imputa_exenta,
+     "TIMPU_IND_IMPUTA" AS timpu_ind_imputa
+     FROM gen_tipo_impuesto ORDER BY "TIMPU_CODIGO"`
   );
   return rows;
+};
+
+const getTipoImpuesto = async (codigo) => {
+  const { rows } = await pool.query(
+    `SELECT "TIMPU_CODIGO" AS timpu_codigo, "TIMPU_DESC" AS timpu_desc,
+     "TIMPU_IVA_N" AS timpu_iva_n, "TIMPU_IRP_RPS_N" AS timpu_irp_rps_n,
+     "TIMPU_IRE_SIMPLE_N" AS timpu_ire_simple_n,
+     "TIMPU_IND_IMPUTA_EXENTA" AS timpu_ind_imputa_exenta,
+     "TIMPU_IND_IMPUTA" AS timpu_ind_imputa
+     FROM gen_tipo_impuesto WHERE "TIMPU_CODIGO" = $1`, [codigo]);
+  if (!rows.length) throw { status: 404, message: 'Tipo de impuesto no encontrado' };
+  return rows[0];
+};
+
+const createTipoImpuesto = async (data) => {
+  const { rows } = await pool.query('SELECT COALESCE(MAX("TIMPU_CODIGO"), 0) + 1 AS next FROM gen_tipo_impuesto');
+  const codigo = rows[0].next;
+  await pool.query(
+    `INSERT INTO gen_tipo_impuesto ("TIMPU_CODIGO","TIMPU_DESC","TIMPU_IVA_N","TIMPU_IRP_RPS_N","TIMPU_IRE_SIMPLE_N","TIMPU_IND_IMPUTA_EXENTA","TIMPU_IND_IMPUTA")
+     VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+    [codigo, data.timpu_desc, data.timpu_iva_n ?? 'N', data.timpu_irp_rps_n ?? 'N',
+     data.timpu_ire_simple_n ?? 'N', data.timpu_ind_imputa_exenta ?? 'N', data.timpu_ind_imputa ?? 'N']
+  );
+  return getTipoImpuesto(codigo);
+};
+
+const updateTipoImpuesto = async (codigo, data) => {
+  const fields = []; const params = [];
+  const map = {
+    timpu_desc: '"TIMPU_DESC"', timpu_iva_n: '"TIMPU_IVA_N"', timpu_irp_rps_n: '"TIMPU_IRP_RPS_N"',
+    timpu_ire_simple_n: '"TIMPU_IRE_SIMPLE_N"', timpu_ind_imputa_exenta: '"TIMPU_IND_IMPUTA_EXENTA"',
+    timpu_ind_imputa: '"TIMPU_IND_IMPUTA"',
+  };
+  for (const [k, col] of Object.entries(map)) {
+    if (data[k] !== undefined) { params.push(data[k]); fields.push(`${col} = $${params.length}`); }
+  }
+  if (!fields.length) return getTipoImpuesto(codigo);
+  params.push(codigo);
+  await pool.query(`UPDATE gen_tipo_impuesto SET ${fields.join(', ')} WHERE "TIMPU_CODIGO" = $${params.length}`, params);
+  return getTipoImpuesto(codigo);
+};
+
+const deleteTipoImpuesto = async (codigo) => {
+  await pool.query('DELETE FROM gen_tipo_impuesto WHERE "TIMPU_CODIGO" = $1', [codigo]);
 };
 
 // ─── DEPARTAMENTOS ───────────────────────────────────────────────────────────
@@ -253,9 +401,11 @@ const deletePrograma = async (clave) => {
 module.exports = {
   getMonedas, getMoneda, createMoneda, updateMoneda, deleteMoneda,
   getPaises, getPais, createPais, updatePais, deletePais,
-  getCiudades,
+  getCiudades, getCiudad, createCiudad, updateCiudad, deleteCiudad,
   getDepartamentos, getDepartamento, createDepartamento, updateDepartamento, deleteDepartamento,
   getSecciones, createSeccion, updateSeccion, deleteSeccion,
   getSistemas,
   getProgramas, getPrograma, createPrograma, updatePrograma, deletePrograma,
+  getImpuestos, getImpuesto, createImpuesto, updateImpuesto, deleteImpuesto,
+  getTiposImpuesto, getTipoImpuesto, createTipoImpuesto, updateTipoImpuesto, deleteTipoImpuesto,
 };

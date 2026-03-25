@@ -30,4 +30,11 @@ const update = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-module.exports = { getAll, getById, create, update };
+const remove = async (req, res, next) => {
+  try {
+    await articuloService.remove(req.params.id);
+    res.status(204).end();
+  } catch (err) { next(err); }
+};
+
+module.exports = { getAll, getById, create, update, remove };

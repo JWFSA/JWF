@@ -33,10 +33,17 @@ router.post('/depositos',                   verifyToken, depositoController.crea
 router.put('/depositos/:empr/:suc/:codigo', verifyToken, depositoController.update);
 router.delete('/depositos/:empr/:suc/:codigo', verifyToken, depositoController.remove);
 
+// Grupos
+router.get('/maestros/grupos',                      verifyToken, maestrosController.getGrupos);
+router.post('/maestros/grupos',                     verifyToken, maestrosController.createGrupo);
+router.put('/maestros/grupos/:linea/:codigo',       verifyToken, maestrosController.updateGrupo);
+router.delete('/maestros/grupos/:linea/:codigo',    verifyToken, maestrosController.deleteGrupo);
+
 // Artículos
 router.get('/articulos',      verifyToken, articuloController.getAll);
 router.get('/articulos/:id',  verifyToken, articuloController.getById);
 router.post('/articulos',     verifyToken, articuloController.create);
 router.put('/articulos/:id',  verifyToken, articuloController.update);
+router.delete('/articulos/:id', verifyToken, articuloController.remove);
 
 module.exports = router;

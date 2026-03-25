@@ -1,5 +1,5 @@
 import api from '@/lib/api';
-import type { Operador, Rol, Empresa, Sucursal, Sistema, Programa, Moneda, Pais, Departamento, Seccion, Paginated } from '@/types/gen';
+import type { Operador, Rol, Empresa, Sucursal, Sistema, Programa, Moneda, Pais, Departamento, Seccion, Ciudad, Impuesto, TipoImpuesto, Paginated } from '@/types/gen';
 
 export type { Pais, Departamento, Seccion };
 
@@ -91,7 +91,22 @@ export const updatePais    = (id: number, data: Partial<Pais>) => api.put<Pais>(
 export const deletePais    = (id: number) => api.delete(`/gen/maestros/paises/${id}`);
 
 // Ciudades
-export const getCiudades   = () => api.get<{ ciudad_codigo: number; ciudad_desc: string }[]>('/gen/maestros/ciudades').then((r) => r.data);
+export const getCiudades      = (params?: ListParams) => api.get<Paginated<Ciudad>>('/gen/maestros/ciudades', { params }).then((r) => r.data);
+export const createCiudad     = (data: Partial<Ciudad>) => api.post<Ciudad>('/gen/maestros/ciudades', data).then((r) => r.data);
+export const updateCiudad     = (id: number, data: Partial<Ciudad>) => api.put<Ciudad>(`/gen/maestros/ciudades/${id}`, data).then((r) => r.data);
+export const deleteCiudad     = (id: number) => api.delete(`/gen/maestros/ciudades/${id}`);
+
+// Impuestos
+export const getImpuestos     = (params?: ListParams) => api.get<Paginated<Impuesto>>('/gen/maestros/impuestos', { params }).then((r) => r.data);
+export const createImpuesto   = (data: Partial<Impuesto>) => api.post<Impuesto>('/gen/maestros/impuestos', data).then((r) => r.data);
+export const updateImpuesto   = (id: number, data: Partial<Impuesto>) => api.put<Impuesto>(`/gen/maestros/impuestos/${id}`, data).then((r) => r.data);
+export const deleteImpuesto   = (id: number) => api.delete(`/gen/maestros/impuestos/${id}`);
+
+// Tipos de impuesto
+export const getTiposImpuesto    = () => api.get<TipoImpuesto[]>('/gen/maestros/tipos-impuesto').then((r) => r.data);
+export const createTipoImpuesto  = (data: Partial<TipoImpuesto>) => api.post<TipoImpuesto>('/gen/maestros/tipos-impuesto', data).then((r) => r.data);
+export const updateTipoImpuesto  = (id: number, data: Partial<TipoImpuesto>) => api.put<TipoImpuesto>(`/gen/maestros/tipos-impuesto/${id}`, data).then((r) => r.data);
+export const deleteTipoImpuesto  = (id: number) => api.delete(`/gen/maestros/tipos-impuesto/${id}`);
 
 // Departamentos
 export const getDepartamentos    = () => api.get<Departamento[]>('/gen/maestros/departamentos').then((r) => r.data);

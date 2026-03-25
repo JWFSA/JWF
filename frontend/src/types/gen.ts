@@ -92,6 +92,30 @@ export interface Paginated<T> {
   };
 }
 
+export interface Ciudad {
+  ciudad_codigo: number;
+  ciudad_desc: string;
+}
+
+export interface Impuesto {
+  impu_codigo: number;
+  impu_desc: string;
+  impu_porcentaje: number;
+  impu_incluido: 'S' | 'N';
+  impu_porc_base_imponible: number;
+  impu_cod_set: number;
+}
+
+export interface TipoImpuesto {
+  timpu_codigo: number;
+  timpu_desc: string;
+  timpu_iva_n: 'S' | 'N';
+  timpu_irp_rps_n: 'S' | 'N';
+  timpu_ire_simple_n: 'S' | 'N';
+  timpu_ind_imputa_exenta: 'S' | 'N';
+  timpu_ind_imputa: 'S' | 'N';
+}
+
 export interface AuthUser {
   codigo: number;
   nombre: string;
