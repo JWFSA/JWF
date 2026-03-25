@@ -71,8 +71,8 @@ export default function CategoriasPage() {
           columns={[
             { key: 'codigo', header: 'Cód.', headerClassName: 'w-16', cell: (c) => c.fcat_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
             { key: 'desc', header: 'Descripción', cell: (c) => c.fcat_desc, cellClassName: 'font-medium text-gray-800' },
-            { key: 'ini', header: 'Venta mín.', headerClassName: 'hidden md:table-cell text-right', cell: (c) => c.fcat_vent_ini.toLocaleString(), cellClassName: 'hidden md:table-cell text-right text-gray-500' },
-            { key: 'fin', header: 'Venta máx.', headerClassName: 'hidden md:table-cell text-right', cell: (c) => c.fcat_vent_fin.toLocaleString(), cellClassName: 'hidden md:table-cell text-right text-gray-500' },
+            { key: 'ini', header: 'Venta mín.', headerClassName: 'hidden md:table-cell text-right', cell: (c) => c.fcat_vent_ini?.toLocaleString() ?? '—', cellClassName: 'hidden md:table-cell text-right text-gray-500' },
+            { key: 'fin', header: 'Venta máx.', headerClassName: 'hidden md:table-cell text-right', cell: (c) => c.fcat_vent_fin?.toLocaleString() ?? '—', cellClassName: 'hidden md:table-cell text-right text-gray-500' },
             { key: 'atraso', header: 'Días atraso', headerClassName: 'hidden lg:table-cell text-right', cell: (c) => c.fcat_atraso, cellClassName: 'hidden lg:table-cell text-right text-gray-500' },
           ]}
         />

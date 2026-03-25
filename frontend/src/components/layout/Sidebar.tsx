@@ -62,7 +62,12 @@ interface Props {
 
 export default function Sidebar({ onClose }: Props) {
   const pathname = usePathname();
-  const [open, setOpen] = useState<string[]>(['General']);
+
+  const initialOpen = menu
+    .filter((item) => item.children?.some((child) => pathname.startsWith(child.href)))
+    .map((item) => item.label);
+
+  const [open, setOpen] = useState<string[]>(initialOpen.length ? initialOpen : []);
 
   const toggleGroup = (label: string) => {
     setOpen((prev) =>

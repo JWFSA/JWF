@@ -3,12 +3,14 @@
 import { useState } from 'react';
 import Sidebar from '@/components/layout/Sidebar';
 import Header from '@/components/layout/Header';
+import DynamicTitle from '@/components/layout/DynamicTitle';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <div className="flex h-screen bg-gray-50">
+      <DynamicTitle />
       {/* Overlay mobile */}
       {sidebarOpen && (
         <div
