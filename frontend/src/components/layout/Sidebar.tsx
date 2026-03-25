@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Users, Building2, Shield, Globe, Settings, LayoutDashboard, ChevronDown, X, Package, Warehouse, Tag, Layers, BookOpen, DollarSign, MapPin, Map, Code, Ruler, Grid3x3, Building, Percent, ShoppingCart, UserCheck, MapPinned, LayoutList, Handshake } from 'lucide-react';
+import { Users, Building2, Shield, Globe, Settings, LayoutDashboard, ChevronDown, X, Package, Warehouse, Tag, Layers, BookOpen, DollarSign, MapPin, Map, Code, Ruler, Grid3x3, Building, Percent, ShoppingCart, UserCheck, MapPinned, LayoutList, Handshake, ClipboardList, ListOrdered, Landmark, CreditCard, Briefcase, Truck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import Image from 'next/image';
@@ -34,11 +34,24 @@ const menu = [
     label: 'Facturación',
     icon: ShoppingCart,
     children: [
-      { label: 'Clientes',    href: '/fac/clientes',    icon: UserCheck },
-      { label: 'Vendedores',  href: '/fac/vendedores',  icon: Handshake },
-      { label: 'Zonas',       href: '/fac/zonas',       icon: MapPinned },
-      { label: 'Categorías',  href: '/fac/categorias',  icon: LayoutList },
-      { label: 'Condiciones', href: '/fac/condiciones', icon: BookOpen },
+      { label: 'Pedidos',          href: '/fac/pedidos',       icon: ClipboardList },
+      { label: 'Clientes',         href: '/fac/clientes',      icon: UserCheck },
+      { label: 'Vendedores',       href: '/fac/vendedores',    icon: Handshake },
+      { label: 'Listas de precio', href: '/fac/listas-precio', icon: ListOrdered },
+      { label: 'Zonas',            href: '/fac/zonas',         icon: MapPinned },
+      { label: 'Categorías',       href: '/fac/categorias',    icon: LayoutList },
+      { label: 'Condiciones',      href: '/fac/condiciones',   icon: BookOpen },
+    ],
+  },
+  {
+    label: 'Finanzas',
+    icon: Landmark,
+    children: [
+      { label: 'Proveedores',      href: '/fin/proveedores',     icon: Truck },
+      { label: 'Bancos',           href: '/fin/bancos',          icon: Landmark },
+      { label: 'Formas de pago',   href: '/fin/formas-pago',     icon: CreditCard },
+      { label: 'Ramos',            href: '/fin/ramos',           icon: Briefcase },
+      { label: 'Tipos proveedor',  href: '/fin/tipos-proveedor', icon: Tag },
     ],
   },
   {

@@ -1,5 +1,5 @@
 import api from '@/lib/api';
-import type { Zona, Categoria, Condicion, Vendedor, Cliente, Paginated } from '@/types/fac';
+import type { Zona, Categoria, Condicion, Vendedor, Cliente, Articulo, Pedido, ListaPrecio, Paginated } from '@/types/fac';
 import type { ListParams } from '@/services/gen';
 
 // Zonas
@@ -19,6 +19,12 @@ export const getCondiciones   = () => api.get<Condicion[]>('/fac/maestros/condic
 export const createCondicion  = (data: { con_desc: string }) => api.post<Condicion>('/fac/maestros/condiciones', data).then((r) => r.data);
 export const deleteCondicion  = (desc: string) => api.delete(`/fac/maestros/condiciones/${encodeURIComponent(desc)}`);
 
+// Listas de precio
+export const getListasPrecio    = (params?: ListParams) => api.get<Paginated<ListaPrecio>>('/fac/maestros/listas-precio', { params }).then((r) => r.data);
+export const createListaPrecio  = (data: Partial<ListaPrecio>) => api.post<ListaPrecio>('/fac/maestros/listas-precio', data).then((r) => r.data);
+export const updateListaPrecio  = (id: number, data: Partial<ListaPrecio>) => api.put<ListaPrecio>(`/fac/maestros/listas-precio/${id}`, data).then((r) => r.data);
+export const deleteListaPrecio  = (id: number) => api.delete(`/fac/maestros/listas-precio/${id}`);
+
 // Vendedores
 export const getVendedores    = (params?: ListParams) => api.get<Paginated<Vendedor>>('/fac/vendedores', { params }).then((r) => r.data);
 export const createVendedor   = (data: Partial<Vendedor>) => api.post<Vendedor>('/fac/vendedores', data).then((r) => r.data);
@@ -31,3 +37,13 @@ export const getCliente    = (id: number) => api.get<Cliente>(`/fac/clientes/${i
 export const createCliente = (data: Partial<Cliente>) => api.post<Cliente>('/fac/clientes', data).then((r) => r.data);
 export const updateCliente = (id: number, data: Partial<Cliente>) => api.put<Cliente>(`/fac/clientes/${id}`, data).then((r) => r.data);
 export const deleteCliente = (id: number) => api.delete(`/fac/clientes/${id}`);
+
+// Artículos
+export const getArticulos = (params?: ListParams) => api.get<Paginated<Articulo>>('/fac/articulos', { params }).then((r) => r.data);
+
+// Pedidos
+export const getPedidos    = (params?: ListParams) => api.get<Paginated<Pedido>>('/fac/pedidos', { params }).then((r) => r.data);
+export const getPedido     = (id: number) => api.get<Pedido>(`/fac/pedidos/${id}`).then((r) => r.data);
+export const createPedido  = (data: Partial<Pedido>) => api.post<Pedido>('/fac/pedidos', data).then((r) => r.data);
+export const updatePedido  = (id: number, data: Partial<Pedido>) => api.put<Pedido>(`/fac/pedidos/${id}`, data).then((r) => r.data);
+export const deletePedido  = (id: number) => api.delete(`/fac/pedidos/${id}`);

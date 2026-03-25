@@ -56,3 +56,59 @@ export interface Cliente {
   cli_obs: string | null;
   cli_pers_contacto: string | null;
 }
+
+export interface Articulo {
+  art_codigo: number;
+  art_desc: string;
+  art_unid_med: string;
+  art_codigo_fabrica: string | null;
+}
+
+export interface PedidoDet {
+  pdet_clave_ped?: number;
+  pdet_nro_item?: number;
+  pdet_art: number;
+  art_desc?: string;
+  art_unid_med?: string;
+  pdet_um_ped: string;
+  pdet_cant_ped: number;
+  pdet_precio: number;
+  pdet_porc_dcto: number;
+  pdet_imp_neto_det?: number;
+  pdet_desc_larga?: string | null;
+}
+
+export interface Pedido {
+  ped_clave: number;
+  ped_nro: number;
+  ped_fecha: string;
+  ped_empr?: number;
+  ped_suc?: number;
+  ped_tipo?: string;
+  ped_estado: string;
+  ped_mon?: number | null;
+  mon_desc?: string;
+  ped_cli: number;
+  cli_nom?: string;
+  cli_ruc?: string;
+  ped_vendedor?: number | null;
+  vend_nombre?: string;
+  vend_apellido?: string;
+  ped_cond_venta?: string | null;
+  ped_producto?: string | null;
+  ped_concepto?: string | null;
+  ped_obs?: string | null;
+  ped_imp_total_mon?: number;
+  ped_imp_dcto_mon?: number;
+  ped_login?: string;
+  ped_fec_grab?: string;
+  items?: PedidoDet[];
+}
+
+export interface ListaPrecio {
+  lipe_empr?: number;
+  lipe_nro_lista_precio: number;
+  lipe_mon?: number | null;
+  lipe_desc: string;
+  lipe_estado: 'A' | 'I';
+}

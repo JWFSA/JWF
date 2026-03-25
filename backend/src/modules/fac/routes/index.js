@@ -2,6 +2,7 @@ const router = require('express').Router();
 const { verifyToken } = require('../../../middlewares/auth');
 const maestrosController = require('../controllers/maestrosController');
 const clienteController  = require('../controllers/clienteController');
+const pedidoController   = require('../controllers/pedidoController');
 
 // Zonas
 router.get('/maestros/zonas',         verifyToken, maestrosController.getZonas);
@@ -20,6 +21,12 @@ router.get('/maestros/condiciones',        verifyToken, maestrosController.getCo
 router.post('/maestros/condiciones',       verifyToken, maestrosController.createCondicion);
 router.delete('/maestros/condiciones/:id', verifyToken, maestrosController.deleteCondicion);
 
+// Listas de precio
+router.get('/maestros/listas-precio',         verifyToken, maestrosController.getListasPrecio);
+router.post('/maestros/listas-precio',        verifyToken, maestrosController.createListaPrecio);
+router.put('/maestros/listas-precio/:id',     verifyToken, maestrosController.updateListaPrecio);
+router.delete('/maestros/listas-precio/:id',  verifyToken, maestrosController.deleteListaPrecio);
+
 // Vendedores
 router.get('/vendedores',         verifyToken, maestrosController.getVendedores);
 router.post('/vendedores',        verifyToken, maestrosController.createVendedor);
@@ -27,10 +34,20 @@ router.put('/vendedores/:id',     verifyToken, maestrosController.updateVendedor
 router.delete('/vendedores/:id',  verifyToken, maestrosController.deleteVendedor);
 
 // Clientes
-router.get('/clientes',       verifyToken, clienteController.getAll);
-router.get('/clientes/:id',   verifyToken, clienteController.getById);
-router.post('/clientes',      verifyToken, clienteController.create);
-router.put('/clientes/:id',   verifyToken, clienteController.update);
-router.delete('/clientes/:id',verifyToken, clienteController.remove);
+router.get('/clientes',        verifyToken, clienteController.getAll);
+router.get('/clientes/:id',    verifyToken, clienteController.getById);
+router.post('/clientes',       verifyToken, clienteController.create);
+router.put('/clientes/:id',    verifyToken, clienteController.update);
+router.delete('/clientes/:id', verifyToken, clienteController.remove);
+
+// Artículos (búsqueda para items de pedido)
+router.get('/articulos', verifyToken, pedidoController.getArticulos);
+
+// Pedidos
+router.get('/pedidos',        verifyToken, pedidoController.getAll);
+router.get('/pedidos/:id',    verifyToken, pedidoController.getById);
+router.post('/pedidos',       verifyToken, pedidoController.create);
+router.put('/pedidos/:id',    verifyToken, pedidoController.update);
+router.delete('/pedidos/:id', verifyToken, pedidoController.remove);
 
 module.exports = router;

@@ -23,9 +23,16 @@ const createVendedor   = async (req, res, next) => { try { if (!req.body.vend_op
 const updateVendedor   = async (req, res, next) => { try { res.json(await s.updateVendedor(req.params.id, req.body)); } catch (e) { next(e); } };
 const deleteVendedor   = async (req, res, next) => { try { await s.deleteVendedor(req.params.id); res.status(204).end(); } catch (e) { next(e); } };
 
+// Listas de precio
+const getListasPrecio   = async (req, res, next) => { try { res.json(await s.getListasPrecio({ all: req.query.all === 'true', page: parseInt(req.query.page) || 1, limit: parseInt(req.query.limit) || 20, search: req.query.search || '' })); } catch (e) { next(e); } };
+const createListaPrecio = async (req, res, next) => { try { if (!req.body.lipe_desc) return res.status(400).json({ message: 'La descripción es requerida' }); res.status(201).json(await s.createListaPrecio(req.body)); } catch (e) { next(e); } };
+const updateListaPrecio = async (req, res, next) => { try { res.json(await s.updateListaPrecio(req.params.id, req.body)); } catch (e) { next(e); } };
+const deleteListaPrecio = async (req, res, next) => { try { await s.deleteListaPrecio(req.params.id); res.status(204).end(); } catch (e) { next(e); } };
+
 module.exports = {
   getZonas, createZona, updateZona, deleteZona,
   getCategorias, createCategoria, updateCategoria, deleteCategoria,
   getCondiciones, createCondicion, deleteCondicion,
   getVendedores, createVendedor, updateVendedor, deleteVendedor,
+  getListasPrecio, createListaPrecio, updateListaPrecio, deleteListaPrecio,
 };

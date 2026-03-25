@@ -18,11 +18,19 @@ const routeTitles: Record<string, string> = {
   '/gen/impuestos': 'Impuestos',
   '/gen/tipos-impuesto': 'Tipos de impuesto',
   // Facturación
+  '/fac/pedidos': 'Pedidos',
   '/fac/clientes': 'Clientes',
   '/fac/vendedores': 'Vendedores',
+  '/fac/listas-precio': 'Listas de precio',
   '/fac/zonas': 'Zonas',
   '/fac/categorias': 'Categorías',
   '/fac/condiciones': 'Condiciones',
+  // Finanzas
+  '/fin/proveedores': 'Proveedores',
+  '/fin/bancos': 'Bancos',
+  '/fin/formas-pago': 'Formas de pago',
+  '/fin/ramos': 'Ramos',
+  '/fin/tipos-proveedor': 'Tipos de proveedor',
   // Stock
   '/stk/articulos': 'Artículos',
   '/stk/depositos': 'Depósitos',

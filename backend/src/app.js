@@ -10,6 +10,7 @@ const errorHandler = require('./middlewares/errorHandler');
 const genRoutes = require('./modules/gen/routes');
 const stkRoutes = require('./modules/stk/routes');
 const facRoutes = require('./modules/fac/routes');
+const finRoutes = require('./modules/fin/routes');
 
 const app = express();
 
@@ -20,6 +21,7 @@ app.use(express.json());
 app.use('/api/gen', genRoutes);
 app.use('/api/stk', stkRoutes);
 app.use('/api/fac', facRoutes);
+app.use('/api/fin', finRoutes);
 
 app.get('/api/health', async (req, res) => {
   try {

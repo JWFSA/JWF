@@ -180,9 +180,76 @@ const deleteVendedor = async (legajo) => {
   await pool.query('DELETE FROM fac_vendedor WHERE "VEND_LEGAJO" = $1', [legajo]);
 };
 
+// ─── LISTAS DE PRECIO ────────────────────────────────────────────────────────
+
+const getListasPrecio = async ({ page = 1, limit = 20, search = '', all = false } = {}) => {
+  const params = search ? [`%${search}%`] : [];
+  const where  = search ? `WHERE "LIPE_DESC" ILIKE $1` : '';
+  const countRes = await pool.query(`SELECT COUNT(*) FROM fac_lista_precio ${where}`, params);
+  const total = parseInt(countRes.rows[0].count);
+  const select = `
+    SELECT "LIPE_EMPR" AS lipe_empr, "LIPE_NRO_LISTA_PRECIO" AS lipe_nro_lista_precio,
+           "LIPE_MON" AS lipe_mon, "LIPE_DESC" AS lipe_desc, "LIPE_ESTADO" AS lipe_estado
+    FROM fac_lista_precio ${where} ORDER BY "LIPE_NRO_LISTA_PRECIO"`;
+  if (all) {
+    const { rows } = await pool.query(select, params);
+    return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
+  }
+  const offset = (page - 1) * limit;
+  const { rows } = await pool.query(`${select} LIMIT $${params.length + 1} OFFSET $${params.length + 2}`, [...params, limit, offset]);
+  return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+};
+
+const getListaPrecio = async (nro) => {
+  const { rows } = await pool.query(
+    `SELECT "LIPE_EMPR" AS lipe_empr, "LIPE_NRO_LISTA_PRECIO" AS lipe_nro_lista_precio,
+     "LIPE_MON" AS lipe_mon, "LIPE_DESC" AS lipe_desc, "LIPE_ESTADO" AS lipe_estado
+     FROM fac_lista_precio WHERE "LIPE_EMPR" = 1 AND "LIPE_NRO_LISTA_PRECIO" = $1`,
+    [nro]
+  );
+  if (!rows.length) throw { status: 404, message: 'Lista de precio no encontrada' };
+  return rows[0];
+};
+
+const createListaPrecio = async (data) => {
+  const { rows } = await pool.query(
+    `SELECT COALESCE(MAX("LIPE_NRO_LISTA_PRECIO"), 0) + 1 AS next FROM fac_lista_precio WHERE "LIPE_EMPR" = 1`
+  );
+  const nro = rows[0].next;
+  await pool.query(
+    `INSERT INTO fac_lista_precio ("LIPE_EMPR","LIPE_NRO_LISTA_PRECIO","LIPE_MON","LIPE_DESC","LIPE_ESTADO")
+     VALUES ($1,$2,$3,$4,$5)`,
+    [1, nro, data.lipe_mon || null, data.lipe_desc, data.lipe_estado || 'A']
+  );
+  return getListaPrecio(nro);
+};
+
+const updateListaPrecio = async (nro, data) => {
+  const fields = []; const params = [];
+  const map = { lipe_mon: '"LIPE_MON"', lipe_desc: '"LIPE_DESC"', lipe_estado: '"LIPE_ESTADO"' };
+  for (const [k, col] of Object.entries(map)) {
+    if (data[k] !== undefined) { params.push(data[k]); fields.push(`${col} = $${params.length}`); }
+  }
+  if (!fields.length) return getListaPrecio(nro);
+  params.push(nro);
+  await pool.query(
+    `UPDATE fac_lista_precio SET ${fields.join(', ')} WHERE "LIPE_EMPR" = 1 AND "LIPE_NRO_LISTA_PRECIO" = $${params.length}`,
+    params
+  );
+  return getListaPrecio(nro);
+};
+
+const deleteListaPrecio = async (nro) => {
+  await pool.query(
+    `DELETE FROM fac_lista_precio WHERE "LIPE_EMPR" = 1 AND "LIPE_NRO_LISTA_PRECIO" = $1`,
+    [nro]
+  );
+};
+
 module.exports = {
   getZonas, getZona, createZona, updateZona, deleteZona,
   getCategorias, getCategoria, createCategoria, updateCategoria, deleteCategoria,
   getCondiciones, createCondicion, deleteCondicion,
   getVendedores, getVendedor, createVendedor, updateVendedor, deleteVendedor,
+  getListasPrecio, getListaPrecio, createListaPrecio, updateListaPrecio, deleteListaPrecio,
 };
