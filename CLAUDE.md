@@ -124,6 +124,42 @@ NEXT_PUBLIC_API_URL=http://localhost:3001/api
 - Archivos backend: `modules/{mod}/controllers/`, `modules/{mod}/services/`
 - Archivos frontend: `app/(dashboard)/{mod}/`, `components/{mod}/`, `services/{mod}.ts`, `types/{mod}.ts`
 
+### Páginas de listado existentes en el frontend
+Cada vez que se cree una nueva página de listado, agregarla aquí. Usar esta lista para saber qué páginas deben recibir cambios globales (como agregar sortField default, paginación, etc.).
+
+| Ruta | Página | sortField default |
+|------|--------|-------------------|
+| `gen/operadores` | Operadores | `nom` asc |
+| `gen/roles` | Roles | `nom` asc |
+| `gen/empresas` | Empresas | — (sin sort) |
+| `gen/paises` | Países | `desc` asc (client-side) |
+| `gen/monedas` | Monedas | `codigo` asc (client-side) |
+| `gen/ciudades` | Ciudades | `desc` asc |
+| `gen/departamentos` | Departamentos | — (sin sort) |
+| `gen/impuestos` | Impuestos | `desc` asc |
+| `gen/tipos-impuesto` | Tipos de impuesto | — (sin sort) |
+| `gen/sistemas` | Sistemas | — (sin sort) |
+| `gen/programas` | Programas | — (sin sort) |
+| `stk/lineas` | Líneas | `desc` asc |
+| `stk/marcas` | Marcas | `desc` asc |
+| `stk/rubros` | Rubros | `desc` asc |
+| `stk/grupos` | Grupos | `desc` asc |
+| `stk/depositos` | Depósitos | `desc` asc |
+| `stk/unidades-medida` | Unidades de medida | `codigo` asc |
+| `stk/articulos` | Artículos | `desc` asc |
+| `fac/clientes` | Clientes | `nom` asc |
+| `fac/vendedores` | Vendedores | `nom` asc |
+| `fac/pedidos` | Pedidos | `fecha` desc |
+| `fac/listas-precio` | Listas de precio | `desc` asc |
+| `fac/zonas` | Zonas | `desc` asc |
+| `fac/categorias` | Categorías | `desc` asc |
+| `fac/condiciones` | Condiciones de pago | — (sin sort) |
+| `fin/proveedores` | Proveedores | `nom` asc |
+| `fin/tipos-proveedor` | Tipos de proveedor | `desc` asc |
+| `fin/bancos` | Bancos | `desc` asc |
+| `fin/ramos` | Ramos | `desc` asc |
+| `fin/formas-pago` | Formas de pago | `desc` asc |
+
 ---
 
 ## Módulo GEN — Tablas DB

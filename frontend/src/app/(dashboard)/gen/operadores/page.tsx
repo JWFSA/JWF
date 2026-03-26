@@ -32,7 +32,7 @@ export default function OperadoresPage() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
-  const [sortField, setSortField] = useState('');
+  const [sortField, setSortField] = useState('nom');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
   useEffect(() => {

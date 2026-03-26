@@ -21,7 +21,7 @@ export default function DepositosPage() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
-  const [sortField, setSortField] = useState('');
+  const [sortField, setSortField] = useState('desc');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [modal, setModal] = useState<ModalState>(null);
   const [form, setForm] = useState<{ dep_empr: number; dep_suc: number; dep_desc: string }>(emptyCreate);

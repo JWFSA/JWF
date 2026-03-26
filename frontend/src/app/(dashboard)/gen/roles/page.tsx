@@ -22,7 +22,7 @@ export default function RolesPage() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
-  const [sortField, setSortField] = useState('');
+  const [sortField, setSortField] = useState('nom');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [nombre, setNombre] = useState('');
   const [showForm, setShowForm] = useState(false);

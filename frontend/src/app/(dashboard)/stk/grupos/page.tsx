@@ -27,7 +27,7 @@ export default function GruposPage() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
-  const [sortField, setSortField] = useState('');
+  const [sortField, setSortField] = useState('desc');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [lineaFiltro, setLineaFiltro] = useState<number | ''>('');
   const [modal, setModal] = useState<ModalState>(null);

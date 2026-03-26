@@ -32,7 +32,7 @@ export default function RubrosPage() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
-  const [sortField, setSortField] = useState('');
+  const [sortField, setSortField] = useState('desc');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [modal, setModal] = useState<null | 'nuevo' | Rubro>(null);
   const [form, setForm] = useState(empty);
