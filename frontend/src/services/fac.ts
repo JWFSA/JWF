@@ -1,6 +1,12 @@
 import api from '@/lib/api';
-import type { Zona, Categoria, Condicion, Vendedor, Cliente, Articulo, Pedido, ListaPrecio, Paginated } from '@/types/fac';
+import type { Barrio, Zona, Categoria, Condicion, Vendedor, Cliente, Articulo, Pedido, ListaPrecio, Paginated } from '@/types/fac';
 import type { ListParams } from '@/services/gen';
+
+// Barrios
+export const getBarrios    = (params?: ListParams) => api.get<Paginated<Barrio>>('/fac/maestros/barrios', { params }).then((r) => r.data);
+export const createBarrio  = (data: Partial<Barrio>) => api.post<Barrio>('/fac/maestros/barrios', data).then((r) => r.data);
+export const updateBarrio  = (id: number, data: Partial<Barrio>) => api.put<Barrio>(`/fac/maestros/barrios/${id}`, data).then((r) => r.data);
+export const deleteBarrio  = (id: number) => api.delete(`/fac/maestros/barrios/${id}`);
 
 // Zonas
 export const getZonas      = (params?: ListParams) => api.get<Paginated<Zona>>('/fac/maestros/zonas', { params }).then((r) => r.data);

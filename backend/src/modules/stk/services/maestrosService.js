@@ -245,10 +245,22 @@ const deleteGrupo = async (linea, codigo) => {
   await pool.query('DELETE FROM stk_grupo WHERE "GRUP_LINEA" = $1 AND "GRUP_CODIGO" = $2', [linea, codigo]);
 };
 
+// ─── OPERACIONES ─────────────────────────────────────────────────────────────
+
+const getOperaciones = async () => {
+  const { rows } = await pool.query(
+    `SELECT "OPER_CODIGO" AS oper_codigo, "OPER_DESC" AS oper_desc,
+            "OPER_ENT_SAL" AS oper_ent_sal, "OPER_IND_COSTO_VALOR" AS oper_ind_costo_valor
+     FROM stk_operacion ORDER BY "OPER_CODIGO"`
+  );
+  return rows;
+};
+
 module.exports = {
   getLineas, getLinea, createLinea, updateLinea, deleteLinea,
   getMarcas, getMarca, createMarca, updateMarca, deleteMarca,
   getRubros, getRubro, createRubro, updateRubro, deleteRubro,
   getUnidadesMedida, createUnidadMedida, deleteUnidadMedida,
   getGrupos, getGrupo, createGrupo, updateGrupo, deleteGrupo,
+  getOperaciones,
 };

@@ -35,4 +35,5 @@ module.exports = {
   getRubros, createRubro, updateRubro, deleteRubro,
   getUnidadesMedida, createUnidadMedida, deleteUnidadMedida,
   getGrupos, createGrupo, updateGrupo, deleteGrupo,
+  getOperaciones: async (_req, res, next) => { try { res.json(await s.getOperaciones()); } catch (e) { next(e); } },
 };

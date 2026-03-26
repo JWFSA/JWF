@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Users, Building2, Shield, Globe, Settings, LayoutDashboard, ChevronDown, X, Package, Warehouse, Tag, Layers, BookOpen, DollarSign, MapPin, Map, Code, Ruler, Grid3x3, Building, Percent, ShoppingCart, UserCheck, MapPinned, LayoutList, Handshake, ClipboardList, ListOrdered, Landmark, CreditCard, Briefcase, Truck } from 'lucide-react';
+import { Users, Building2, Shield, Globe, Settings, LayoutDashboard, ChevronDown, X, Package, Warehouse, Tag, Layers, BookOpen, DollarSign, MapPin, Map, Code, Ruler, Grid3x3, Building, Percent, ShoppingCart, UserCheck, MapPinned, LayoutList, Handshake, ClipboardList, ListOrdered, Landmark, CreditCard, Briefcase, Truck, FileText, Banknote, Scale, ArrowLeftRight, BarChart3, Receipt } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import Image from 'next/image';
@@ -41,23 +41,31 @@ const menu = [
       { label: 'Zonas',            href: '/fac/zonas',         icon: MapPinned },
       { label: 'Categorías',       href: '/fac/categorias',    icon: LayoutList },
       { label: 'Condiciones',      href: '/fac/condiciones',   icon: BookOpen },
+      { label: 'Barrios',          href: '/fac/barrios',       icon: MapPin },
     ],
   },
   {
     label: 'Finanzas',
     icon: Landmark,
     children: [
-      { label: 'Proveedores',      href: '/fin/proveedores',     icon: Truck },
-      { label: 'Bancos',           href: '/fin/bancos',          icon: Landmark },
-      { label: 'Formas de pago',   href: '/fin/formas-pago',     icon: CreditCard },
-      { label: 'Ramos',            href: '/fin/ramos',           icon: Briefcase },
-      { label: 'Tipos proveedor',  href: '/fin/tipos-proveedor', icon: Tag },
+      { label: 'Órdenes de pago',    href: '/fin/ordenes-pago',       icon: Receipt },
+      { label: 'Proveedores',        href: '/fin/proveedores',        icon: Truck },
+      { label: 'Cuentas bancarias', href: '/fin/cuentas-bancarias',  icon: Banknote },
+      { label: 'Bancos',            href: '/fin/bancos',             icon: Landmark },
+      { label: 'Formas de pago',    href: '/fin/formas-pago',        icon: CreditCard },
+      { label: 'Ramos',             href: '/fin/ramos',              icon: Briefcase },
+      { label: 'Tipos proveedor',   href: '/fin/tipos-proveedor',    icon: Tag },
+      { label: 'Personerías',       href: '/fin/personeria',         icon: Scale },
+      { label: 'Clases documento',  href: '/fin/clases-doc',         icon: FileText },
     ],
   },
   {
     label: 'Stock',
     icon: Package,
     children: [
+      { label: 'Movimientos',       href: '/stk/movimientos',     icon: ArrowLeftRight },
+      { label: 'Remisiones',        href: '/stk/remisiones',      icon: FileText },
+      { label: 'Stock actual',      href: '/stk/stock',           icon: BarChart3 },
       { label: 'Artículos',        href: '/stk/articulos',       icon: Layers },
       { label: 'Depósitos',        href: '/stk/depositos',       icon: Warehouse },
       { label: 'Líneas',           href: '/stk/lineas',          icon: BookOpen },

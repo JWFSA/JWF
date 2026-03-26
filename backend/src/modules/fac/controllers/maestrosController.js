@@ -29,10 +29,17 @@ const createListaPrecio = async (req, res, next) => { try { if (!req.body.lipe_d
 const updateListaPrecio = async (req, res, next) => { try { res.json(await s.updateListaPrecio(req.params.id, req.body)); } catch (e) { next(e); } };
 const deleteListaPrecio = async (req, res, next) => { try { await s.deleteListaPrecio(req.params.id); res.status(204).end(); } catch (e) { next(e); } };
 
+// Barrios
+const getBarrios    = async (req, res, next) => { try { res.json(await s.getBarrios({ all: req.query.all === 'true', page: parseInt(req.query.page) || 1, limit: parseInt(req.query.limit) || 20, search: req.query.search || '', sortField: req.query.sortField || '', sortDir: req.query.sortDir || 'asc' })); } catch (e) { next(e); } };
+const createBarrio  = async (req, res, next) => { try { if (!req.body.ba_desc) return res.status(400).json({ message: 'La descripción es requerida' }); res.status(201).json(await s.createBarrio(req.body)); } catch (e) { next(e); } };
+const updateBarrio  = async (req, res, next) => { try { res.json(await s.updateBarrio(req.params.id, req.body)); } catch (e) { next(e); } };
+const deleteBarrio  = async (req, res, next) => { try { await s.deleteBarrio(req.params.id); res.status(204).end(); } catch (e) { next(e); } };
+
 module.exports = {
   getZonas, createZona, updateZona, deleteZona,
   getCategorias, createCategoria, updateCategoria, deleteCategoria,
   getCondiciones, createCondicion, deleteCondicion,
   getVendedores, createVendedor, updateVendedor, deleteVendedor,
   getListasPrecio, createListaPrecio, updateListaPrecio, deleteListaPrecio,
+  getBarrios, createBarrio, updateBarrio, deleteBarrio,
 };

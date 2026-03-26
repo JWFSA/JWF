@@ -1,6 +1,12 @@
 import { Paginated } from './gen';
 export type { Paginated };
 
+export interface Barrio {
+  ba_codigo: number;
+  ba_desc: string;
+  ba_localidad: number | null;
+}
+
 export interface Zona {
   zona_codigo: number;
   zona_desc: string;

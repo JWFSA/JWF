@@ -27,6 +27,12 @@ router.post('/maestros/listas-precio',        verifyToken, maestrosController.cr
 router.put('/maestros/listas-precio/:id',     verifyToken, maestrosController.updateListaPrecio);
 router.delete('/maestros/listas-precio/:id',  verifyToken, maestrosController.deleteListaPrecio);
 
+// Barrios
+router.get('/maestros/barrios',         verifyToken, maestrosController.getBarrios);
+router.post('/maestros/barrios',        verifyToken, maestrosController.createBarrio);
+router.put('/maestros/barrios/:id',     verifyToken, maestrosController.updateBarrio);
+router.delete('/maestros/barrios/:id',  verifyToken, maestrosController.deleteBarrio);
+
 // Vendedores
 router.get('/vendedores',         verifyToken, maestrosController.getVendedores);
 router.post('/vendedores',        verifyToken, maestrosController.createVendedor);

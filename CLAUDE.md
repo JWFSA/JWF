@@ -112,9 +112,9 @@ NEXT_PUBLIC_API_URL=http://localhost:3001/api
 | Código | Nombre       | Estado        |
 |--------|--------------|---------------|
 | GEN    | General      | ✅ Completo   |
-| FAC    | Facturación  | ⏳ Pendiente  |
-| FIN    | Finanzas     | ⏳ Pendiente  |
-| STK    | Stock        | ⏳ Pendiente  |
+| FAC    | Facturación  | 🔄 Avanzado   |
+| FIN    | Finanzas     | 🔄 Avanzado   |
+| STK    | Stock        | 🔄 Avanzado   |
 | PER    | Personal     | ⏳ Pendiente  |
 
 ### Convención de nombres por módulo
@@ -146,6 +146,9 @@ Cada vez que se cree una nueva página de listado, agregarla aquí. Usar esta li
 | `stk/grupos` | Grupos | `desc` asc |
 | `stk/depositos` | Depósitos | `desc` asc |
 | `stk/unidades-medida` | Unidades de medida | `codigo` asc |
+| `stk/movimientos` | Movimientos de stock | `fecha` desc |
+| `stk/remisiones` | Remisiones | `fecha` desc |
+| `stk/stock` | Stock actual | `art` asc |
 | `stk/articulos` | Artículos | `desc` asc |
 | `fac/clientes` | Clientes | `nom` asc |
 | `fac/vendedores` | Vendedores | `nom` asc |
@@ -154,11 +157,16 @@ Cada vez que se cree una nueva página de listado, agregarla aquí. Usar esta li
 | `fac/zonas` | Zonas | `desc` asc |
 | `fac/categorias` | Categorías | `desc` asc |
 | `fac/condiciones` | Condiciones de pago | — (sin sort) |
+| `fac/barrios` | Barrios | `desc` asc |
+| `fin/ordenes-pago` | Órdenes de pago | `fecha` desc |
 | `fin/proveedores` | Proveedores | `nom` asc |
 | `fin/tipos-proveedor` | Tipos de proveedor | `desc` asc |
 | `fin/bancos` | Bancos | `desc` asc |
 | `fin/ramos` | Ramos | `desc` asc |
 | `fin/formas-pago` | Formas de pago | `desc` asc |
+| `fin/personeria` | Personerías | `desc` asc |
+| `fin/clases-doc` | Clases de documento | `desc` asc |
+| `fin/cuentas-bancarias` | Cuentas bancarias | `desc` asc |
 
 ---
 

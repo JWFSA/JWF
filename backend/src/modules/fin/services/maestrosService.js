@@ -211,9 +211,101 @@ const deleteTipoProveedor = async (codigo) => {
   await pool.query('DELETE FROM fin_tipo_proveedor WHERE "TIPR_CODIGO" = $1', [codigo]);
 };
 
+// ─── PERSONERÍAS ─────────────────────────────────────────────────────────────
+
+const getPersonerias = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  const params = search ? [`%${search}%`] : [];
+  const where  = search ? `WHERE "PERS_DESC" ILIKE $1` : '';
+  const countRes = await pool.query(`SELECT COUNT(*) FROM fin_personeria ${where}`, params);
+  const total = parseInt(countRes.rows[0].count);
+  const allowedSort = { cod: '"PERS_CODIGO"', desc: '"PERS_DESC"' };
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = allowedSort[sortField] ? `${allowedSort[sortField]} ${dir}` : '"PERS_DESC" ASC';
+  const select = `SELECT "PERS_CODIGO" AS pers_codigo, "PERS_DESC" AS pers_desc FROM fin_personeria ${where} ORDER BY ${orderBy}`;
+  if (all) {
+    const { rows } = await pool.query(select, params);
+    return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
+  }
+  const offset = (page - 1) * limit;
+  const { rows } = await pool.query(`${select} LIMIT $${params.length + 1} OFFSET $${params.length + 2}`, [...params, limit, offset]);
+  return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+};
+
+const getPersoneria = async (codigo) => {
+  const { rows } = await pool.query(
+    `SELECT "PERS_CODIGO" AS pers_codigo, "PERS_DESC" AS pers_desc FROM fin_personeria WHERE "PERS_CODIGO" = $1`, [codigo]
+  );
+  if (!rows.length) throw { status: 404, message: 'Personería no encontrada' };
+  return rows[0];
+};
+
+const createPersoneria = async (data) => {
+  const { rows } = await pool.query('SELECT COALESCE(MAX("PERS_CODIGO"), 0) + 1 AS next FROM fin_personeria');
+  const codigo = rows[0].next;
+  await pool.query(`INSERT INTO fin_personeria ("PERS_CODIGO","PERS_DESC") VALUES ($1,$2)`, [codigo, data.pers_desc]);
+  return getPersoneria(codigo);
+};
+
+const updatePersoneria = async (codigo, data) => {
+  if (!data.pers_desc) return getPersoneria(codigo);
+  await pool.query(`UPDATE fin_personeria SET "PERS_DESC" = $1 WHERE "PERS_CODIGO" = $2`, [data.pers_desc, codigo]);
+  return getPersoneria(codigo);
+};
+
+const deletePersoneria = async (codigo) => {
+  await pool.query('DELETE FROM fin_personeria WHERE "PERS_CODIGO" = $1', [codigo]);
+};
+
+// ─── CLASES DE DOCUMENTO ─────────────────────────────────────────────────────
+
+const getClasesDoc = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  const params = search ? [`%${search}%`] : [];
+  const where  = search ? `WHERE "CLDO_DESC" ILIKE $1` : '';
+  const countRes = await pool.query(`SELECT COUNT(*) FROM fin_clase_doc ${where}`, params);
+  const total = parseInt(countRes.rows[0].count);
+  const allowedSort = { cod: '"CLDO_CODIGO"', desc: '"CLDO_DESC"' };
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = allowedSort[sortField] ? `${allowedSort[sortField]} ${dir}` : '"CLDO_DESC" ASC';
+  const select = `SELECT "CLDO_CODIGO" AS cldo_codigo, "CLDO_DESC" AS cldo_desc FROM fin_clase_doc ${where} ORDER BY ${orderBy}`;
+  if (all) {
+    const { rows } = await pool.query(select, params);
+    return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
+  }
+  const offset = (page - 1) * limit;
+  const { rows } = await pool.query(`${select} LIMIT $${params.length + 1} OFFSET $${params.length + 2}`, [...params, limit, offset]);
+  return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+};
+
+const getClaseDoc = async (codigo) => {
+  const { rows } = await pool.query(
+    `SELECT "CLDO_CODIGO" AS cldo_codigo, "CLDO_DESC" AS cldo_desc FROM fin_clase_doc WHERE "CLDO_CODIGO" = $1`, [codigo]
+  );
+  if (!rows.length) throw { status: 404, message: 'Clase de documento no encontrada' };
+  return rows[0];
+};
+
+const createClaseDoc = async (data) => {
+  const { rows } = await pool.query('SELECT COALESCE(MAX("CLDO_CODIGO"), 0) + 1 AS next FROM fin_clase_doc');
+  const codigo = rows[0].next;
+  await pool.query(`INSERT INTO fin_clase_doc ("CLDO_CODIGO","CLDO_DESC") VALUES ($1,$2)`, [codigo, data.cldo_desc]);
+  return getClaseDoc(codigo);
+};
+
+const updateClaseDoc = async (codigo, data) => {
+  if (!data.cldo_desc) return getClaseDoc(codigo);
+  await pool.query(`UPDATE fin_clase_doc SET "CLDO_DESC" = $1 WHERE "CLDO_CODIGO" = $2`, [data.cldo_desc, codigo]);
+  return getClaseDoc(codigo);
+};
+
+const deleteClaseDoc = async (codigo) => {
+  await pool.query('DELETE FROM fin_clase_doc WHERE "CLDO_CODIGO" = $1', [codigo]);
+};
+
 module.exports = {
   getBancos, getBanco, createBanco, updateBanco, deleteBanco,
   getFormasPago, getFormaPago, createFormaPago, updateFormaPago, deleteFormaPago,
   getRamos, getRamo, createRamo, updateRamo, deleteRamo,
   getTiposProveedor, getTipoProveedor, createTipoProveedor, updateTipoProveedor, deleteTipoProveedor,
+  getPersonerias, getPersoneria, createPersoneria, updatePersoneria, deletePersoneria,
+  getClasesDoc, getClaseDoc, createClaseDoc, updateClaseDoc, deleteClaseDoc,
 };

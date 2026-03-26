@@ -1,5 +1,5 @@
 import api from '@/lib/api';
-import type { Articulo, Deposito, Linea, Marca, Rubro, UnidadMedida, Grupo, Paginated } from '@/types/stk';
+import type { Articulo, Deposito, Linea, Marca, Rubro, UnidadMedida, Grupo, Operacion, Movimiento, StockActual, Remision, Paginated } from '@/types/stk';
 import type { ListParams } from '@/services/gen';
 
 // Líneas
@@ -52,3 +52,43 @@ export const updateArticulo = (id: number, data: Partial<Articulo>) =>
 
 export const deleteArticulo = (id: number) =>
   api.delete(`/stk/articulos/${id}`);
+
+// Stock actual
+export const getStock = (params?: ListParams & { dep?: number }) =>
+  api.get<Paginated<StockActual>>('/stk/stock', { params }).then((r) => r.data);
+
+// Operaciones
+export const getOperaciones = () =>
+  api.get<Operacion[]>('/stk/maestros/operaciones').then((r) => r.data);
+
+// Movimientos de stock
+export const getMovimientos = (params?: ListParams) =>
+  api.get<Paginated<Movimiento>>('/stk/movimientos', { params }).then((r) => r.data);
+
+export const getMovimiento = (id: number) =>
+  api.get<Movimiento>(`/stk/movimientos/${id}`).then((r) => r.data);
+
+export const createMovimiento = (data: Partial<Movimiento>) =>
+  api.post<Movimiento>('/stk/movimientos', data).then((r) => r.data);
+
+export const updateMovimiento = (id: number, data: Partial<Movimiento>) =>
+  api.put<Movimiento>(`/stk/movimientos/${id}`, data).then((r) => r.data);
+
+export const deleteMovimiento = (id: number) =>
+  api.delete(`/stk/movimientos/${id}`);
+
+// Remisiones
+export const getRemisiones = (params?: ListParams) =>
+  api.get<Paginated<Remision>>('/stk/remisiones', { params }).then((r) => r.data);
+
+export const getRemision = (nro: number) =>
+  api.get<Remision>(`/stk/remisiones/${nro}`).then((r) => r.data);
+
+export const createRemision = (data: Partial<Remision>) =>
+  api.post<Remision>('/stk/remisiones', data).then((r) => r.data);
+
+export const updateRemision = (nro: number, data: Partial<Remision>) =>
+  api.put<Remision>(`/stk/remisiones/${nro}`, data).then((r) => r.data);
+
+export const deleteRemision = (nro: number) =>
+  api.delete(`/stk/remisiones/${nro}`);

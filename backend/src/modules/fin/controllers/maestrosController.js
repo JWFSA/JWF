@@ -24,9 +24,23 @@ const createTipoProveedor  = async (req, res, next) => { try { if (!req.body.tip
 const updateTipoProveedor  = async (req, res, next) => { try { res.json(await s.updateTipoProveedor(req.params.id, req.body)); } catch (e) { next(e); } };
 const deleteTipoProveedor  = async (req, res, next) => { try { await s.deleteTipoProveedor(req.params.id); res.status(204).end(); } catch (e) { next(e); } };
 
+// Personerías
+const getPersonerias    = async (req, res, next) => { try { res.json(await s.getPersonerias({ all: req.query.all === 'true', page: parseInt(req.query.page) || 1, limit: parseInt(req.query.limit) || 20, search: req.query.search || '', sortField: req.query.sortField || '', sortDir: req.query.sortDir || 'asc' })); } catch (e) { next(e); } };
+const createPersoneria  = async (req, res, next) => { try { if (!req.body.pers_desc) return res.status(400).json({ message: 'La descripción es requerida' }); res.status(201).json(await s.createPersoneria(req.body)); } catch (e) { next(e); } };
+const updatePersoneria  = async (req, res, next) => { try { res.json(await s.updatePersoneria(req.params.id, req.body)); } catch (e) { next(e); } };
+const deletePersoneria  = async (req, res, next) => { try { await s.deletePersoneria(req.params.id); res.status(204).end(); } catch (e) { next(e); } };
+
+// Clases de documento
+const getClasesDoc    = async (req, res, next) => { try { res.json(await s.getClasesDoc({ all: req.query.all === 'true', page: parseInt(req.query.page) || 1, limit: parseInt(req.query.limit) || 20, search: req.query.search || '', sortField: req.query.sortField || '', sortDir: req.query.sortDir || 'asc' })); } catch (e) { next(e); } };
+const createClaseDoc  = async (req, res, next) => { try { if (!req.body.cldo_desc) return res.status(400).json({ message: 'La descripción es requerida' }); res.status(201).json(await s.createClaseDoc(req.body)); } catch (e) { next(e); } };
+const updateClaseDoc  = async (req, res, next) => { try { res.json(await s.updateClaseDoc(req.params.id, req.body)); } catch (e) { next(e); } };
+const deleteClaseDoc  = async (req, res, next) => { try { await s.deleteClaseDoc(req.params.id); res.status(204).end(); } catch (e) { next(e); } };
+
 module.exports = {
   getBancos, createBanco, updateBanco, deleteBanco,
   getFormasPago, createFormaPago, updateFormaPago, deleteFormaPago,
   getRamos, createRamo, updateRamo, deleteRamo,
   getTiposProveedor, createTipoProveedor, updateTipoProveedor, deleteTipoProveedor,
+  getPersonerias, createPersoneria, updatePersoneria, deletePersoneria,
+  getClasesDoc, createClaseDoc, updateClaseDoc, deleteClaseDoc,
 };

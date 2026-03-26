@@ -258,10 +258,63 @@ const deleteListaPrecio = async (nro) => {
   );
 };
 
+// ─── BARRIOS ─────────────────────────────────────────────────────────────────
+
+const getBarrios = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  const params = search ? [`%${search}%`] : [];
+  const where  = search ? `WHERE "BA_DESC" ILIKE $1` : '';
+  const countRes = await pool.query(`SELECT COUNT(*) FROM fac_barrio ${where}`, params);
+  const total = parseInt(countRes.rows[0].count);
+  const allowedSort = { cod: '"BA_CODIGO"', desc: '"BA_DESC"' };
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = allowedSort[sortField] ? `${allowedSort[sortField]} ${dir}` : '"BA_DESC" ASC';
+  const select = `SELECT "BA_CODIGO" AS ba_codigo, "BA_DESC" AS ba_desc, "BA_LOCALIDAD" AS ba_localidad FROM fac_barrio ${where} ORDER BY ${orderBy}`;
+  if (all) {
+    const { rows } = await pool.query(select, params);
+    return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
+  }
+  const offset = (page - 1) * limit;
+  const { rows } = await pool.query(`${select} LIMIT $${params.length + 1} OFFSET $${params.length + 2}`, [...params, limit, offset]);
+  return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+};
+
+const getBarrio = async (codigo) => {
+  const { rows } = await pool.query(
+    `SELECT "BA_CODIGO" AS ba_codigo, "BA_DESC" AS ba_desc, "BA_LOCALIDAD" AS ba_localidad FROM fac_barrio WHERE "BA_CODIGO" = $1`, [codigo]
+  );
+  if (!rows.length) throw { status: 404, message: 'Barrio no encontrado' };
+  return rows[0];
+};
+
+const createBarrio = async (data) => {
+  const { rows } = await pool.query('SELECT COALESCE(MAX("BA_CODIGO"), 0) + 1 AS next FROM fac_barrio');
+  const codigo = rows[0].next;
+  await pool.query(`INSERT INTO fac_barrio ("BA_CODIGO","BA_DESC","BA_LOCALIDAD") VALUES ($1,$2,$3)`,
+    [codigo, data.ba_desc, data.ba_localidad || null]);
+  return getBarrio(codigo);
+};
+
+const updateBarrio = async (codigo, data) => {
+  const fields = []; const params = [];
+  const map = { ba_desc: '"BA_DESC"', ba_localidad: '"BA_LOCALIDAD"' };
+  for (const [k, col] of Object.entries(map)) {
+    if (data[k] !== undefined) { params.push(data[k]); fields.push(`${col} = $${params.length}`); }
+  }
+  if (!fields.length) return getBarrio(codigo);
+  params.push(codigo);
+  await pool.query(`UPDATE fac_barrio SET ${fields.join(', ')} WHERE "BA_CODIGO" = $${params.length}`, params);
+  return getBarrio(codigo);
+};
+
+const deleteBarrio = async (codigo) => {
+  await pool.query('DELETE FROM fac_barrio WHERE "BA_CODIGO" = $1', [codigo]);
+};
+
 module.exports = {
   getZonas, getZona, createZona, updateZona, deleteZona,
   getCategorias, getCategoria, createCategoria, updateCategoria, deleteCategoria,
   getCondiciones, createCondicion, deleteCondicion,
   getVendedores, getVendedor, createVendedor, updateVendedor, deleteVendedor,
   getListasPrecio, getListaPrecio, createListaPrecio, updateListaPrecio, deleteListaPrecio,
+  getBarrios, getBarrio, createBarrio, updateBarrio, deleteBarrio,
 };
