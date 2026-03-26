@@ -13,14 +13,22 @@ import DataTable from '@/components/ui/DataTable';
 const empty = { pais_desc: '', pais_nacionalidad: '' };
 
 const COLUMNS = [
-  { key: 'codigo',       header: 'Código',       headerClassName: 'w-24', cell: (p: Pais) => p.pais_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
-  { key: 'desc',         header: 'País',          cell: (p: Pais) => p.pais_desc, cellClassName: 'font-medium text-gray-800' },
-  { key: 'nacionalidad', header: 'Nacionalidad',  headerClassName: 'hidden sm:table-cell', cell: (p: Pais) => p.pais_nacionalidad ?? '—', cellClassName: 'text-gray-500 hidden sm:table-cell' },
+  { key: 'codigo',       header: 'Código',      sortKey: 'codigo',       headerClassName: 'w-24', cell: (p: Pais) => p.pais_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
+  { key: 'desc',         header: 'País',         sortKey: 'desc',         cell: (p: Pais) => p.pais_desc, cellClassName: 'font-medium text-gray-800' },
+  { key: 'nacionalidad', header: 'Nacionalidad', sortKey: 'nacionalidad', headerClassName: 'hidden sm:table-cell', cell: (p: Pais) => p.pais_nacionalidad ?? '—', cellClassName: 'text-gray-500 hidden sm:table-cell' },
 ];
 
-function matchesPais(p: Pais, q: string) {
-  const s = `${p.pais_codigo} ${p.pais_desc} ${p.pais_nacionalidad ?? ''}`.toLowerCase();
-  return s.includes(q);
+function sortPaises(list: Pais[], field: string, dir: 'asc' | 'desc'): Pais[] {
+  if (!field) return list;
+  return [...list].sort((a, b) => {
+    let va: any, vb: any;
+    if (field === 'codigo')       { va = a.pais_codigo;       vb = b.pais_codigo; }
+    else if (field === 'desc')    { va = a.pais_desc;         vb = b.pais_desc; }
+    else                          { va = a.pais_nacionalidad; vb = b.pais_nacionalidad; }
+    if (va == null) return 1; if (vb == null) return -1;
+    const cmp = typeof va === 'string' ? va.localeCompare(vb) : va - vb;
+    return dir === 'desc' ? -cmp : cmp;
+  });
 }
 
 export default function PaisesPage() {
@@ -32,6 +40,8 @@ export default function PaisesPage() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
+  const [sortField, setSortField] = useState('desc');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
   useEffect(() => {
     const t = setTimeout(() => { setDebouncedSearch(search); setPage(1); }, 400);
@@ -42,16 +52,16 @@ export default function PaisesPage() {
 
   const filtered = useMemo(() => {
     const q = debouncedSearch.trim().toLowerCase();
-    if (!q) return paisesRaw;
-    return paisesRaw.filter((p) => matchesPais(p, q));
-  }, [paisesRaw, debouncedSearch]);
+    const list = q
+      ? paisesRaw.filter((p) => `${p.pais_codigo} ${p.pais_desc} ${p.pais_nacionalidad ?? ''}`.toLowerCase().includes(q))
+      : paisesRaw;
+    return sortPaises(list, sortField, sortDir);
+  }, [paisesRaw, debouncedSearch, sortField, sortDir]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / limit));
   const safePage = Math.min(page, totalPages);
 
-  useEffect(() => {
-    if (page > totalPages) setPage(totalPages);
-  }, [page, totalPages]);
+  useEffect(() => { if (page > totalPages) setPage(totalPages); }, [page, totalPages]);
 
   const paises = useMemo(() => {
     const start = (safePage - 1) * limit;
@@ -59,6 +69,7 @@ export default function PaisesPage() {
   }, [filtered, safePage, limit]);
 
   const inv = () => qc.invalidateQueries({ queryKey: ['paises'] });
+  const handleSortChange = (field: string, dir: 'asc' | 'desc') => { setSortField(field); setSortDir(dir); setPage(1); };
 
   const openNuevo  = () => { setForm(empty); setError(''); setModal('nuevo'); };
   const openEditar = (p: Pais) => { setForm({ pais_desc: p.pais_desc, pais_nacionalidad: p.pais_nacionalidad ?? '' }); setError(''); setModal(p); };
@@ -99,6 +110,9 @@ export default function PaisesPage() {
           tableClassName="w-full min-w-[400px] text-sm"
           emptyLabel="Sin registros"
           columns={COLUMNS}
+          sortField={sortField}
+          sortDir={sortDir}
+          onSortChange={handleSortChange}
         />
 
         {!isLoading && (

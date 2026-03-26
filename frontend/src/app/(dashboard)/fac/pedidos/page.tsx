@@ -21,7 +21,7 @@ const fmtTotal = (n?: number) =>
 
 const COLUMNS = [
   { key: 'nro',    header: 'Nro.',     sortKey: 'nro',     headerClassName: 'w-28', cell: (p: Pedido) => p.ped_nro, cellClassName: 'font-mono text-xs text-gray-500' },
-  { key: 'fecha',  header: 'Fecha',    sortKey: 'fecha',   headerClassName: 'w-28', cell: (p: Pedido) => p.ped_fecha ? String(p.ped_fecha).substring(0, 10) : '—', cellClassName: 'text-gray-600' },
+  { key: 'fecha',  header: 'Fecha',    sortKey: 'fecha',   headerClassName: 'w-36', cell: (p: Pedido) => p.ped_fecha ? String(p.ped_fecha).substring(0, 10) : '—', cellClassName: 'text-gray-600' },
   { key: 'cli',    header: 'Cliente',  sortKey: 'cliente', cell: (p: Pedido) => p.cli_nom ?? '—', cellClassName: 'font-medium text-gray-800' },
   { key: 'vend',   header: 'Vendedor', headerClassName: 'hidden md:table-cell',
     cell: (p: Pedido) => p.vend_nombre ? `${p.vend_nombre} ${p.vend_apellido ?? ''}`.trim() : '—',

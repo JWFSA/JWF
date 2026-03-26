@@ -15,9 +15,9 @@ type ModalState = null | 'nuevo' | Grupo;
 const empty = { grup_linea: 0, grup_desc: '', grup_coeficiente: 1 };
 
 const COLUMNS = [
-  { key: 'linea',  header: 'Línea',       sortKey: 'linea', headerClassName: 'hidden md:table-cell', cell: (g: Grupo) => g.lin_desc ?? g.grup_linea, cellClassName: 'text-gray-500 hidden md:table-cell' },
   { key: 'codigo', header: 'Código',      sortKey: 'cod',   headerClassName: 'w-24',                 cell: (g: Grupo) => g.grup_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
   { key: 'desc',   header: 'Descripción', sortKey: 'desc',                                            cell: (g: Grupo) => g.grup_desc, cellClassName: 'font-medium text-gray-800' },
+  { key: 'linea',  header: 'Línea',       sortKey: 'linea', headerClassName: 'hidden md:table-cell', cell: (g: Grupo) => g.lin_desc ?? g.grup_linea, cellClassName: 'text-gray-500 hidden md:table-cell' },
   { key: 'coef',   header: 'Coeficiente',                   headerClassName: 'hidden md:table-cell text-right', cell: (g: Grupo) => g.grup_coeficiente, cellClassName: 'text-gray-500 hidden md:table-cell text-right' },
 ];
 

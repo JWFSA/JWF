@@ -271,6 +271,21 @@ const items = data?.data ?? [];
 - Íconos: `ChevronLeft`, `ChevronRight`, `ChevronsLeft`, `ChevronsRight` de `lucide-react`
 - Estado `limit` con default 20; al cambiar resetear `page` a 1
 
+### Ordenamiento en DataTable (OBLIGATORIO)
+Todo componente que use `DataTable` debe implementar ordenamiento asc/desc en todas las columnas que tengan sentido ordenar.
+
+**Si el listado usa paginación server-side** (datos paginados desde el backend):
+- Backend — service: aceptar `sortField` y `sortDir` en los parámetros; usar `allowedSort` para mapear claves a columnas SQL; aplicar `ORDER BY` dinámico
+- Backend — controller: pasar `sortField: req.query.sortField || ''` y `sortDir: req.query.sortDir || 'asc'`
+- Frontend — service: incluir `sortField` y `sortDir` en los params de la request
+- Frontend — página: estados `sortField` y `sortDir`; `handleSortChange` que actualiza ambos y resetea `page` a 1; pasar `sortField`, `sortDir`, `onSortChange` al `DataTable`; incluir `sortField` y `sortDir` en el `queryKey`
+
+**Si el listado usa filtrado/paginación client-side** (backend devuelve todos los registros de una vez):
+- No se modifica el backend
+- Frontend — página: estados `sortField` y `sortDir`; función `sort<Entidad>` que ordena el array; aplicar el sort dentro del `useMemo` de filtrado, antes del slice de paginación; pasar `sortField`, `sortDir`, `onSortChange` al `DataTable`
+
+**En ambos casos:** agregar `sortKey` a cada columna ordenable en `COLUMNS`.
+
 ### Frontend — Responsive (OBLIGATORIO)
 Todos los componentes deben ser responsive. Reglas:
 

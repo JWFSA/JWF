@@ -146,9 +146,23 @@ const deleteRubro = async (codigo) => {
 
 // ─── UNIDADES DE MEDIDA ──────────────────────────────────────────────────────
 
-const getUnidadesMedida = async () => {
-  const { rows } = await pool.query(`SELECT "UM_CODIGO" AS um_codigo FROM stk_unid_med ORDER BY "UM_CODIGO"`);
-  return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
+const getUnidadesMedida = async ({ page = 1, limit = 20, search = '', all = false, sortDir = 'asc' } = {}) => {
+  const params = [];
+  const where = search ? (params.push(`%${search}%`), `WHERE "UM_CODIGO" ILIKE $1`) : '';
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = `"UM_CODIGO" ${dir}`;
+
+  const countRes = await pool.query(`SELECT COUNT(*) FROM stk_unid_med ${where}`, params);
+  const total = parseInt(countRes.rows[0].count);
+  const select = `SELECT "UM_CODIGO" AS um_codigo FROM stk_unid_med ${where} ORDER BY ${orderBy}`;
+
+  if (all) {
+    const { rows } = await pool.query(select, params);
+    return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
+  }
+  const offset = (page - 1) * limit;
+  const { rows } = await pool.query(`${select} LIMIT $${params.length + 1} OFFSET $${params.length + 2}`, [...params, limit, offset]);
+  return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
 };
 
 const createUnidadMedida = async (data) => {

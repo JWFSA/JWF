@@ -21,7 +21,7 @@ export const updateRubro  = (id: number, data: Partial<Rubro>) => api.put<Rubro>
 export const deleteRubro  = (id: number) => api.delete(`/stk/maestros/rubros/${id}`);
 
 // Unidades de medida
-export const getUnidadesMedida    = (params?: Pick<ListParams, 'all'>) => api.get<Paginated<UnidadMedida>>('/stk/maestros/unidades-medida', { params }).then((r) => r.data);
+export const getUnidadesMedida    = (params?: ListParams) => api.get<Paginated<UnidadMedida>>('/stk/maestros/unidades-medida', { params }).then((r) => r.data);
 export const createUnidadMedida   = (data: { um_codigo: string }) => api.post<UnidadMedida>('/stk/maestros/unidades-medida', data).then((r) => r.data);
 export const deleteUnidadMedida   = (id: string) => api.delete(`/stk/maestros/unidades-medida/${id}`);
 

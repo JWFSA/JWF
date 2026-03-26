@@ -1,29 +1,47 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getUnidadesMedida, createUnidadMedida, deleteUnidadMedida } from '@/services/stk';
 import type { UnidadMedida } from '@/types/stk';
 import DataTable from '@/components/ui/DataTable';
 import FormModal from '@/components/ui/FormModal';
 import PrimaryAddButton from '@/components/ui/PrimaryAddButton';
+import SearchField from '@/components/ui/SearchField';
+import TablePagination from '@/components/ui/TablePagination';
 
 const empty = { um_codigo: '' };
 
+const COLUMNS = [
+  { key: 'codigo', header: 'Código', sortKey: 'codigo', cell: (u: UnidadMedida) => u.um_codigo, cellClassName: 'font-mono font-medium text-gray-800' },
+];
+
 export default function UnidadesMedidaPage() {
   const qc = useQueryClient();
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(20);
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [modal, setModal] = useState(false);
   const [form, setForm] = useState(empty);
   const [error, setError] = useState('');
 
+  useEffect(() => {
+    const t = setTimeout(() => { setDebouncedSearch(search); setPage(1); }, 400);
+    return () => clearTimeout(t);
+  }, [search]);
+
   const { data, isLoading } = useQuery({
-    queryKey: ['unidades-medida'],
-    queryFn: () => getUnidadesMedida(),
+    queryKey: ['unidades-medida', { page, limit, search: debouncedSearch, sortDir }],
+    queryFn: () => getUnidadesMedida({ page, limit, search: debouncedSearch, sortDir }),
   });
 
   const unidades = data?.data ?? [];
+  const pagination = data?.pagination;
 
   const inv = () => qc.invalidateQueries({ queryKey: ['unidades-medida'] });
+  const handleSortChange = (_field: string, dir: 'asc' | 'desc') => { setSortDir(dir); setPage(1); };
 
   const createMut = useMutation({
     mutationFn: createUnidadMedida,
@@ -49,6 +67,10 @@ export default function UnidadesMedidaPage() {
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+        <div className="p-4 border-b border-gray-100">
+          <SearchField value={search} onChange={setSearch} placeholder="Buscar unidad..." />
+        </div>
+
         <DataTable
           isLoading={isLoading}
           rows={unidades}
@@ -56,10 +78,22 @@ export default function UnidadesMedidaPage() {
           onDelete={(u: UnidadMedida) => deleteMut.mutate(u.um_codigo)}
           deleteConfirmMessage="¿Eliminar esta unidad de medida?"
           tableClassName="w-full text-sm"
-          columns={[
-            { key: 'codigo', header: 'Código', cell: (u) => u.um_codigo, cellClassName: 'font-mono font-medium text-gray-800' },
-          ]}
+          columns={COLUMNS}
+          sortField="codigo"
+          sortDir={sortDir}
+          onSortChange={handleSortChange}
         />
+
+        {pagination && (
+          <TablePagination
+            total={pagination.total}
+            page={page}
+            limit={limit}
+            totalPages={pagination.totalPages}
+            onPageChange={setPage}
+            onLimitChange={(n) => { setLimit(n); setPage(1); }}
+          />
+        )}
       </div>
 
       {modal && (

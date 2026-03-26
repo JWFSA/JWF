@@ -13,16 +13,26 @@ import DataTable from '@/components/ui/DataTable';
 const empty = { mon_desc: '', mon_simbolo: '', mon_tasa_comp: 0, mon_tasa_vta: 0 };
 
 const COLUMNS = [
-  { key: 'codigo',    header: 'Código',      headerClassName: 'w-24', cell: (m: Moneda) => m.mon_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
-  { key: 'desc',      header: 'Descripción', cell: (m: Moneda) => m.mon_desc, cellClassName: 'font-medium text-gray-800' },
-  { key: 'simbolo',   header: 'Símbolo',     headerClassName: 'w-16', cell: (m: Moneda) => m.mon_simbolo, cellClassName: 'text-gray-500' },
-  { key: 'tasa_comp', header: 'Tasa compra', headerClassName: 'text-right hidden md:table-cell', cell: (m: Moneda) => m.mon_tasa_comp?.toLocaleString(), cellClassName: 'text-right text-gray-600 hidden md:table-cell' },
-  { key: 'tasa_vta',  header: 'Tasa venta',  headerClassName: 'text-right hidden md:table-cell', cell: (m: Moneda) => m.mon_tasa_vta?.toLocaleString(), cellClassName: 'text-right text-gray-600 hidden md:table-cell' },
+  { key: 'codigo',    header: 'Código',      sortKey: 'codigo',    headerClassName: 'w-24', cell: (m: Moneda) => m.mon_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
+  { key: 'desc',      header: 'Descripción', sortKey: 'desc',      cell: (m: Moneda) => m.mon_desc, cellClassName: 'font-medium text-gray-800' },
+  { key: 'simbolo',   header: 'Símbolo',     sortKey: 'simbolo',   headerClassName: 'w-16', cell: (m: Moneda) => m.mon_simbolo, cellClassName: 'text-gray-500' },
+  { key: 'tasa_comp', header: 'Tasa compra', sortKey: 'tasa_comp', headerClassName: 'text-right hidden md:table-cell', cell: (m: Moneda) => m.mon_tasa_comp?.toLocaleString(), cellClassName: 'text-right text-gray-600 hidden md:table-cell' },
+  { key: 'tasa_vta',  header: 'Tasa venta',  sortKey: 'tasa_vta',  headerClassName: 'text-right hidden md:table-cell', cell: (m: Moneda) => m.mon_tasa_vta?.toLocaleString(), cellClassName: 'text-right text-gray-600 hidden md:table-cell' },
 ];
 
-function matchesMoneda(m: Moneda, q: string) {
-  const s = `${m.mon_codigo} ${m.mon_desc} ${m.mon_simbolo ?? ''}`.toLowerCase();
-  return s.includes(q);
+function sortMonedas(list: Moneda[], field: string, dir: 'asc' | 'desc'): Moneda[] {
+  if (!field) return list;
+  return [...list].sort((a, b) => {
+    let va: any, vb: any;
+    if (field === 'codigo')         { va = a.mon_codigo;    vb = b.mon_codigo; }
+    else if (field === 'desc')      { va = a.mon_desc;      vb = b.mon_desc; }
+    else if (field === 'simbolo')   { va = a.mon_simbolo;   vb = b.mon_simbolo; }
+    else if (field === 'tasa_comp') { va = a.mon_tasa_comp; vb = b.mon_tasa_comp; }
+    else                            { va = a.mon_tasa_vta;  vb = b.mon_tasa_vta; }
+    if (va == null) return 1; if (vb == null) return -1;
+    const cmp = typeof va === 'string' ? va.localeCompare(vb) : va - vb;
+    return dir === 'desc' ? -cmp : cmp;
+  });
 }
 
 export default function MonedasPage() {
@@ -34,6 +44,8 @@ export default function MonedasPage() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
+  const [sortField, setSortField] = useState('codigo');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
   useEffect(() => {
     const t = setTimeout(() => { setDebouncedSearch(search); setPage(1); }, 400);
@@ -44,16 +56,16 @@ export default function MonedasPage() {
 
   const filtered = useMemo(() => {
     const q = debouncedSearch.trim().toLowerCase();
-    if (!q) return monedasRaw;
-    return monedasRaw.filter((m) => matchesMoneda(m, q));
-  }, [monedasRaw, debouncedSearch]);
+    const list = q
+      ? monedasRaw.filter((m) => `${m.mon_codigo} ${m.mon_desc} ${m.mon_simbolo ?? ''}`.toLowerCase().includes(q))
+      : monedasRaw;
+    return sortMonedas(list, sortField, sortDir);
+  }, [monedasRaw, debouncedSearch, sortField, sortDir]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / limit));
   const safePage = Math.min(page, totalPages);
 
-  useEffect(() => {
-    if (page > totalPages) setPage(totalPages);
-  }, [page, totalPages]);
+  useEffect(() => { if (page > totalPages) setPage(totalPages); }, [page, totalPages]);
 
   const monedas = useMemo(() => {
     const start = (safePage - 1) * limit;
@@ -61,6 +73,7 @@ export default function MonedasPage() {
   }, [filtered, safePage, limit]);
 
   const inv = () => qc.invalidateQueries({ queryKey: ['monedas'] });
+  const handleSortChange = (field: string, dir: 'asc' | 'desc') => { setSortField(field); setSortDir(dir); setPage(1); };
 
   const openNueva  = () => { setForm(empty); setError(''); setModal('nueva'); };
   const openEditar = (m: Moneda) => { setForm({ mon_desc: m.mon_desc, mon_simbolo: m.mon_simbolo ?? '', mon_tasa_comp: m.mon_tasa_comp ?? 0, mon_tasa_vta: m.mon_tasa_vta ?? 0 }); setError(''); setModal(m); };
@@ -101,6 +114,9 @@ export default function MonedasPage() {
           tableClassName="w-full min-w-[560px] text-sm"
           emptyLabel="Sin registros"
           columns={COLUMNS}
+          sortField={sortField}
+          sortDir={sortDir}
+          onSortChange={handleSortChange}
         />
 
         {!isLoading && (
