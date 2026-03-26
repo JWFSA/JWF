@@ -1,39 +1,17 @@
 const pool = require('../../../config/db');
 
-const getAll = async ({ page = 1, limit = 20, search = '', all = false } = {}) => {
+const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
   const params = search ? [`%${search}%`] : [];
   const where = search
     ? `WHERE (a."ART_DESC" ILIKE $1 OR a."ART_DESC_ABREV" ILIKE $1 OR a."ART_CODIGO_FABRICA" ILIKE $1)`
     : '';
-
-  if (all) {
-    const { rows } = await pool.query(
-      `SELECT a."ART_CODIGO" AS art_codigo, a."ART_DESC" AS art_desc,
-              a."ART_DESC_ABREV" AS art_desc_abrev, a."ART_UNID_MED" AS art_unid_med,
-              a."ART_LINEA" AS art_linea, l."LIN_DESC" AS lin_desc,
-              a."ART_MARCA" AS art_marca, m."MARC_DESC" AS marc_desc,
-              a."ART_RUBRO" AS art_rubro, r."RUB_DESC" AS rub_desc,
-              a."ART_EST" AS art_est, a."ART_CODIGO_FABRICA" AS art_codigo_fabrica
-       FROM stk_articulo a
-       LEFT JOIN stk_linea l ON l."LIN_CODIGO" = a."ART_LINEA"
-       LEFT JOIN stk_marca m ON m."MARC_CODIGO" = a."ART_MARCA"
-       LEFT JOIN stk_rubro r ON r."RUB_CODIGO" = a."ART_RUBRO"
-       ${where}
-       ORDER BY a."ART_DESC"`,
-      params
-    );
-    return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
-  }
-
-  const countRes = await pool.query(
-    `SELECT COUNT(*) FROM stk_articulo a ${where}`,
-    params
-  );
-  const total = parseInt(countRes.rows[0].count);
-  const offset = (page - 1) * limit;
-
-  const { rows } = await pool.query(
-    `SELECT a."ART_CODIGO" AS art_codigo, a."ART_DESC" AS art_desc,
+  const allowedSort = {
+    cod: 'a."ART_CODIGO"', desc: 'a."ART_DESC"', abrev: 'a."ART_DESC_ABREV"',
+    linea: 'l."LIN_DESC"', marca: 'm."MARC_DESC"', rubro: 'r."RUB_DESC"', estado: 'a."ART_EST"',
+  };
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = allowedSort[sortField] ? `${allowedSort[sortField]} ${dir}` : 'a."ART_DESC" ASC';
+  const select = `SELECT a."ART_CODIGO" AS art_codigo, a."ART_DESC" AS art_desc,
             a."ART_DESC_ABREV" AS art_desc_abrev, a."ART_UNID_MED" AS art_unid_med,
             a."ART_LINEA" AS art_linea, l."LIN_DESC" AS lin_desc,
             a."ART_MARCA" AS art_marca, m."MARC_DESC" AS marc_desc,
@@ -43,12 +21,20 @@ const getAll = async ({ page = 1, limit = 20, search = '', all = false } = {}) =
      LEFT JOIN stk_linea l ON l."LIN_CODIGO" = a."ART_LINEA"
      LEFT JOIN stk_marca m ON m."MARC_CODIGO" = a."ART_MARCA"
      LEFT JOIN stk_rubro r ON r."RUB_CODIGO" = a."ART_RUBRO"
-     ${where}
-     ORDER BY a."ART_DESC"
-     LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
+     ${where} ORDER BY ${orderBy}`;
+
+  if (all) {
+    const { rows } = await pool.query(select, params);
+    return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
+  }
+
+  const countRes = await pool.query(`SELECT COUNT(*) FROM stk_articulo a ${where}`, params);
+  const total = parseInt(countRes.rows[0].count);
+  const offset = (page - 1) * limit;
+  const { rows } = await pool.query(
+    `${select} LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
     [...params, limit, offset]
   );
-
   return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
 };
 

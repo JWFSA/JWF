@@ -2,13 +2,16 @@ const pool = require('../../../config/db');
 
 // ─── BANCOS ───────────────────────────────────────────────────────────────────
 
-const getBancos = async ({ page = 1, limit = 20, search = '', all = false } = {}) => {
+const getBancos = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
   const params = search ? [`%${search}%`] : [];
   const where  = search ? `WHERE "BCO_DESC" ILIKE $1` : '';
   const countRes = await pool.query(`SELECT COUNT(*) FROM fin_banco ${where}`, params);
   const total = parseInt(countRes.rows[0].count);
+  const allowedSort = { cod: '"BCO_CODIGO"', desc: '"BCO_DESC"' };
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = allowedSort[sortField] ? `${allowedSort[sortField]} ${dir}` : '"BCO_DESC" ASC';
   const select = `SELECT "BCO_CODIGO" AS bco_codigo, "BCO_DESC" AS bco_desc, "BCO_PAIS" AS bco_pais
-    FROM fin_banco ${where} ORDER BY "BCO_DESC"`;
+    FROM fin_banco ${where} ORDER BY ${orderBy}`;
   if (all) {
     const { rows } = await pool.query(select, params);
     return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
@@ -52,14 +55,17 @@ const deleteBanco = async (codigo) => {
 
 // ─── FORMAS DE PAGO ───────────────────────────────────────────────────────────
 
-const getFormasPago = async ({ page = 1, limit = 20, search = '', all = false } = {}) => {
+const getFormasPago = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
   const params = search ? [`%${search}%`] : [];
   const where  = search ? `WHERE "FPAG_DESC" ILIKE $1` : '';
   const countRes = await pool.query(`SELECT COUNT(*) FROM fin_forma_pago ${where}`, params);
   const total = parseInt(countRes.rows[0].count);
+  const allowedSort = { cod: '"FPAG_CODIGO"', desc: '"FPAG_DESC"', dias: '"FPAG_DIA_PAGO"' };
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = allowedSort[sortField] ? `${allowedSort[sortField]} ${dir}` : '"FPAG_DESC" ASC';
   const select = `SELECT "FPAG_CODIGO" AS fpag_codigo, "FPAG_DESC" AS fpag_desc,
     "FPAG_DIA_PAGO" AS fpag_dia_pago, "FPAG_IND_FACT" AS fpag_ind_fact
-    FROM fin_forma_pago ${where} ORDER BY "FPAG_DESC"`;
+    FROM fin_forma_pago ${where} ORDER BY ${orderBy}`;
   if (all) {
     const { rows } = await pool.query(select, params);
     return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
@@ -107,13 +113,16 @@ const deleteFormaPago = async (codigo) => {
 
 // ─── RAMOS ────────────────────────────────────────────────────────────────────
 
-const getRamos = async ({ page = 1, limit = 20, search = '', all = false } = {}) => {
+const getRamos = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
   const params = search ? [`%${search}%`] : [];
   const where  = search ? `WHERE "RAMO_DESC" ILIKE $1` : '';
   const countRes = await pool.query(`SELECT COUNT(*) FROM fin_ramo ${where}`, params);
   const total = parseInt(countRes.rows[0].count);
+  const allowedSort = { cod: '"RAMO_CODIGO"', desc: '"RAMO_DESC"' };
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = allowedSort[sortField] ? `${allowedSort[sortField]} ${dir}` : '"RAMO_DESC" ASC';
   const select = `SELECT "RAMO_CODIGO" AS ramo_codigo, "RAMO_DESC" AS ramo_desc, "RAMO_PADRE" AS ramo_padre
-    FROM fin_ramo ${where} ORDER BY "RAMO_DESC"`;
+    FROM fin_ramo ${where} ORDER BY ${orderBy}`;
   if (all) {
     const { rows } = await pool.query(select, params);
     return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
@@ -158,13 +167,16 @@ const deleteRamo = async (codigo) => {
 
 // ─── TIPOS DE PROVEEDOR ───────────────────────────────────────────────────────
 
-const getTiposProveedor = async ({ page = 1, limit = 20, search = '', all = false } = {}) => {
+const getTiposProveedor = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
   const params = search ? [`%${search}%`] : [];
   const where  = search ? `WHERE "TIPR_DESC" ILIKE $1` : '';
   const countRes = await pool.query(`SELECT COUNT(*) FROM fin_tipo_proveedor ${where}`, params);
   const total = parseInt(countRes.rows[0].count);
+  const allowedSort = { cod: '"TIPR_CODIGO"', desc: '"TIPR_DESC"' };
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = allowedSort[sortField] ? `${allowedSort[sortField]} ${dir}` : '"TIPR_DESC" ASC';
   const select = `SELECT "TIPR_CODIGO" AS tipr_codigo, "TIPR_DESC" AS tipr_desc
-    FROM fin_tipo_proveedor ${where} ORDER BY "TIPR_DESC"`;
+    FROM fin_tipo_proveedor ${where} ORDER BY ${orderBy}`;
   if (all) {
     const { rows } = await pool.query(select, params);
     return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };

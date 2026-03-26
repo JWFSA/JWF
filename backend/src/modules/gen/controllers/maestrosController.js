@@ -23,7 +23,7 @@ const updatePais      = async (req, res, next) => { try { res.json(await s.updat
 const deletePais      = async (req, res, next) => { try { await s.deletePais(req.params.id); res.status(204).end(); } catch (e) { next(e); } };
 
 // ─── CIUDADES ─────────────────────────────────────────────────────────────────
-const getCiudades     = async (req, res, next) => { try { res.json(await s.getCiudades({ all: req.query.all === 'true', page: parseInt(req.query.page) || 1, limit: parseInt(req.query.limit) || 20, search: req.query.search || '' })); } catch (e) { next(e); } };
+const getCiudades     = async (req, res, next) => { try { res.json(await s.getCiudades({ all: req.query.all === 'true', page: parseInt(req.query.page) || 1, limit: parseInt(req.query.limit) || 20, search: req.query.search || '', sortField: req.query.sortField || '', sortDir: req.query.sortDir || 'asc' })); } catch (e) { next(e); } };
 const createCiudad    = async (req, res, next) => { try { if (!req.body.ciudad_desc) return res.status(400).json({ message: 'La descripción es requerida' }); res.status(201).json(await s.createCiudad(req.body)); } catch (e) { next(e); } };
 const updateCiudad    = async (req, res, next) => { try { res.json(await s.updateCiudad(req.params.id, req.body)); } catch (e) { next(e); } };
 const deleteCiudad    = async (req, res, next) => { try { await s.deleteCiudad(req.params.id); res.status(204).end(); } catch (e) { next(e); } };
@@ -65,7 +65,7 @@ const updatePrograma  = async (req, res, next) => { try { res.json(await s.updat
 const deletePrograma  = async (req, res, next) => { try { await s.deletePrograma(req.params.id); res.status(204).end(); } catch (e) { next(e); } };
 
 // ─── IMPUESTOS ────────────────────────────────────────────────────────────────
-const getImpuestos    = async (req, res, next) => { try { res.json(await s.getImpuestos({ all: req.query.all === 'true', page: parseInt(req.query.page) || 1, limit: parseInt(req.query.limit) || 20, search: req.query.search || '' })); } catch (e) { next(e); } };
+const getImpuestos    = async (req, res, next) => { try { res.json(await s.getImpuestos({ all: req.query.all === 'true', page: parseInt(req.query.page) || 1, limit: parseInt(req.query.limit) || 20, search: req.query.search || '', sortField: req.query.sortField || '', sortDir: req.query.sortDir || 'asc' })); } catch (e) { next(e); } };
 const createImpuesto  = async (req, res, next) => { try { if (!req.body.impu_desc) return res.status(400).json({ message: 'La descripción es requerida' }); res.status(201).json(await s.createImpuesto(req.body)); } catch (e) { next(e); } };
 const updateImpuesto  = async (req, res, next) => { try { res.json(await s.updateImpuesto(req.params.id, req.body)); } catch (e) { next(e); } };
 const deleteImpuesto  = async (req, res, next) => { try { await s.deleteImpuesto(req.params.id); res.status(204).end(); } catch (e) { next(e); } };

@@ -12,12 +12,19 @@ import TablePagination from '@/components/ui/TablePagination';
 
 const emptyForm = { ramo_desc: '' };
 
+const COLUMNS = [
+  { key: 'cod',  header: 'Cód.',        sortKey: 'cod',  headerClassName: 'w-16', cell: (r: Ramo) => r.ramo_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
+  { key: 'desc', header: 'Descripción', sortKey: 'desc',                          cell: (r: Ramo) => r.ramo_desc,   cellClassName: 'font-medium text-gray-800' },
+];
+
 export default function RamosPage() {
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
+  const [sortField, setSortField] = useState('');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [modal, setModal] = useState(false);
   const [editing, setEditing] = useState<Ramo | null>(null);
   const [form, setForm] = useState(emptyForm);
@@ -29,12 +36,13 @@ export default function RamosPage() {
   }, [search]);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['ramos', { page, limit, search: debouncedSearch }],
-    queryFn: () => getRamos({ page, limit, search: debouncedSearch }),
+    queryKey: ['ramos', { page, limit, search: debouncedSearch, sortField, sortDir }],
+    queryFn: () => getRamos({ page, limit, search: debouncedSearch, sortField, sortDir }),
   });
 
   const ramos      = data?.data ?? [];
   const pagination = data?.pagination;
+  const handleSortChange = (field: string, dir: 'asc' | 'desc') => { setSortField(field); setSortDir(dir); setPage(1); };
   const inv = () => qc.invalidateQueries({ queryKey: ['ramos'] });
 
   const createMut = useMutation({ mutationFn: createRamo, onSuccess: () => { inv(); closeModal(); }, onError: (e: any) => setError(e?.response?.data?.message ?? 'Error') });
@@ -68,10 +76,8 @@ export default function RamosPage() {
           onEdit={openEdit} onDelete={(r) => deleteMut.mutate(r.ramo_codigo)}
           deleteConfirmMessage="¿Eliminar este ramo?"
           tableClassName="w-full text-sm"
-          columns={[
-            { key: 'cod',  header: 'Cód.', headerClassName: 'w-16', cell: (r) => r.ramo_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
-            { key: 'desc', header: 'Descripción', cell: (r) => r.ramo_desc, cellClassName: 'font-medium text-gray-800' },
-          ]}
+          sortField={sortField} sortDir={sortDir} onSortChange={handleSortChange}
+          columns={COLUMNS}
         />
         {pagination && <TablePagination total={pagination.total} page={page} limit={limit} totalPages={pagination.totalPages} onPageChange={setPage} onLimitChange={(n) => { setLimit(n); setPage(1); }} />}
       </div>

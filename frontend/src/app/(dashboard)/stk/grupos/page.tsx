@@ -14,12 +14,21 @@ type ModalState = null | 'nuevo' | Grupo;
 
 const empty = { grup_linea: 0, grup_desc: '', grup_coeficiente: 1 };
 
+const COLUMNS = [
+  { key: 'linea',  header: 'Línea',       sortKey: 'linea', headerClassName: 'hidden md:table-cell', cell: (g: Grupo) => g.lin_desc ?? g.grup_linea, cellClassName: 'text-gray-500 hidden md:table-cell' },
+  { key: 'codigo', header: 'Código',      sortKey: 'cod',   headerClassName: 'w-24',                 cell: (g: Grupo) => g.grup_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
+  { key: 'desc',   header: 'Descripción', sortKey: 'desc',                                            cell: (g: Grupo) => g.grup_desc, cellClassName: 'font-medium text-gray-800' },
+  { key: 'coef',   header: 'Coeficiente',                   headerClassName: 'hidden md:table-cell text-right', cell: (g: Grupo) => g.grup_coeficiente, cellClassName: 'text-gray-500 hidden md:table-cell text-right' },
+];
+
 export default function GruposPage() {
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
+  const [sortField, setSortField] = useState('');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [lineaFiltro, setLineaFiltro] = useState<number | ''>('');
   const [modal, setModal] = useState<ModalState>(null);
   const [form, setForm] = useState<typeof empty>(empty);
@@ -37,14 +46,15 @@ export default function GruposPage() {
   const lineas = lineasData?.data ?? [];
 
   const { data, isLoading } = useQuery({
-    queryKey: ['grupos', { page, limit, search: debouncedSearch, linea: lineaFiltro }],
-    queryFn: () => getGrupos({ page, limit, search: debouncedSearch, linea: lineaFiltro || undefined }),
+    queryKey: ['grupos', { page, limit, search: debouncedSearch, linea: lineaFiltro, sortField, sortDir }],
+    queryFn: () => getGrupos({ page, limit, search: debouncedSearch, linea: lineaFiltro || undefined, sortField, sortDir }),
   });
 
   const grupos = data?.data ?? [];
   const pagination = data?.pagination;
 
   const inv = () => qc.invalidateQueries({ queryKey: ['grupos'] });
+  const handleSortChange = (field: string, dir: 'asc' | 'desc') => { setSortField(field); setSortDir(dir); setPage(1); };
 
   const openNuevo  = () => { setForm(empty); setError(''); setModal('nuevo'); };
   const openEditar = (g: Grupo) => { setForm({ grup_linea: g.grup_linea, grup_desc: g.grup_desc, grup_coeficiente: g.grup_coeficiente }); setError(''); setModal(g); };
@@ -113,12 +123,8 @@ export default function GruposPage() {
           onDelete={(g) => deleteMut.mutate({ linea: g.grup_linea, codigo: g.grup_codigo })}
           deleteConfirmMessage="¿Eliminar este grupo?"
           tableClassName="w-full min-w-[500px] text-sm"
-          columns={[
-            { key: 'linea', header: 'Línea', headerClassName: 'hidden md:table-cell', cell: (g) => g.lin_desc ?? g.grup_linea, cellClassName: 'text-gray-500 hidden md:table-cell' },
-            { key: 'codigo', header: 'Código', headerClassName: 'w-24', cell: (g) => g.grup_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
-            { key: 'desc', header: 'Descripción', cell: (g) => g.grup_desc, cellClassName: 'font-medium text-gray-800' },
-            { key: 'coef', header: 'Coeficiente', headerClassName: 'hidden md:table-cell text-right', cell: (g) => g.grup_coeficiente, cellClassName: 'text-gray-500 hidden md:table-cell text-right' },
-          ]}
+          columns={COLUMNS}
+          sortField={sortField} sortDir={sortDir} onSortChange={handleSortChange}
         />
 
         {pagination && (

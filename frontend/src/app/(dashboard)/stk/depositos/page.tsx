@@ -21,6 +21,8 @@ export default function DepositosPage() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
+  const [sortField, setSortField] = useState('');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [modal, setModal] = useState<ModalState>(null);
   const [form, setForm] = useState<{ dep_empr: number; dep_suc: number; dep_desc: string }>(emptyCreate);
   const [error, setError] = useState('');
@@ -31,8 +33,8 @@ export default function DepositosPage() {
   }, [search]);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['depositos', { page, limit, search: debouncedSearch }],
-    queryFn: () => getDepositos({ page, limit, search: debouncedSearch }),
+    queryKey: ['depositos', { page, limit, search: debouncedSearch, sortField, sortDir }],
+    queryFn: () => getDepositos({ page, limit, search: debouncedSearch, sortField, sortDir }),
   });
 
   const { data: empresasData } = useQuery({
@@ -78,7 +80,15 @@ export default function DepositosPage() {
     return m;
   }, [uniqueEmprIds, sucursalesTablaQueries]);
 
+  const columns = useMemo(() => [
+    { key: 'empresa',  header: 'Empresa',      headerClassName: 'hidden md:table-cell', cell: (d: Deposito) => empresaNombrePorId.get(d.dep_empr) ?? d.dep_empr,                    cellClassName: 'text-gray-700 hidden md:table-cell' },
+    { key: 'sucursal', header: 'Sucursal',      headerClassName: 'hidden md:table-cell', cell: (d: Deposito) => sucursalNombrePorEmprSuc.get(`${d.dep_empr}-${d.dep_suc}`) ?? d.dep_suc, cellClassName: 'text-gray-700 hidden md:table-cell' },
+    { key: 'codigo',   header: 'Código',  sortKey: 'cod',  headerClassName: 'w-24',      cell: (d: Deposito) => d.dep_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
+    { key: 'desc',     header: 'Descripción', sortKey: 'desc',                           cell: (d: Deposito) => d.dep_desc,   cellClassName: 'font-medium text-gray-800' },
+  ], [empresaNombrePorId, sucursalNombrePorEmprSuc]);
+
   const inv = () => qc.invalidateQueries({ queryKey: ['depositos'] });
+  const handleSortChange = (field: string, dir: 'asc' | 'desc') => { setSortField(field); setSortDir(dir); setPage(1); };
 
   const openNuevo  = () => { setForm(emptyCreate); setError(''); setModal('nuevo'); };
   const openEditar = (d: Deposito) => { setForm({ dep_empr: d.dep_empr, dep_suc: d.dep_suc, dep_desc: d.dep_desc }); setError(''); setModal(d); };
@@ -139,12 +149,8 @@ export default function DepositosPage() {
           onDelete={(d) => deleteMut.mutate({ empr: d.dep_empr, suc: d.dep_suc, codigo: d.dep_codigo })}
           deleteConfirmMessage="¿Eliminar este depósito?"
           tableClassName="w-full min-w-[400px] text-sm"
-          columns={[
-            { key: 'empresa', header: 'Empresa', headerClassName: 'hidden md:table-cell', cell: (d) => empresaNombrePorId.get(d.dep_empr) ?? d.dep_empr, cellClassName: 'text-gray-700 hidden md:table-cell' },
-            { key: 'sucursal', header: 'Sucursal', headerClassName: 'hidden md:table-cell', cell: (d) => sucursalNombrePorEmprSuc.get(`${d.dep_empr}-${d.dep_suc}`) ?? d.dep_suc, cellClassName: 'text-gray-700 hidden md:table-cell' },
-            { key: 'codigo', header: 'Código', headerClassName: 'w-24', cell: (d) => d.dep_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
-            { key: 'desc', header: 'Descripción', cell: (d) => d.dep_desc, cellClassName: 'font-medium text-gray-800' },
-          ]}
+          columns={columns}
+          sortField={sortField} sortDir={sortDir} onSortChange={handleSortChange}
         />
 
         {pagination && (

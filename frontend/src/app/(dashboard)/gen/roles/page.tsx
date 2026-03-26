@@ -3,11 +3,17 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { getRoles, createRol, deleteRol } from '@/services/gen';
+import type { Rol } from '@/types/gen';
 import DataTable from '@/components/ui/DataTable';
 import PrimaryAddButton from '@/components/ui/PrimaryAddButton';
 import SearchField from '@/components/ui/SearchField';
 import TablePagination from '@/components/ui/TablePagination';
 import { useState, useEffect } from 'react';
+
+const COLUMNS = [
+  { key: 'codigo', header: 'Código', sortKey: 'cod', headerClassName: 'w-24', cell: (r: Rol) => r.rol_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
+  { key: 'nombre', header: 'Nombre', sortKey: 'nom', cell: (r: Rol) => r.rol_nombre, cellClassName: 'font-medium text-gray-800' },
+];
 
 export default function RolesPage() {
   const router = useRouter();
@@ -16,6 +22,8 @@ export default function RolesPage() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
+  const [sortField, setSortField] = useState('');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [nombre, setNombre] = useState('');
   const [showForm, setShowForm] = useState(false);
 
@@ -25,12 +33,14 @@ export default function RolesPage() {
   }, [search]);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['roles', { page, limit, search: debouncedSearch }],
-    queryFn: () => getRoles({ page, limit, search: debouncedSearch }),
+    queryKey: ['roles', { page, limit, search: debouncedSearch, sortField, sortDir }],
+    queryFn: () => getRoles({ page, limit, search: debouncedSearch, sortField, sortDir }),
   });
 
   const rows       = data?.data ?? [];
   const pagination = data?.pagination;
+
+  const handleSortChange = (field: string, dir: 'asc' | 'desc') => { setSortField(field); setSortDir(dir); setPage(1); };
 
   const createMutation = useMutation({
     mutationFn: createRol,
@@ -101,10 +111,8 @@ export default function RolesPage() {
           onDelete={(rol) => deleteMutation.mutate(rol.rol_codigo)}
           deleteConfirmMessage="¿Eliminar este rol?"
           tableClassName="w-full text-sm min-w-[400px]"
-          columns={[
-            { key: 'codigo', header: 'Código', headerClassName: 'w-24', cell: (rol) => rol.rol_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
-            { key: 'nombre', header: 'Nombre', cell: (rol) => rol.rol_nombre, cellClassName: 'font-medium text-gray-800' },
-          ]}
+          sortField={sortField} sortDir={sortDir} onSortChange={handleSortChange}
+          columns={COLUMNS}
         />
 
         {pagination && (

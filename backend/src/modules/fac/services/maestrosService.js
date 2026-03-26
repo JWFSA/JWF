@@ -2,12 +2,15 @@ const pool = require('../../../config/db');
 
 // ─── ZONAS ───────────────────────────────────────────────────────────────────
 
-const getZonas = async ({ page = 1, limit = 20, search = '', all = false } = {}) => {
+const getZonas = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
   const params = search ? [`%${search}%`] : [];
   const where  = search ? `WHERE "ZONA_DESC" ILIKE $1` : '';
   const countRes = await pool.query(`SELECT COUNT(*) FROM fac_zona ${where}`, params);
   const total = parseInt(countRes.rows[0].count);
-  const select = `SELECT "ZONA_CODIGO" AS zona_codigo, "ZONA_DESC" AS zona_desc FROM fac_zona ${where} ORDER BY "ZONA_DESC"`;
+  const allowedSort = { cod: '"ZONA_CODIGO"', desc: '"ZONA_DESC"' };
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = allowedSort[sortField] ? `${allowedSort[sortField]} ${dir}` : '"ZONA_DESC" ASC';
+  const select = `SELECT "ZONA_CODIGO" AS zona_codigo, "ZONA_DESC" AS zona_desc FROM fac_zona ${where} ORDER BY ${orderBy}`;
   if (all) {
     const { rows } = await pool.query(select, params);
     return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
@@ -41,14 +44,17 @@ const deleteZona = async (codigo) => {
 
 // ─── CATEGORÍAS ──────────────────────────────────────────────────────────────
 
-const getCategorias = async ({ page = 1, limit = 20, search = '', all = false } = {}) => {
+const getCategorias = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
   const params = search ? [`%${search}%`] : [];
   const where  = search ? `WHERE "FCAT_DESC" ILIKE $1` : '';
   const countRes = await pool.query(`SELECT COUNT(*) FROM fac_categoria ${where}`, params);
   const total = parseInt(countRes.rows[0].count);
+  const allowedSort = { cod: '"FCAT_CODIGO"', desc: '"FCAT_DESC"' };
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = allowedSort[sortField] ? `${allowedSort[sortField]} ${dir}` : '"FCAT_CODIGO" ASC';
   const select = `SELECT "FCAT_CODIGO" AS fcat_codigo, "FCAT_DESC" AS fcat_desc, "FCAT_MON" AS fcat_mon,
     "FCAT_VENT_INI" AS fcat_vent_ini, "FCAT_VENT_FIN" AS fcat_vent_fin, "FCAT_ATRASO" AS fcat_atraso
-    FROM fac_categoria ${where} ORDER BY "FCAT_CODIGO"`;
+    FROM fac_categoria ${where} ORDER BY ${orderBy}`;
   if (all) {
     const { rows } = await pool.query(select, params);
     return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
@@ -113,11 +119,14 @@ const deleteCondicion = async (desc) => {
 
 // ─── VENDEDORES ──────────────────────────────────────────────────────────────
 
-const getVendedores = async ({ page = 1, limit = 20, search = '', all = false } = {}) => {
+const getVendedores = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
   const params = search ? [`%${search}%`] : [];
   const where  = search ? `WHERE (o."OPER_NOMBRE" ILIKE $1 OR o."OPER_APELLIDO" ILIKE $1)` : '';
   const countRes = await pool.query(`SELECT COUNT(*) FROM fac_vendedor v JOIN gen_operador o ON o."OPER_CODIGO" = v."VEND_OPER" ${where}`, params);
   const total = parseInt(countRes.rows[0].count);
+  const allowedSort = { leg: 'v."VEND_LEGAJO"', nom: 'o."OPER_NOMBRE"', ape: 'o."OPER_APELLIDO"', zona: 'z."ZONA_DESC"' };
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = allowedSort[sortField] ? `${allowedSort[sortField]} ${dir}` : 'o."OPER_NOMBRE" ASC, o."OPER_APELLIDO" ASC';
   const select = `SELECT v."VEND_LEGAJO" AS vend_legajo, v."VEND_OPER" AS vend_oper,
     v."VEND_ZONA" AS vend_zona, z."ZONA_DESC" AS zona_desc,
     v."VEND_EMPR" AS vend_empr, e."EMPR_RAZON_SOCIAL" AS empr_razon_social,
@@ -127,7 +136,7 @@ const getVendedores = async ({ page = 1, limit = 20, search = '', all = false } 
     JOIN gen_operador o ON o."OPER_CODIGO" = v."VEND_OPER"
     LEFT JOIN fac_zona z ON z."ZONA_CODIGO" = v."VEND_ZONA"
     LEFT JOIN gen_empresa e ON e."EMPR_CODIGO" = v."VEND_EMPR"
-    ${where} ORDER BY o."OPER_NOMBRE", o."OPER_APELLIDO"`;
+    ${where} ORDER BY ${orderBy}`;
   if (all) {
     const { rows } = await pool.query(select, params);
     return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
@@ -182,15 +191,18 @@ const deleteVendedor = async (legajo) => {
 
 // ─── LISTAS DE PRECIO ────────────────────────────────────────────────────────
 
-const getListasPrecio = async ({ page = 1, limit = 20, search = '', all = false } = {}) => {
+const getListasPrecio = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
   const params = search ? [`%${search}%`] : [];
   const where  = search ? `WHERE "LIPE_DESC" ILIKE $1` : '';
   const countRes = await pool.query(`SELECT COUNT(*) FROM fac_lista_precio ${where}`, params);
   const total = parseInt(countRes.rows[0].count);
+  const allowedSort = { nro: '"LIPE_NRO_LISTA_PRECIO"', desc: '"LIPE_DESC"', estado: '"LIPE_ESTADO"' };
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = allowedSort[sortField] ? `${allowedSort[sortField]} ${dir}` : '"LIPE_NRO_LISTA_PRECIO" ASC';
   const select = `
     SELECT "LIPE_EMPR" AS lipe_empr, "LIPE_NRO_LISTA_PRECIO" AS lipe_nro_lista_precio,
            "LIPE_MON" AS lipe_mon, "LIPE_DESC" AS lipe_desc, "LIPE_ESTADO" AS lipe_estado
-    FROM fac_lista_precio ${where} ORDER BY "LIPE_NRO_LISTA_PRECIO"`;
+    FROM fac_lista_precio ${where} ORDER BY ${orderBy}`;
   if (all) {
     const { rows } = await pool.query(select, params);
     return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };

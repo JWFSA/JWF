@@ -95,12 +95,15 @@ const deletePais = async (codigo) => {
 
 // ─── CIUDADES ────────────────────────────────────────────────────────────────
 
-const getCiudades = async ({ page = 1, limit = 20, search = '', all = false } = {}) => {
+const getCiudades = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
   const params = search ? [`%${search}%`] : [];
   const where  = search ? `WHERE "CIUDAD_DESC" ILIKE $1` : '';
   const countRes = await pool.query(`SELECT COUNT(*) FROM gen_ciudad ${where}`, params);
   const total = parseInt(countRes.rows[0].count);
-  const select = `SELECT "CIUDAD_CODIGO" AS ciudad_codigo, "CIUDAD_DESC" AS ciudad_desc FROM gen_ciudad ${where} ORDER BY "CIUDAD_DESC"`;
+  const allowedSort = { cod: '"CIUDAD_CODIGO"', desc: '"CIUDAD_DESC"' };
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = allowedSort[sortField] ? `${allowedSort[sortField]} ${dir}` : '"CIUDAD_DESC" ASC';
+  const select = `SELECT "CIUDAD_CODIGO" AS ciudad_codigo, "CIUDAD_DESC" AS ciudad_desc FROM gen_ciudad ${where} ORDER BY ${orderBy}`;
   if (all) {
     const { rows } = await pool.query(select, params);
     return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
@@ -134,15 +137,18 @@ const deleteCiudad = async (codigo) => {
 
 // ─── IMPUESTOS ───────────────────────────────────────────────────────────────
 
-const getImpuestos = async ({ page = 1, limit = 20, search = '', all = false } = {}) => {
+const getImpuestos = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
   const params = search ? [`%${search}%`] : [];
   const where  = search ? `WHERE "IMPU_DESC" ILIKE $1` : '';
   const countRes = await pool.query(`SELECT COUNT(*) FROM gen_impuesto ${where}`, params);
   const total = parseInt(countRes.rows[0].count);
+  const allowedSort = { cod: '"IMPU_CODIGO"', desc: '"IMPU_DESC"', porc: '"IMPU_PORCENTAJE"' };
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = allowedSort[sortField] ? `${allowedSort[sortField]} ${dir}` : '"IMPU_CODIGO" ASC';
   const select = `SELECT "IMPU_CODIGO" AS impu_codigo, "IMPU_DESC" AS impu_desc,
     "IMPU_PORCENTAJE" AS impu_porcentaje, "IMPU_INCLUIDO" AS impu_incluido,
     "IMPU_PORC_BASE_IMPONIBLE" AS impu_porc_base_imponible, "IMPU_COD_SET" AS impu_cod_set
-    FROM gen_impuesto ${where} ORDER BY "IMPU_CODIGO"`;
+    FROM gen_impuesto ${where} ORDER BY ${orderBy}`;
   if (all) {
     const { rows } = await pool.query(select, params);
     return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };

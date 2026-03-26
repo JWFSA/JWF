@@ -1,12 +1,18 @@
 const pool = require('../../../config/db');
 
-const getAll = async ({ page = 1, limit = 20, search = '', all = false } = {}) => {
+const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
   const params = search ? [`%${search}%`] : [];
   const where  = search
     ? `WHERE (c."CLI_NOM" ILIKE $1 OR c."CLI_RUC" ILIKE $1 OR c."CLI_TEL" ILIKE $1)`
     : '';
   const countRes = await pool.query(`SELECT COUNT(*) FROM fin_cliente c ${where}`, params);
   const total = parseInt(countRes.rows[0].count);
+  const allowedSort = {
+    cod: 'c."CLI_CODIGO"', nom: 'c."CLI_NOM"', ruc: 'c."CLI_RUC"',
+    tel: 'c."CLI_TEL"', zona: 'z."ZONA_DESC"', categ: 'cat."FCAT_DESC"', estado: 'c."CLI_EST_CLI"',
+  };
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = allowedSort[sortField] ? `${allowedSort[sortField]} ${dir}` : 'c."CLI_NOM" ASC';
   const select = `
     SELECT c."CLI_CODIGO" AS cli_codigo, c."CLI_NOM" AS cli_nom, c."CLI_RUC" AS cli_ruc,
            c."CLI_TEL" AS cli_tel, c."CLI_EMAIL" AS cli_email, c."CLI_EST_CLI" AS cli_est_cli,
@@ -15,7 +21,7 @@ const getAll = async ({ page = 1, limit = 20, search = '', all = false } = {}) =
     FROM fin_cliente c
     LEFT JOIN fac_zona z ON z."ZONA_CODIGO" = c."CLI_ZONA"
     LEFT JOIN fac_categoria cat ON cat."FCAT_CODIGO" = c."CLI_CATEG"
-    ${where} ORDER BY c."CLI_NOM"`;
+    ${where} ORDER BY ${orderBy}`;
   if (all) {
     const { rows } = await pool.query(select, params);
     return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };

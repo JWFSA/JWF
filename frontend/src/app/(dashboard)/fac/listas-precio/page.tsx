@@ -13,12 +13,25 @@ import { useEffect } from 'react';
 
 const emptyForm = { lipe_desc: '', lipe_mon: '', lipe_estado: 'A' as 'A' | 'I' };
 
+const COLUMNS = [
+  { key: 'nro',    header: 'Nro.',        sortKey: 'nro',    headerClassName: 'w-16', cell: (l: ListaPrecio) => l.lipe_nro_lista_precio, cellClassName: 'font-mono text-xs text-gray-500' },
+  { key: 'desc',   header: 'Descripción', sortKey: 'desc',   cell: (l: ListaPrecio) => l.lipe_desc, cellClassName: 'font-medium text-gray-800' },
+  { key: 'estado', header: 'Estado',      sortKey: 'estado',
+    cell: (l: ListaPrecio) => (
+      <span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${l.lipe_estado === 'A' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+        {l.lipe_estado === 'A' ? 'Activa' : 'Inactiva'}
+      </span>
+    ) },
+];
+
 export default function ListasPrecioPage() {
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
+  const [sortField, setSortField] = useState('');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [modal, setModal] = useState(false);
   const [editing, setEditing] = useState<ListaPrecio | null>(null);
   const [form, setForm] = useState(emptyForm);
@@ -30,12 +43,13 @@ export default function ListasPrecioPage() {
   }, [search]);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['listas-precio', { page, limit, search: debouncedSearch }],
-    queryFn: () => getListasPrecio({ page, limit, search: debouncedSearch }),
+    queryKey: ['listas-precio', { page, limit, search: debouncedSearch, sortField, sortDir }],
+    queryFn: () => getListasPrecio({ page, limit, search: debouncedSearch, sortField, sortDir }),
   });
 
   const listas     = data?.data ?? [];
   const pagination = data?.pagination;
+  const handleSortChange = (field: string, dir: 'asc' | 'desc') => { setSortField(field); setSortDir(dir); setPage(1); };
   const inv = () => qc.invalidateQueries({ queryKey: ['listas-precio'] });
 
   const createMut = useMutation({
@@ -100,18 +114,8 @@ export default function ListasPrecioPage() {
           onDelete={(l) => deleteMut.mutate(l.lipe_nro_lista_precio)}
           deleteConfirmMessage="¿Eliminar esta lista de precio?"
           tableClassName="w-full min-w-[400px] text-sm"
-          columns={[
-            { key: 'nro',  header: 'Nro.',  headerClassName: 'w-16', cell: (l) => l.lipe_nro_lista_precio, cellClassName: 'font-mono text-xs text-gray-500' },
-            { key: 'desc', header: 'Descripción', cell: (l) => l.lipe_desc, cellClassName: 'font-medium text-gray-800' },
-            {
-              key: 'estado', header: 'Estado',
-              cell: (l) => (
-                <span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${l.lipe_estado === 'A' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                  {l.lipe_estado === 'A' ? 'Activa' : 'Inactiva'}
-                </span>
-              ),
-            },
-          ]}
+          sortField={sortField} sortDir={sortDir} onSortChange={handleSortChange}
+          columns={COLUMNS}
         />
 
         {pagination && (

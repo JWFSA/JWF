@@ -1,7 +1,7 @@
 const pool = require('../../../config/db');
 const bcrypt = require('bcryptjs');
 
-const getAll = async ({ page = 1, limit = 20, search = '', all = false } = {}) => {
+const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
   const where = search
     ? `WHERE (o."OPER_NOMBRE" ILIKE $1 OR o."OPER_APELLIDO" ILIKE $1 OR o."OPER_LOGIN" ILIKE $1)`
     : '';
@@ -13,6 +13,13 @@ const getAll = async ({ page = 1, limit = 20, search = '', all = false } = {}) =
     countParams
   );
   const total = parseInt(countRows[0].total);
+
+  const allowedSort = {
+    cod: 'o."OPER_CODIGO"', nom: 'o."OPER_NOMBRE"', ape: 'o."OPER_APELLIDO"',
+    login: 'o."OPER_LOGIN"', empr: 'e."EMPR_RAZON_SOCIAL"',
+  };
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = allowedSort[sortField] ? `${allowedSort[sortField]} ${dir}` : 'o."OPER_NOMBRE" ASC, o."OPER_APELLIDO" ASC';
 
   const select = `SELECT o."OPER_CODIGO"       AS oper_codigo,
             o."OPER_NOMBRE"       AS oper_nombre,
@@ -29,7 +36,7 @@ const getAll = async ({ page = 1, limit = 20, search = '', all = false } = {}) =
      LEFT JOIN gen_empresa e ON e."EMPR_CODIGO" = o."OPER_EMPR"
      LEFT JOIN gen_sucursal s ON s."SUC_EMPR" = o."OPER_EMPR" AND s."SUC_CODIGO" = o."OPER_SUC"
      ${where}
-     ORDER BY o."OPER_NOMBRE", o."OPER_APELLIDO"`;
+     ORDER BY ${orderBy}`;
 
   let rows;
   if (all) {

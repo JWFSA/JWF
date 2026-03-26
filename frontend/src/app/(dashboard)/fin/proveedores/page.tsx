@@ -4,10 +4,25 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { getProveedores, deleteProveedor } from '@/services/fin';
+import type { Proveedor } from '@/types/fin';
 import DataTable from '@/components/ui/DataTable';
 import PrimaryAddButton from '@/components/ui/PrimaryAddButton';
 import SearchField from '@/components/ui/SearchField';
 import TablePagination from '@/components/ui/TablePagination';
+
+const COLUMNS = [
+  { key: 'cod',    header: 'Cód.',        sortKey: 'cod',    headerClassName: 'w-20', cell: (p: Proveedor) => p.prov_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
+  { key: 'nom',    header: 'Razón social', sortKey: 'nom',   cell: (p: Proveedor) => p.prov_razon_social, cellClassName: 'font-medium text-gray-800' },
+  { key: 'ruc',    header: 'RUC',         sortKey: 'ruc',    headerClassName: 'hidden sm:table-cell', cell: (p: Proveedor) => p.prov_ruc ?? '—', cellClassName: 'text-gray-500 hidden sm:table-cell' },
+  { key: 'tel',    header: 'Teléfono',    sortKey: 'tel',    headerClassName: 'hidden md:table-cell', cell: (p: Proveedor) => p.prov_tel ?? '—', cellClassName: 'text-gray-500 hidden md:table-cell' },
+  { key: 'tipo',   header: 'Tipo',        sortKey: 'tipo',   headerClassName: 'hidden lg:table-cell', cell: (p: Proveedor) => p.tipr_desc ?? '—', cellClassName: 'text-gray-500 hidden lg:table-cell' },
+  { key: 'estado', header: 'Estado',      sortKey: 'estado',
+    cell: (p: Proveedor) => (
+      <span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${p.prov_est_prov === 'A' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+        {p.prov_est_prov === 'A' ? 'Activo' : 'Inactivo'}
+      </span>
+    ) },
+];
 
 export default function ProveedoresPage() {
   const router = useRouter();
@@ -16,6 +31,8 @@ export default function ProveedoresPage() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
+  const [sortField, setSortField] = useState('');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
   useEffect(() => {
     const t = setTimeout(() => { setDebouncedSearch(search); setPage(1); }, 400);
@@ -23,12 +40,14 @@ export default function ProveedoresPage() {
   }, [search]);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['proveedores', { page, limit, search: debouncedSearch }],
-    queryFn: () => getProveedores({ page, limit, search: debouncedSearch }),
+    queryKey: ['proveedores', { page, limit, search: debouncedSearch, sortField, sortDir }],
+    queryFn: () => getProveedores({ page, limit, search: debouncedSearch, sortField, sortDir }),
   });
 
   const proveedores = data?.data ?? [];
   const pagination  = data?.pagination;
+
+  const handleSortChange = (field: string, dir: 'asc' | 'desc') => { setSortField(field); setSortDir(dir); setPage(1); };
 
   const deleteMut = useMutation({
     mutationFn: deleteProveedor,
@@ -57,21 +76,8 @@ export default function ProveedoresPage() {
           onDelete={(p) => deleteMut.mutate(p.prov_codigo)}
           deleteConfirmMessage="¿Eliminar este proveedor?"
           tableClassName="w-full min-w-[560px] text-sm"
-          columns={[
-            { key: 'cod',    header: 'Cód.', headerClassName: 'w-20', cell: (p) => p.prov_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
-            { key: 'nom',    header: 'Razón social', cell: (p) => p.prov_razon_social, cellClassName: 'font-medium text-gray-800' },
-            { key: 'ruc',    header: 'RUC', headerClassName: 'hidden sm:table-cell', cell: (p) => p.prov_ruc ?? '—', cellClassName: 'text-gray-500 hidden sm:table-cell' },
-            { key: 'tel',    header: 'Teléfono', headerClassName: 'hidden md:table-cell', cell: (p) => p.prov_tel ?? '—', cellClassName: 'text-gray-500 hidden md:table-cell' },
-            { key: 'tipo',   header: 'Tipo', headerClassName: 'hidden lg:table-cell', cell: (p) => p.tipr_desc ?? '—', cellClassName: 'text-gray-500 hidden lg:table-cell' },
-            {
-              key: 'estado', header: 'Estado',
-              cell: (p) => (
-                <span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${p.prov_est_prov === 'A' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                  {p.prov_est_prov === 'A' ? 'Activo' : 'Inactivo'}
-                </span>
-              ),
-            },
-          ]}
+          sortField={sortField} sortDir={sortDir} onSortChange={handleSortChange}
+          columns={COLUMNS}
         />
         {pagination && (
           <TablePagination

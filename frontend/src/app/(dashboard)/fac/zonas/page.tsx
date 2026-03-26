@@ -13,12 +13,19 @@ import TablePagination from '@/components/ui/TablePagination';
 type ModalState = null | 'nueva' | Zona;
 const empty = { zona_desc: '' };
 
+const COLUMNS = [
+  { key: 'codigo', header: 'Código',      sortKey: 'cod',  headerClassName: 'w-24', cell: (z: Zona) => z.zona_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
+  { key: 'desc',   header: 'Descripción', sortKey: 'desc',                          cell: (z: Zona) => z.zona_desc,   cellClassName: 'font-medium text-gray-800' },
+];
+
 export default function ZonasPage() {
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
+  const [sortField, setSortField] = useState('');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [modal, setModal] = useState<ModalState>(null);
   const [form, setForm] = useState(empty);
   const [error, setError] = useState('');
@@ -29,12 +36,13 @@ export default function ZonasPage() {
   }, [search]);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['zonas', { page, limit, search: debouncedSearch }],
-    queryFn: () => getZonas({ page, limit, search: debouncedSearch }),
+    queryKey: ['zonas', { page, limit, search: debouncedSearch, sortField, sortDir }],
+    queryFn: () => getZonas({ page, limit, search: debouncedSearch, sortField, sortDir }),
   });
 
   const zonas = data?.data ?? [];
   const pagination = data?.pagination;
+  const handleSortChange = (field: string, dir: 'asc' | 'desc') => { setSortField(field); setSortDir(dir); setPage(1); };
   const inv = () => qc.invalidateQueries({ queryKey: ['zonas'] });
 
   const openNueva  = () => { setForm(empty); setError(''); setModal('nueva'); };
@@ -65,10 +73,8 @@ export default function ZonasPage() {
         <DataTable isLoading={isLoading} rows={zonas} getRowKey={(z) => z.zona_codigo}
           onEdit={openEditar} onDelete={(z) => deleteMut.mutate(z.zona_codigo)}
           deleteConfirmMessage="¿Eliminar esta zona?"
-          columns={[
-            { key: 'codigo', header: 'Código', headerClassName: 'w-24', cell: (z) => z.zona_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
-            { key: 'desc', header: 'Descripción', cell: (z) => z.zona_desc, cellClassName: 'font-medium text-gray-800' },
-          ]}
+          sortField={sortField} sortDir={sortDir} onSortChange={handleSortChange}
+          columns={COLUMNS}
         />
         {pagination && <TablePagination total={pagination.total} page={page} limit={limit} totalPages={pagination.totalPages} onPageChange={setPage} onLimitChange={(n) => { setLimit(n); setPage(1); }} />}
       </div>

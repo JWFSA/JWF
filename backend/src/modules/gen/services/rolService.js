@@ -1,6 +1,6 @@
 const pool = require('../../../config/db');
 
-const getAll = async ({ page = 1, limit = 20, search = '', all = false } = {}) => {
+const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
   const where = search ? `WHERE "ROL_NOMBRE" ILIKE $1` : '';
   const searchParam = `%${search}%`;
   const countParams = search ? [searchParam] : [];
@@ -11,8 +11,12 @@ const getAll = async ({ page = 1, limit = 20, search = '', all = false } = {}) =
   );
   const total = parseInt(countRows[0].total);
 
+  const allowedSort = { cod: '"ROL_CODIGO"', nom: '"ROL_NOMBRE"' };
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = allowedSort[sortField] ? `${allowedSort[sortField]} ${dir}` : '"ROL_NOMBRE" ASC';
+
   const select = `SELECT "ROL_CODIGO" AS rol_codigo, "ROL_NOMBRE" AS rol_nombre
-     FROM gen_rol ${where} ORDER BY "ROL_NOMBRE"`;
+     FROM gen_rol ${where} ORDER BY ${orderBy}`;
 
   let rows;
   if (all) {

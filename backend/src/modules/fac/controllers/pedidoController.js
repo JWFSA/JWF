@@ -2,12 +2,14 @@ const s = require('../services/pedidoService');
 
 const getAll = async (req, res, next) => {
   try {
-    const { all, page, limit, search } = req.query;
+    const { all, page, limit, search, sortField, sortDir } = req.query;
     res.json(await s.getAll({
       all: all === 'true',
       page: parseInt(page) || 1,
       limit: parseInt(limit) || 20,
       search: search || '',
+      sortField: sortField || '',
+      sortDir: sortDir || 'asc',
     }));
   } catch (e) { next(e); }
 };

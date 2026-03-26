@@ -6,7 +6,9 @@ const getAll = async (req, res, next) => {
     const page   = parseInt(req.query.page)  || 1;
     const limit  = parseInt(req.query.limit) || 20;
     const search = req.query.search || '';
-    res.json(await articuloService.getAll({ page, limit, search, all }));
+    const sortField = req.query.sortField || '';
+    const sortDir   = req.query.sortDir   || 'asc';
+    res.json(await articuloService.getAll({ page, limit, search, all, sortField, sortDir }));
   } catch (err) { next(err); }
 };
 

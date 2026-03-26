@@ -13,12 +13,19 @@ import TablePagination from '@/components/ui/TablePagination';
 type ModalState = null | 'nueva' | Ciudad;
 const empty = { ciudad_desc: '' };
 
+const COLUMNS = [
+  { key: 'codigo', header: 'Código', sortKey: 'cod',  headerClassName: 'w-24', cell: (c: Ciudad) => c.ciudad_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
+  { key: 'desc',   header: 'Ciudad', sortKey: 'desc',                          cell: (c: Ciudad) => c.ciudad_desc,   cellClassName: 'font-medium text-gray-800' },
+];
+
 export default function CiudadesPage() {
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
+  const [sortField, setSortField] = useState('');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [modal, setModal] = useState<ModalState>(null);
   const [form, setForm] = useState(empty);
   const [error, setError] = useState('');
@@ -29,12 +36,13 @@ export default function CiudadesPage() {
   }, [search]);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['ciudades', { page, limit, search: debouncedSearch }],
-    queryFn: () => getCiudades({ page, limit, search: debouncedSearch }),
+    queryKey: ['ciudades', { page, limit, search: debouncedSearch, sortField, sortDir }],
+    queryFn: () => getCiudades({ page, limit, search: debouncedSearch, sortField, sortDir }),
   });
 
   const ciudades = data?.data ?? [];
   const pagination = data?.pagination;
+  const handleSortChange = (field: string, dir: 'asc' | 'desc') => { setSortField(field); setSortDir(dir); setPage(1); };
   const inv = () => qc.invalidateQueries({ queryKey: ['ciudades'] });
 
   const openNueva  = () => { setForm(empty); setError(''); setModal('nueva'); };
@@ -70,10 +78,8 @@ export default function CiudadesPage() {
           onEdit={openEditar}
           onDelete={(c) => deleteMut.mutate(c.ciudad_codigo)}
           deleteConfirmMessage="¿Eliminar esta ciudad?"
-          columns={[
-            { key: 'codigo', header: 'Código', headerClassName: 'w-24', cell: (c) => c.ciudad_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
-            { key: 'desc', header: 'Ciudad', cell: (c) => c.ciudad_desc, cellClassName: 'font-medium text-gray-800' },
-          ]}
+          sortField={sortField} sortDir={sortDir} onSortChange={handleSortChange}
+          columns={COLUMNS}
         />
         {pagination && (
           <TablePagination total={pagination.total} page={page} limit={limit} totalPages={pagination.totalPages}

@@ -8,6 +8,24 @@ import SearchField from '@/components/ui/SearchField';
 import TablePagination from '@/components/ui/TablePagination';
 import DataTable from '@/components/ui/DataTable';
 import { getArticulos, deleteArticulo } from '@/services/stk';
+import type { Articulo } from '@/types/stk';
+
+const COLUMNS = [
+  { key: 'codigo', header: 'Código',      sortKey: 'cod',   headerClassName: 'w-24',                cell: (a: Articulo) => a.art_codigo,        cellClassName: 'font-mono text-xs text-gray-500' },
+  { key: 'desc',   header: 'Descripción', sortKey: 'desc',                                           cell: (a: Articulo) => a.art_desc,          cellClassName: 'font-medium text-gray-800' },
+  { key: 'abrev',  header: 'Abrev.',                        headerClassName: 'hidden md:table-cell', cell: (a: Articulo) => a.art_desc_abrev ?? '—', cellClassName: 'text-gray-500 hidden md:table-cell' },
+  { key: 'um',     header: 'UM',                            headerClassName: 'hidden md:table-cell', cell: (a: Articulo) => a.art_unid_med ?? '—',   cellClassName: 'text-gray-500 hidden md:table-cell' },
+  { key: 'linea',  header: 'Línea',       sortKey: 'linea', headerClassName: 'hidden lg:table-cell', cell: (a: Articulo) => a.lin_desc ?? '—',   cellClassName: 'text-gray-500 hidden lg:table-cell' },
+  { key: 'marca',  header: 'Marca',       sortKey: 'marca', headerClassName: 'hidden lg:table-cell', cell: (a: Articulo) => a.marc_desc ?? '—',  cellClassName: 'text-gray-500 hidden lg:table-cell' },
+  {
+    key: 'estado', header: 'Estado', sortKey: 'estado',
+    cell: (a: Articulo) => (
+      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${a.art_est === 'A' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+        {a.art_est === 'A' ? 'Activo' : 'Inactivo'}
+      </span>
+    ),
+  },
+];
 
 export default function ArticulosPage() {
   const router = useRouter();
@@ -16,6 +34,8 @@ export default function ArticulosPage() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
+  const [sortField, setSortField] = useState('');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
   useEffect(() => {
     const t = setTimeout(() => { setDebouncedSearch(search); setPage(1); }, 400);
@@ -28,12 +48,14 @@ export default function ArticulosPage() {
   });
 
   const { data, isLoading } = useQuery({
-    queryKey: ['articulos', { page, limit, search: debouncedSearch }],
-    queryFn: () => getArticulos({ page, limit, search: debouncedSearch }),
+    queryKey: ['articulos', { page, limit, search: debouncedSearch, sortField, sortDir }],
+    queryFn: () => getArticulos({ page, limit, search: debouncedSearch, sortField, sortDir }),
   });
 
   const articulos  = data?.data ?? [];
   const pagination = data?.pagination;
+
+  const handleSortChange = (field: string, dir: 'asc' | 'desc') => { setSortField(field); setSortDir(dir); setPage(1); };
 
   return (
     <div className="p-4 sm:p-6">
@@ -58,25 +80,8 @@ export default function ArticulosPage() {
           onDelete={(a) => deleteMut.mutate(a.art_codigo)}
           deleteConfirmMessage="¿Eliminar este artículo?"
           tableClassName="w-full min-w-[700px] text-sm"
-          columns={[
-            { key: 'codigo', header: 'Código', headerClassName: 'w-24', cell: (a) => a.art_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
-            { key: 'desc', header: 'Descripción', cell: (a) => a.art_desc, cellClassName: 'font-medium text-gray-800' },
-            { key: 'abrev', header: 'Abrev.', headerClassName: 'hidden md:table-cell', cell: (a) => a.art_desc_abrev ?? '—', cellClassName: 'text-gray-500 hidden md:table-cell' },
-            { key: 'um', header: 'UM', headerClassName: 'hidden md:table-cell', cell: (a) => a.art_unid_med ?? '—', cellClassName: 'text-gray-500 hidden md:table-cell' },
-            { key: 'linea', header: 'Línea', headerClassName: 'hidden lg:table-cell', cell: (a) => a.lin_desc ?? '—', cellClassName: 'text-gray-500 hidden lg:table-cell' },
-            { key: 'marca', header: 'Marca', headerClassName: 'hidden lg:table-cell', cell: (a) => a.marc_desc ?? '—', cellClassName: 'text-gray-500 hidden lg:table-cell' },
-            {
-              key: 'estado',
-              header: 'Estado',
-              cell: (a) => (
-                <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                  a.art_est === 'A' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
-                }`}>
-                  {a.art_est === 'A' ? 'Activo' : 'Inactivo'}
-                </span>
-              ),
-            },
-          ]}
+          columns={COLUMNS}
+          sortField={sortField} sortDir={sortDir} onSortChange={handleSortChange}
         />
 
         {pagination && (

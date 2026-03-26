@@ -1,12 +1,19 @@
 const pool = require('../../../config/db');
 
-const getAll = async ({ page = 1, limit = 20, search = '', all = false } = {}) => {
+const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
   const params = search ? [`%${search}%`] : [];
   const where  = search
     ? `WHERE (p."PROV_RAZON_SOCIAL" ILIKE $1 OR p."PROV_RUC" ILIKE $1 OR p."PROV_TEL" ILIKE $1)`
     : '';
   const countRes = await pool.query(`SELECT COUNT(*) FROM fin_proveedor p ${where}`, params);
   const total = parseInt(countRes.rows[0].count);
+  const allowedSort = {
+    cod: 'p."PROV_CODIGO"', nom: 'p."PROV_RAZON_SOCIAL"',
+    ruc: 'p."PROV_RUC"', tel: 'p."PROV_TEL"',
+    tipo: 't."TIPR_DESC"', estado: 'p."PROV_EST_PROV"',
+  };
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = allowedSort[sortField] ? `${allowedSort[sortField]} ${dir}` : 'p."PROV_RAZON_SOCIAL" ASC';
   const select = `
     SELECT p."PROV_CODIGO" AS prov_codigo, p."PROV_RAZON_SOCIAL" AS prov_razon_social,
            p."PROV_RUC" AS prov_ruc, p."PROV_TEL" AS prov_tel,
@@ -14,7 +21,7 @@ const getAll = async ({ page = 1, limit = 20, search = '', all = false } = {}) =
            p."PROV_TIPO" AS prov_tipo, t."TIPR_DESC" AS tipr_desc
     FROM fin_proveedor p
     LEFT JOIN fin_tipo_proveedor t ON t."TIPR_CODIGO" = p."PROV_TIPO"
-    ${where} ORDER BY p."PROV_RAZON_SOCIAL"`;
+    ${where} ORDER BY ${orderBy}`;
   if (all) {
     const { rows } = await pool.query(select, params);
     return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };

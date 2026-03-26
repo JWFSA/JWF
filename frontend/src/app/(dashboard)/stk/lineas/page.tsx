@@ -12,12 +12,19 @@ import TablePagination from '@/components/ui/TablePagination';
 
 const empty = { lin_desc: '' };
 
+const COLUMNS = [
+  { key: 'codigo', header: 'Código', sortKey: 'cod', headerClassName: 'w-24', cell: (l: Linea) => l.lin_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
+  { key: 'desc',   header: 'Descripción', sortKey: 'desc', cell: (l: Linea) => l.lin_desc, cellClassName: 'font-medium text-gray-800' },
+];
+
 export default function LineasPage() {
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
+  const [sortField, setSortField] = useState('');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [modal, setModal] = useState<null | 'nueva' | Linea>(null);
   const [form, setForm] = useState(empty);
   const [error, setError] = useState('');
@@ -28,14 +35,15 @@ export default function LineasPage() {
   }, [search]);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['lineas', { page, limit, search: debouncedSearch }],
-    queryFn: () => getLineas({ page, limit, search: debouncedSearch }),
+    queryKey: ['lineas', { page, limit, search: debouncedSearch, sortField, sortDir }],
+    queryFn: () => getLineas({ page, limit, search: debouncedSearch, sortField, sortDir }),
   });
 
   const lineas = data?.data ?? [];
   const pagination = data?.pagination;
 
   const inv = () => qc.invalidateQueries({ queryKey: ['lineas'] });
+  const handleSortChange = (field: string, dir: 'asc' | 'desc') => { setSortField(field); setSortDir(dir); setPage(1); };
 
   const openNueva  = () => { setForm(empty); setError(''); setModal('nueva'); };
   const openEditar = (l: Linea) => { setForm({ lin_desc: l.lin_desc }); setError(''); setModal(l); };
@@ -73,10 +81,8 @@ export default function LineasPage() {
           onEdit={openEditar}
           onDelete={(l) => deleteMut.mutate(l.lin_codigo)}
           deleteConfirmMessage="¿Eliminar esta línea?"
-          columns={[
-            { key: 'codigo', header: 'Código', headerClassName: 'w-24', cell: (l) => l.lin_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
-            { key: 'desc', header: 'Descripción', cell: (l) => l.lin_desc, cellClassName: 'font-medium text-gray-800' },
-          ]}
+          columns={COLUMNS}
+          sortField={sortField} sortDir={sortDir} onSortChange={handleSortChange}
         />
 
         {pagination && (

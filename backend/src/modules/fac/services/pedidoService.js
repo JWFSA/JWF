@@ -2,7 +2,7 @@ const pool = require('../../../config/db');
 
 // ─── PEDIDOS ─────────────────────────────────────────────────────────────────
 
-const getAll = async ({ page = 1, limit = 20, search = '', all = false } = {}) => {
+const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
   const params = search ? [`%${search}%`] : [];
   const where  = search
     ? `WHERE (c."CLI_NOM" ILIKE $1 OR CAST(p."PED_NRO" AS TEXT) ILIKE $1 OR p."PED_PRODUCTO" ILIKE $1)`
@@ -12,6 +12,12 @@ const getAll = async ({ page = 1, limit = 20, search = '', all = false } = {}) =
     params
   );
   const total = parseInt(countRes.rows[0].count);
+  const allowedSort = {
+    clave: 'p."PED_CLAVE"', nro: 'p."PED_NRO"', fecha: 'p."PED_FECHA"',
+    cliente: 'c."CLI_NOM"', estado: 'p."PED_ESTADO"', total: 'p."PED_IMP_TOTAL_MON"',
+  };
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = allowedSort[sortField] ? `${allowedSort[sortField]} ${dir}` : 'p."PED_CLAVE" DESC';
   const select = `
     SELECT p."PED_CLAVE" AS ped_clave, p."PED_NRO" AS ped_nro, p."PED_FECHA" AS ped_fecha,
            p."PED_ESTADO" AS ped_estado, p."PED_IMP_TOTAL_MON" AS ped_imp_total_mon,
@@ -24,7 +30,7 @@ const getAll = async ({ page = 1, limit = 20, search = '', all = false } = {}) =
     LEFT JOIN fin_cliente c ON c."CLI_CODIGO" = p."PED_CLI"
     LEFT JOIN fac_vendedor v ON v."VEND_LEGAJO" = p."PED_VENDEDOR"
     LEFT JOIN gen_operador o ON o."OPER_CODIGO" = v."VEND_OPER"
-    ${where} ORDER BY p."PED_CLAVE" DESC`;
+    ${where} ORDER BY ${orderBy}`;
   if (all) {
     const { rows } = await pool.query(select, params);
     return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };

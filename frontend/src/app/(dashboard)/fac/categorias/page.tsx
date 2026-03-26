@@ -13,12 +13,22 @@ import TablePagination from '@/components/ui/TablePagination';
 type ModalState = null | 'nueva' | Categoria;
 const empty = { fcat_desc: '', fcat_vent_ini: 0, fcat_vent_fin: 0, fcat_atraso: 0 };
 
+const COLUMNS = [
+  { key: 'codigo',  header: 'Cód.',        sortKey: 'cod',  headerClassName: 'w-16', cell: (c: Categoria) => c.fcat_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
+  { key: 'desc',    header: 'Descripción', sortKey: 'desc', cell: (c: Categoria) => c.fcat_desc, cellClassName: 'font-medium text-gray-800' },
+  { key: 'ini',     header: 'Venta mín.',  headerClassName: 'hidden md:table-cell text-right', cell: (c: Categoria) => c.fcat_vent_ini?.toLocaleString() ?? '—', cellClassName: 'hidden md:table-cell text-right text-gray-500' },
+  { key: 'fin',     header: 'Venta máx.',  headerClassName: 'hidden md:table-cell text-right', cell: (c: Categoria) => c.fcat_vent_fin?.toLocaleString() ?? '—', cellClassName: 'hidden md:table-cell text-right text-gray-500' },
+  { key: 'atraso',  header: 'Días atraso', headerClassName: 'hidden lg:table-cell text-right', cell: (c: Categoria) => c.fcat_atraso, cellClassName: 'hidden lg:table-cell text-right text-gray-500' },
+];
+
 export default function CategoriasPage() {
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
+  const [sortField, setSortField] = useState('');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [modal, setModal] = useState<ModalState>(null);
   const [form, setForm] = useState<typeof empty>(empty);
   const [error, setError] = useState('');
@@ -29,12 +39,13 @@ export default function CategoriasPage() {
   }, [search]);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['categorias', { page, limit, search: debouncedSearch }],
-    queryFn: () => getCategorias({ page, limit, search: debouncedSearch }),
+    queryKey: ['categorias', { page, limit, search: debouncedSearch, sortField, sortDir }],
+    queryFn: () => getCategorias({ page, limit, search: debouncedSearch, sortField, sortDir }),
   });
 
   const categorias = data?.data ?? [];
   const pagination = data?.pagination;
+  const handleSortChange = (field: string, dir: 'asc' | 'desc') => { setSortField(field); setSortDir(dir); setPage(1); };
   const inv = () => qc.invalidateQueries({ queryKey: ['categorias'] });
 
   const openNueva  = () => { setForm(empty); setError(''); setModal('nueva'); };
@@ -68,13 +79,8 @@ export default function CategoriasPage() {
           onEdit={openEditar} onDelete={(c) => deleteMut.mutate(c.fcat_codigo)}
           deleteConfirmMessage="¿Eliminar esta categoría?"
           tableClassName="w-full min-w-[500px] text-sm"
-          columns={[
-            { key: 'codigo', header: 'Cód.', headerClassName: 'w-16', cell: (c) => c.fcat_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
-            { key: 'desc', header: 'Descripción', cell: (c) => c.fcat_desc, cellClassName: 'font-medium text-gray-800' },
-            { key: 'ini', header: 'Venta mín.', headerClassName: 'hidden md:table-cell text-right', cell: (c) => c.fcat_vent_ini?.toLocaleString() ?? '—', cellClassName: 'hidden md:table-cell text-right text-gray-500' },
-            { key: 'fin', header: 'Venta máx.', headerClassName: 'hidden md:table-cell text-right', cell: (c) => c.fcat_vent_fin?.toLocaleString() ?? '—', cellClassName: 'hidden md:table-cell text-right text-gray-500' },
-            { key: 'atraso', header: 'Días atraso', headerClassName: 'hidden lg:table-cell text-right', cell: (c) => c.fcat_atraso, cellClassName: 'hidden lg:table-cell text-right text-gray-500' },
-          ]}
+          sortField={sortField} sortDir={sortDir} onSortChange={handleSortChange}
+          columns={COLUMNS}
         />
         {pagination && <TablePagination total={pagination.total} page={page} limit={limit} totalPages={pagination.totalPages} onPageChange={setPage} onLimitChange={(n) => { setLimit(n); setPage(1); }} />}
       </div>

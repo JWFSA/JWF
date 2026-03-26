@@ -1,6 +1,6 @@
 const pool = require('../../../config/db');
 
-const getAll = async ({ page = 1, limit = 20, search = '', all = false } = {}) => {
+const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
   const where = search
     ? `WHERE ("EMPR_RAZON_SOCIAL" ILIKE $1 OR "EMPR_RUC" ILIKE $1)`
     : '';
@@ -13,6 +13,10 @@ const getAll = async ({ page = 1, limit = 20, search = '', all = false } = {}) =
   );
   const total = parseInt(countRows[0].total);
 
+  const allowedSort = { cod: '"EMPR_CODIGO"', nom: '"EMPR_RAZON_SOCIAL"', ruc: '"EMPR_RUC"' };
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = allowedSort[sortField] ? `${allowedSort[sortField]} ${dir}` : '"EMPR_RAZON_SOCIAL" ASC';
+
   const select = `SELECT "EMPR_CODIGO"        AS empr_codigo,
             "EMPR_RAZON_SOCIAL"  AS empr_razon_social,
             "EMPR_DIR"           AS empr_dir,
@@ -22,7 +26,7 @@ const getAll = async ({ page = 1, limit = 20, search = '', all = false } = {}) =
             "EMPR_CORREO_ELECT"  AS empr_correo_elect,
             "EMPR_PAGINA_WEB"    AS empr_pagina_web,
             "EMPR_IND_BLOQUEADO" AS empr_ind_bloqueado
-     FROM gen_empresa ${where} ORDER BY "EMPR_RAZON_SOCIAL"`;
+     FROM gen_empresa ${where} ORDER BY ${orderBy}`;
 
   let rows;
   if (all) {

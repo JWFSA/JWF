@@ -13,12 +13,26 @@ import TablePagination from '@/components/ui/TablePagination';
 type ModalState = null | 'nuevo' | Impuesto;
 const empty = { impu_desc: '', impu_porcentaje: 0, impu_incluido: 'N' as 'S' | 'N', impu_porc_base_imponible: 100, impu_cod_set: 1 };
 
+const COLUMNS = [
+  { key: 'codigo',   header: 'Cód.',       sortKey: 'cod',  headerClassName: 'w-16', cell: (i: Impuesto) => i.impu_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
+  { key: 'desc',     header: 'Descripción', sortKey: 'desc', cell: (i: Impuesto) => i.impu_desc, cellClassName: 'font-medium text-gray-800' },
+  { key: 'porc',     header: '%',           sortKey: 'porc', headerClassName: 'w-20 text-right', cell: (i: Impuesto) => `${i.impu_porcentaje}%`, cellClassName: 'text-right text-gray-700' },
+  { key: 'base',     header: '% Base imp.', headerClassName: 'hidden md:table-cell w-32 text-right', cell: (i: Impuesto) => `${i.impu_porc_base_imponible}%`, cellClassName: 'hidden md:table-cell text-right text-gray-500' },
+  { key: 'incluido', header: 'Incluido', headerClassName: 'hidden sm:table-cell text-center',
+    cell: (i: Impuesto) => i.impu_incluido === 'S'
+      ? <span className="inline-flex px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700">Sí</span>
+      : <span className="inline-flex px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-500">No</span>,
+    cellClassName: 'hidden sm:table-cell text-center' },
+];
+
 export default function ImpuestosPage() {
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
+  const [sortField, setSortField] = useState('');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [modal, setModal] = useState<ModalState>(null);
   const [form, setForm] = useState<typeof empty>(empty);
   const [error, setError] = useState('');
@@ -29,12 +43,13 @@ export default function ImpuestosPage() {
   }, [search]);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['impuestos', { page, limit, search: debouncedSearch }],
-    queryFn: () => getImpuestos({ page, limit, search: debouncedSearch }),
+    queryKey: ['impuestos', { page, limit, search: debouncedSearch, sortField, sortDir }],
+    queryFn: () => getImpuestos({ page, limit, search: debouncedSearch, sortField, sortDir }),
   });
 
   const impuestos = data?.data ?? [];
   const pagination = data?.pagination;
+  const handleSortChange = (field: string, dir: 'asc' | 'desc') => { setSortField(field); setSortDir(dir); setPage(1); };
   const inv = () => qc.invalidateQueries({ queryKey: ['impuestos'] });
 
   const openNuevo  = () => { setForm(empty); setError(''); setModal('nuevo'); };
@@ -76,19 +91,8 @@ export default function ImpuestosPage() {
           onDelete={(i) => deleteMut.mutate(i.impu_codigo)}
           deleteConfirmMessage="¿Eliminar este impuesto?"
           tableClassName="w-full min-w-[500px] text-sm"
-          columns={[
-            { key: 'codigo', header: 'Cód.', headerClassName: 'w-16', cell: (i) => i.impu_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
-            { key: 'desc', header: 'Descripción', cell: (i) => i.impu_desc, cellClassName: 'font-medium text-gray-800' },
-            { key: 'porc', header: '%', headerClassName: 'w-20 text-right', cell: (i) => `${i.impu_porcentaje}%`, cellClassName: 'text-right text-gray-700' },
-            { key: 'base', header: '% Base imp.', headerClassName: 'hidden md:table-cell w-32 text-right', cell: (i) => `${i.impu_porc_base_imponible}%`, cellClassName: 'hidden md:table-cell text-right text-gray-500' },
-            {
-              key: 'incluido', header: 'Incluido', headerClassName: 'hidden sm:table-cell text-center',
-              cell: (i) => i.impu_incluido === 'S'
-                ? <span className="inline-flex px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700">Sí</span>
-                : <span className="inline-flex px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-500">No</span>,
-              cellClassName: 'hidden sm:table-cell text-center',
-            },
-          ]}
+          sortField={sortField} sortDir={sortDir} onSortChange={handleSortChange}
+          columns={COLUMNS}
         />
         {pagination && (
           <TablePagination total={pagination.total} page={page} limit={limit} totalPages={pagination.totalPages}

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { getPedidos, deletePedido } from '@/services/fac';
+import type { Pedido } from '@/types/fac';
 import DataTable from '@/components/ui/DataTable';
 import PrimaryAddButton from '@/components/ui/PrimaryAddButton';
 import SearchField from '@/components/ui/SearchField';
@@ -15,6 +16,26 @@ const ESTADO: Record<string, { label: string; cls: string }> = {
   C: { label: 'Cerrado',   cls: 'bg-gray-100 text-gray-500'   },
 };
 
+const fmtTotal = (n?: number) =>
+  n != null ? new Intl.NumberFormat('es-PY').format(Number(n)) : '—';
+
+const COLUMNS = [
+  { key: 'nro',    header: 'Nro.',     sortKey: 'nro',     headerClassName: 'w-28', cell: (p: Pedido) => p.ped_nro, cellClassName: 'font-mono text-xs text-gray-500' },
+  { key: 'fecha',  header: 'Fecha',    sortKey: 'fecha',   headerClassName: 'w-28', cell: (p: Pedido) => p.ped_fecha ? String(p.ped_fecha).substring(0, 10) : '—', cellClassName: 'text-gray-600' },
+  { key: 'cli',    header: 'Cliente',  sortKey: 'cliente', cell: (p: Pedido) => p.cli_nom ?? '—', cellClassName: 'font-medium text-gray-800' },
+  { key: 'vend',   header: 'Vendedor', headerClassName: 'hidden md:table-cell',
+    cell: (p: Pedido) => p.vend_nombre ? `${p.vend_nombre} ${p.vend_apellido ?? ''}`.trim() : '—',
+    cellClassName: 'text-gray-500 hidden md:table-cell' },
+  { key: 'total',  header: 'Total',    sortKey: 'total',   headerClassName: 'hidden sm:table-cell text-right',
+    cell: (p: Pedido) => fmtTotal(p.ped_imp_total_mon),
+    cellClassName: 'text-right tabular-nums text-gray-700 hidden sm:table-cell' },
+  { key: 'estado', header: 'Estado',   sortKey: 'estado',
+    cell: (p: Pedido) => {
+      const e = ESTADO[p.ped_estado] ?? { label: p.ped_estado, cls: 'bg-gray-100 text-gray-500' };
+      return <span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${e.cls}`}>{e.label}</span>;
+    } },
+];
+
 export default function PedidosPage() {
   const router = useRouter();
   const qc = useQueryClient();
@@ -22,6 +43,8 @@ export default function PedidosPage() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
+  const [sortField, setSortField] = useState('');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
   useEffect(() => {
     const t = setTimeout(() => { setDebouncedSearch(search); setPage(1); }, 400);
@@ -29,20 +52,19 @@ export default function PedidosPage() {
   }, [search]);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['pedidos', { page, limit, search: debouncedSearch }],
-    queryFn: () => getPedidos({ page, limit, search: debouncedSearch }),
+    queryKey: ['pedidos', { page, limit, search: debouncedSearch, sortField, sortDir }],
+    queryFn: () => getPedidos({ page, limit, search: debouncedSearch, sortField, sortDir }),
   });
 
   const pedidos    = data?.data ?? [];
   const pagination = data?.pagination;
 
+  const handleSortChange = (field: string, dir: 'asc' | 'desc') => { setSortField(field); setSortDir(dir); setPage(1); };
+
   const deleteMut = useMutation({
     mutationFn: deletePedido,
     onSuccess: () => qc.invalidateQueries({ queryKey: ['pedidos'] }),
   });
-
-  const fmtTotal = (n?: number) =>
-    n != null ? new Intl.NumberFormat('es-PY').format(Number(n)) : '—';
 
   return (
     <div className="p-4 sm:p-6">
@@ -67,28 +89,8 @@ export default function PedidosPage() {
           onDelete={(p) => deleteMut.mutate(p.ped_clave)}
           deleteConfirmMessage="¿Eliminar este pedido?"
           tableClassName="w-full min-w-[700px] text-sm"
-          columns={[
-            { key: 'nro',    header: 'Nro.',   headerClassName: 'w-28',       cell: (p) => p.ped_nro,  cellClassName: 'font-mono text-xs text-gray-500' },
-            { key: 'fecha',  header: 'Fecha',  headerClassName: 'w-28',       cell: (p) => p.ped_fecha ? String(p.ped_fecha).substring(0, 10) : '—', cellClassName: 'text-gray-600' },
-            { key: 'cli',    header: 'Cliente',                                cell: (p) => p.cli_nom ?? '—', cellClassName: 'font-medium text-gray-800' },
-            {
-              key: 'vend', header: 'Vendedor', headerClassName: 'hidden md:table-cell',
-              cell: (p) => p.vend_nombre ? `${p.vend_nombre} ${p.vend_apellido ?? ''}`.trim() : '—',
-              cellClassName: 'text-gray-500 hidden md:table-cell',
-            },
-            {
-              key: 'total', header: 'Total', headerClassName: 'hidden sm:table-cell text-right',
-              cell: (p) => fmtTotal(p.ped_imp_total_mon),
-              cellClassName: 'text-right tabular-nums text-gray-700 hidden sm:table-cell',
-            },
-            {
-              key: 'estado', header: 'Estado',
-              cell: (p) => {
-                const e = ESTADO[p.ped_estado] ?? { label: p.ped_estado, cls: 'bg-gray-100 text-gray-500' };
-                return <span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${e.cls}`}>{e.label}</span>;
-              },
-            },
-          ]}
+          sortField={sortField} sortDir={sortDir} onSortChange={handleSortChange}
+          columns={COLUMNS}
         />
 
         {pagination && (

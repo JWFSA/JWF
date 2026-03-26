@@ -12,12 +12,19 @@ import TablePagination from '@/components/ui/TablePagination';
 
 const emptyForm = { bco_desc: '' };
 
+const COLUMNS = [
+  { key: 'cod',  header: 'Cód.',        sortKey: 'cod',  headerClassName: 'w-16', cell: (b: Banco) => b.bco_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
+  { key: 'desc', header: 'Descripción', sortKey: 'desc',                          cell: (b: Banco) => b.bco_desc,   cellClassName: 'font-medium text-gray-800' },
+];
+
 export default function BancosPage() {
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
+  const [sortField, setSortField] = useState('');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [modal, setModal] = useState(false);
   const [editing, setEditing] = useState<Banco | null>(null);
   const [form, setForm] = useState(emptyForm);
@@ -29,12 +36,13 @@ export default function BancosPage() {
   }, [search]);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['bancos', { page, limit, search: debouncedSearch }],
-    queryFn: () => getBancos({ page, limit, search: debouncedSearch }),
+    queryKey: ['bancos', { page, limit, search: debouncedSearch, sortField, sortDir }],
+    queryFn: () => getBancos({ page, limit, search: debouncedSearch, sortField, sortDir }),
   });
 
   const bancos     = data?.data ?? [];
   const pagination = data?.pagination;
+  const handleSortChange = (field: string, dir: 'asc' | 'desc') => { setSortField(field); setSortDir(dir); setPage(1); };
   const inv = () => qc.invalidateQueries({ queryKey: ['bancos'] });
 
   const createMut = useMutation({ mutationFn: createBanco, onSuccess: () => { inv(); closeModal(); }, onError: (e: any) => setError(e?.response?.data?.message ?? 'Error') });
@@ -68,10 +76,8 @@ export default function BancosPage() {
           onEdit={openEdit} onDelete={(b) => deleteMut.mutate(b.bco_codigo)}
           deleteConfirmMessage="¿Eliminar este banco?"
           tableClassName="w-full text-sm"
-          columns={[
-            { key: 'cod',  header: 'Cód.', headerClassName: 'w-16', cell: (b) => b.bco_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
-            { key: 'desc', header: 'Descripción', cell: (b) => b.bco_desc, cellClassName: 'font-medium text-gray-800' },
-          ]}
+          sortField={sortField} sortDir={sortDir} onSortChange={handleSortChange}
+          columns={COLUMNS}
         />
         {pagination && <TablePagination total={pagination.total} page={page} limit={limit} totalPages={pagination.totalPages} onPageChange={setPage} onLimitChange={(n) => { setLimit(n); setPage(1); }} />}
       </div>

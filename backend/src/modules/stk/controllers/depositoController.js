@@ -2,7 +2,7 @@ const s = require('../services/depositoService');
 
 const getAll = async (req, res, next) => {
   try {
-    res.json(await s.getAll({ all: req.query.all === 'true', page: parseInt(req.query.page) || 1, limit: parseInt(req.query.limit) || 20, search: req.query.search || '' }));
+    res.json(await s.getAll({ all: req.query.all === 'true', page: parseInt(req.query.page) || 1, limit: parseInt(req.query.limit) || 20, search: req.query.search || '', sortField: req.query.sortField || '', sortDir: req.query.sortDir || 'asc' }));
   } catch (e) { next(e); }
 };
 

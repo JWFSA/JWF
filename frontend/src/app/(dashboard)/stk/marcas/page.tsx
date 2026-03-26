@@ -12,12 +12,19 @@ import SearchField from '@/components/ui/SearchField';
 
 const empty = { marc_desc: '' };
 
+const COLUMNS = [
+  { key: 'codigo', header: 'Código', sortKey: 'cod', headerClassName: 'w-24', cell: (m: Marca) => m.marc_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
+  { key: 'desc',   header: 'Descripción', sortKey: 'desc', cell: (m: Marca) => m.marc_desc, cellClassName: 'font-medium text-gray-800' },
+];
+
 export default function MarcasPage() {
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
+  const [sortField, setSortField] = useState('');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [modal, setModal] = useState<null | 'nueva' | Marca>(null);
   const [form, setForm] = useState(empty);
   const [error, setError] = useState('');
@@ -28,14 +35,15 @@ export default function MarcasPage() {
   }, [search]);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['marcas', { page, limit, search: debouncedSearch }],
-    queryFn: () => getMarcas({ page, limit, search: debouncedSearch }),
+    queryKey: ['marcas', { page, limit, search: debouncedSearch, sortField, sortDir }],
+    queryFn: () => getMarcas({ page, limit, search: debouncedSearch, sortField, sortDir }),
   });
 
   const marcas = data?.data ?? [];
   const pagination = data?.pagination;
 
   const inv = () => qc.invalidateQueries({ queryKey: ['marcas'] });
+  const handleSortChange = (field: string, dir: 'asc' | 'desc') => { setSortField(field); setSortDir(dir); setPage(1); };
 
   const openNueva  = () => { setForm(empty); setError(''); setModal('nueva'); };
   const openEditar = (m: Marca) => { setForm({ marc_desc: m.marc_desc }); setError(''); setModal(m); };
@@ -73,10 +81,8 @@ export default function MarcasPage() {
           onEdit={openEditar}
           onDelete={(m) => deleteMut.mutate(m.marc_codigo)}
           deleteConfirmMessage="¿Eliminar esta marca?"
-          columns={[
-            { key: 'codigo', header: 'Código', headerClassName: 'w-24', cell: (m) => m.marc_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
-            { key: 'desc', header: 'Descripción', cell: (m) => m.marc_desc, cellClassName: 'font-medium text-gray-800' },
-          ]}
+          columns={COLUMNS}
+          sortField={sortField} sortDir={sortDir} onSortChange={handleSortChange}
         />
 
         {pagination && (

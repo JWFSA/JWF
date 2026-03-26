@@ -4,10 +4,25 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { getClientes, deleteCliente } from '@/services/fac';
+import type { Cliente } from '@/types/fac';
 import DataTable from '@/components/ui/DataTable';
 import PrimaryAddButton from '@/components/ui/PrimaryAddButton';
 import SearchField from '@/components/ui/SearchField';
 import TablePagination from '@/components/ui/TablePagination';
+
+const COLUMNS = [
+  { key: 'codigo', header: 'Cód.',    sortKey: 'cod',    headerClassName: 'w-20', cell: (c: Cliente) => c.cli_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
+  { key: 'nom',    header: 'Nombre',  sortKey: 'nom',    cell: (c: Cliente) => c.cli_nom, cellClassName: 'font-medium text-gray-800' },
+  { key: 'ruc',    header: 'RUC',     sortKey: 'ruc',    headerClassName: 'hidden sm:table-cell', cell: (c: Cliente) => c.cli_ruc ?? '—', cellClassName: 'text-gray-500 hidden sm:table-cell' },
+  { key: 'tel',    header: 'Teléfono', sortKey: 'tel',   headerClassName: 'hidden md:table-cell', cell: (c: Cliente) => c.cli_tel ?? '—', cellClassName: 'text-gray-500 hidden md:table-cell' },
+  { key: 'zona',   header: 'Zona',    sortKey: 'zona',   headerClassName: 'hidden lg:table-cell', cell: (c: Cliente) => c.zona_desc ?? '—', cellClassName: 'text-gray-500 hidden lg:table-cell' },
+  { key: 'estado', header: 'Estado',  sortKey: 'estado',
+    cell: (c: Cliente) => (
+      <span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${c.cli_est_cli === 'A' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+        {c.cli_est_cli === 'A' ? 'Activo' : 'Inactivo'}
+      </span>
+    ) },
+];
 
 export default function ClientesPage() {
   const router = useRouter();
@@ -16,6 +31,8 @@ export default function ClientesPage() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
+  const [sortField, setSortField] = useState('');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
   useEffect(() => {
     const t = setTimeout(() => { setDebouncedSearch(search); setPage(1); }, 400);
@@ -23,12 +40,14 @@ export default function ClientesPage() {
   }, [search]);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['clientes', { page, limit, search: debouncedSearch }],
-    queryFn: () => getClientes({ page, limit, search: debouncedSearch }),
+    queryKey: ['clientes', { page, limit, search: debouncedSearch, sortField, sortDir }],
+    queryFn: () => getClientes({ page, limit, search: debouncedSearch, sortField, sortDir }),
   });
 
   const clientes  = data?.data ?? [];
   const pagination = data?.pagination;
+
+  const handleSortChange = (field: string, dir: 'asc' | 'desc') => { setSortField(field); setSortDir(dir); setPage(1); };
 
   const deleteMut = useMutation({
     mutationFn: deleteCliente,
@@ -58,21 +77,8 @@ export default function ClientesPage() {
           onDelete={(c) => deleteMut.mutate(c.cli_codigo)}
           deleteConfirmMessage="¿Eliminar este cliente?"
           tableClassName="w-full min-w-[600px] text-sm"
-          columns={[
-            { key: 'codigo', header: 'Cód.', headerClassName: 'w-20', cell: (c) => c.cli_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
-            { key: 'nom', header: 'Nombre', cell: (c) => c.cli_nom, cellClassName: 'font-medium text-gray-800' },
-            { key: 'ruc', header: 'RUC', headerClassName: 'hidden sm:table-cell', cell: (c) => c.cli_ruc ?? '—', cellClassName: 'text-gray-500 hidden sm:table-cell' },
-            { key: 'tel', header: 'Teléfono', headerClassName: 'hidden md:table-cell', cell: (c) => c.cli_tel ?? '—', cellClassName: 'text-gray-500 hidden md:table-cell' },
-            { key: 'zona', header: 'Zona', headerClassName: 'hidden lg:table-cell', cell: (c) => c.zona_desc ?? '—', cellClassName: 'text-gray-500 hidden lg:table-cell' },
-            {
-              key: 'estado', header: 'Estado',
-              cell: (c) => (
-                <span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${c.cli_est_cli === 'A' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                  {c.cli_est_cli === 'A' ? 'Activo' : 'Inactivo'}
-                </span>
-              ),
-            },
-          ]}
+          sortField={sortField} sortDir={sortDir} onSortChange={handleSortChange}
+          columns={COLUMNS}
         />
 
         {pagination && (

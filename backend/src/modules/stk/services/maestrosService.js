@@ -2,18 +2,21 @@ const pool = require('../../../config/db');
 
 // ─── LÍNEAS ──────────────────────────────────────────────────────────────────
 
-const getLineas = async ({ page = 1, limit = 20, search = '', all = false } = {}) => {
+const getLineas = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
   const params = search ? [`%${search}%`] : [];
   const where  = search ? `WHERE "LIN_DESC" ILIKE $1` : '';
   const countRes = await pool.query(`SELECT COUNT(*) FROM stk_linea ${where}`, params);
   const total = parseInt(countRes.rows[0].count);
+  const allowedSort = { cod: '"LIN_CODIGO"', desc: '"LIN_DESC"' };
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = allowedSort[sortField] ? `${allowedSort[sortField]} ${dir}` : '"LIN_DESC" ASC';
   if (all) {
-    const { rows } = await pool.query(`SELECT "LIN_CODIGO" AS lin_codigo, "LIN_DESC" AS lin_desc FROM stk_linea ${where} ORDER BY "LIN_DESC"`, params);
+    const { rows } = await pool.query(`SELECT "LIN_CODIGO" AS lin_codigo, "LIN_DESC" AS lin_desc FROM stk_linea ${where} ORDER BY ${orderBy}`, params);
     return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
   }
   const offset = (page - 1) * limit;
   const { rows } = await pool.query(
-    `SELECT "LIN_CODIGO" AS lin_codigo, "LIN_DESC" AS lin_desc FROM stk_linea ${where} ORDER BY "LIN_DESC" LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
+    `SELECT "LIN_CODIGO" AS lin_codigo, "LIN_DESC" AS lin_desc FROM stk_linea ${where} ORDER BY ${orderBy} LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
     [...params, limit, offset]
   );
   return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
@@ -43,18 +46,21 @@ const deleteLinea = async (codigo) => {
 
 // ─── MARCAS ──────────────────────────────────────────────────────────────────
 
-const getMarcas = async ({ page = 1, limit = 20, search = '', all = false } = {}) => {
+const getMarcas = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
   const params = search ? [`%${search}%`] : [];
   const where  = search ? `WHERE "MARC_DESC" ILIKE $1` : '';
   const countRes = await pool.query(`SELECT COUNT(*) FROM stk_marca ${where}`, params);
   const total = parseInt(countRes.rows[0].count);
+  const allowedSort = { cod: '"MARC_CODIGO"', desc: '"MARC_DESC"' };
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = allowedSort[sortField] ? `${allowedSort[sortField]} ${dir}` : '"MARC_DESC" ASC';
   if (all) {
-    const { rows } = await pool.query(`SELECT "MARC_CODIGO" AS marc_codigo, "MARC_DESC" AS marc_desc FROM stk_marca ${where} ORDER BY "MARC_DESC"`, params);
+    const { rows } = await pool.query(`SELECT "MARC_CODIGO" AS marc_codigo, "MARC_DESC" AS marc_desc FROM stk_marca ${where} ORDER BY ${orderBy}`, params);
     return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
   }
   const offset = (page - 1) * limit;
   const { rows } = await pool.query(
-    `SELECT "MARC_CODIGO" AS marc_codigo, "MARC_DESC" AS marc_desc FROM stk_marca ${where} ORDER BY "MARC_DESC" LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
+    `SELECT "MARC_CODIGO" AS marc_codigo, "MARC_DESC" AS marc_desc FROM stk_marca ${where} ORDER BY ${orderBy} LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
     [...params, limit, offset]
   );
   return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
@@ -84,19 +90,22 @@ const deleteMarca = async (codigo) => {
 
 // ─── RUBROS ──────────────────────────────────────────────────────────────────
 
-const getRubros = async ({ page = 1, limit = 20, search = '', all = false } = {}) => {
+const getRubros = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
   const params = search ? [`%${search}%`] : [];
   const where  = search ? `WHERE "RUB_DESC" ILIKE $1` : '';
   const countRes = await pool.query(`SELECT COUNT(*) FROM stk_rubro ${where}`, params);
   const total = parseInt(countRes.rows[0].count);
+  const allowedSort = { cod: '"RUB_CODIGO"', desc: '"RUB_DESC"' };
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = allowedSort[sortField] ? `${allowedSort[sortField]} ${dir}` : '"RUB_DESC" ASC';
   if (all) {
     const { rows } = await pool.query(
-      `SELECT "RUB_CODIGO" AS rub_codigo, "RUB_DESC" AS rub_desc, "RUB_IND_INCLUIR_RANKING" AS rub_ind_incluir_ranking FROM stk_rubro ${where} ORDER BY "RUB_DESC"`, params);
+      `SELECT "RUB_CODIGO" AS rub_codigo, "RUB_DESC" AS rub_desc, "RUB_IND_INCLUIR_RANKING" AS rub_ind_incluir_ranking FROM stk_rubro ${where} ORDER BY ${orderBy}`, params);
     return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
   }
   const offset = (page - 1) * limit;
   const { rows } = await pool.query(
-    `SELECT "RUB_CODIGO" AS rub_codigo, "RUB_DESC" AS rub_desc, "RUB_IND_INCLUIR_RANKING" AS rub_ind_incluir_ranking FROM stk_rubro ${where} ORDER BY "RUB_DESC" LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
+    `SELECT "RUB_CODIGO" AS rub_codigo, "RUB_DESC" AS rub_desc, "RUB_IND_INCLUIR_RANKING" AS rub_ind_incluir_ranking FROM stk_rubro ${where} ORDER BY ${orderBy} LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
     [...params, limit, offset]
   );
   return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
@@ -153,12 +162,15 @@ const deleteUnidadMedida = async (codigo) => {
 
 // ─── GRUPOS ──────────────────────────────────────────────────────────────────
 
-const getGrupos = async ({ page = 1, limit = 20, search = '', all = false, linea } = {}) => {
+const getGrupos = async ({ page = 1, limit = 20, search = '', all = false, linea, sortField = '', sortDir = 'asc' } = {}) => {
   const conditions = [];
   const params = [];
   if (linea) { params.push(linea); conditions.push(`"GRUP_LINEA" = $${params.length}`); }
   if (search) { params.push(`%${search}%`); conditions.push(`"GRUP_DESC" ILIKE $${params.length}`); }
   const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+  const allowedSort = { linea: 'g."GRUP_LINEA"', cod: 'g."GRUP_CODIGO"', desc: 'g."GRUP_DESC"', lin_desc: 'l."LIN_DESC"' };
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = allowedSort[sortField] ? `${allowedSort[sortField]} ${dir}` : 'g."GRUP_LINEA" ASC, g."GRUP_CODIGO" ASC';
 
   const countRes = await pool.query(`SELECT COUNT(*) FROM stk_grupo ${where}`, params);
   const total = parseInt(countRes.rows[0].count);
@@ -168,7 +180,7 @@ const getGrupos = async ({ page = 1, limit = 20, search = '', all = false, linea
            l."LIN_DESC" AS lin_desc
     FROM stk_grupo g
     LEFT JOIN stk_linea l ON l."LIN_CODIGO" = g."GRUP_LINEA"
-    ${where} ORDER BY g."GRUP_LINEA", g."GRUP_CODIGO"`;
+    ${where} ORDER BY ${orderBy}`;
 
   if (all) {
     const { rows } = await pool.query(select, params);

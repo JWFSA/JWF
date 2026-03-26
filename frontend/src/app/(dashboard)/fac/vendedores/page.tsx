@@ -14,12 +14,22 @@ import TablePagination from '@/components/ui/TablePagination';
 type ModalState = null | 'nuevo' | Vendedor;
 const empty = { vend_oper: 0, vend_zona: 0, vend_empr: 0, vend_porc_comision_vta: 0 };
 
+const COLUMNS = [
+  { key: 'legajo',   header: 'Legajo',     sortKey: 'leg',  headerClassName: 'w-20', cell: (v: Vendedor) => v.vend_legajo, cellClassName: 'font-mono text-xs text-gray-500' },
+  { key: 'nombre',   header: 'Nombre',     sortKey: 'nom',  cell: (v: Vendedor) => `${v.oper_nombre ?? ''} ${v.oper_apellido ?? ''}`.trim(), cellClassName: 'font-medium text-gray-800' },
+  { key: 'zona',     header: 'Zona',       sortKey: 'zona', headerClassName: 'hidden md:table-cell', cell: (v: Vendedor) => v.zona_desc ?? '—', cellClassName: 'text-gray-500 hidden md:table-cell' },
+  { key: 'empresa',  header: 'Empresa',    headerClassName: 'hidden lg:table-cell', cell: (v: Vendedor) => v.empr_razon_social ?? '—', cellClassName: 'text-gray-500 hidden lg:table-cell' },
+  { key: 'comision', header: '% Comisión', headerClassName: 'hidden md:table-cell text-right', cell: (v: Vendedor) => `${v.vend_porc_comision_vta}%`, cellClassName: 'hidden md:table-cell text-right text-gray-500' },
+];
+
 export default function VendedoresPage() {
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
+  const [sortField, setSortField] = useState('');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [modal, setModal] = useState<ModalState>(null);
   const [form, setForm] = useState<typeof empty>(empty);
   const [error, setError] = useState('');
@@ -30,8 +40,8 @@ export default function VendedoresPage() {
   }, [search]);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['vendedores', { page, limit, search: debouncedSearch }],
-    queryFn: () => getVendedores({ page, limit, search: debouncedSearch }),
+    queryKey: ['vendedores', { page, limit, search: debouncedSearch, sortField, sortDir }],
+    queryFn: () => getVendedores({ page, limit, search: debouncedSearch, sortField, sortDir }),
   });
 
   const { data: operadoresData } = useQuery({ queryKey: ['operadores', { all: true }], queryFn: () => getOperadores({ all: true }) });
@@ -40,6 +50,7 @@ export default function VendedoresPage() {
 
   const vendedores  = data?.data ?? [];
   const pagination  = data?.pagination;
+  const handleSortChange = (field: string, dir: 'asc' | 'desc') => { setSortField(field); setSortDir(dir); setPage(1); };
   const operadores  = operadoresData?.data ?? [];
   const zonas       = zonasData?.data ?? [];
   const empresas    = empresasData?.data ?? [];
@@ -78,13 +89,8 @@ export default function VendedoresPage() {
           onEdit={openEditar} onDelete={(v) => deleteMut.mutate(v.vend_legajo)}
           deleteConfirmMessage="¿Eliminar este vendedor?"
           tableClassName="w-full min-w-[500px] text-sm"
-          columns={[
-            { key: 'legajo', header: 'Legajo', headerClassName: 'w-20', cell: (v) => v.vend_legajo, cellClassName: 'font-mono text-xs text-gray-500' },
-            { key: 'nombre', header: 'Nombre', cell: (v) => `${v.oper_nombre ?? ''} ${v.oper_apellido ?? ''}`.trim(), cellClassName: 'font-medium text-gray-800' },
-            { key: 'zona', header: 'Zona', headerClassName: 'hidden md:table-cell', cell: (v) => v.zona_desc ?? '—', cellClassName: 'text-gray-500 hidden md:table-cell' },
-            { key: 'empresa', header: 'Empresa', headerClassName: 'hidden lg:table-cell', cell: (v) => v.empr_razon_social ?? '—', cellClassName: 'text-gray-500 hidden lg:table-cell' },
-            { key: 'comision', header: '% Comisión', headerClassName: 'hidden md:table-cell text-right', cell: (v) => `${v.vend_porc_comision_vta}%`, cellClassName: 'hidden md:table-cell text-right text-gray-500' },
-          ]}
+          sortField={sortField} sortDir={sortDir} onSortChange={handleSortChange}
+          columns={COLUMNS}
         />
         {pagination && <TablePagination total={pagination.total} page={page} limit={limit} totalPages={pagination.totalPages} onPageChange={setPage} onLimitChange={(n) => { setLimit(n); setPage(1); }} />}
       </div>

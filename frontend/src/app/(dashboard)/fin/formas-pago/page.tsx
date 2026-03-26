@@ -12,12 +12,20 @@ import TablePagination from '@/components/ui/TablePagination';
 
 const emptyForm = { fpag_desc: '', fpag_dia_pago: '' };
 
+const COLUMNS = [
+  { key: 'cod',  header: 'Cód.',        sortKey: 'cod',  headerClassName: 'w-16', cell: (f: FormaPago) => f.fpag_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
+  { key: 'desc', header: 'Descripción', sortKey: 'desc', cell: (f: FormaPago) => f.fpag_desc, cellClassName: 'font-medium text-gray-800' },
+  { key: 'dias', header: 'Días pago',   headerClassName: 'hidden sm:table-cell w-24 text-right', cell: (f: FormaPago) => f.fpag_dia_pago ?? '—', cellClassName: 'hidden sm:table-cell text-right text-gray-500' },
+];
+
 export default function FormasPagoPage() {
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
+  const [sortField, setSortField] = useState('');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [modal, setModal] = useState(false);
   const [editing, setEditing] = useState<FormaPago | null>(null);
   const [form, setForm] = useState(emptyForm);
@@ -29,12 +37,13 @@ export default function FormasPagoPage() {
   }, [search]);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['formas-pago', { page, limit, search: debouncedSearch }],
-    queryFn: () => getFormasPago({ page, limit, search: debouncedSearch }),
+    queryKey: ['formas-pago', { page, limit, search: debouncedSearch, sortField, sortDir }],
+    queryFn: () => getFormasPago({ page, limit, search: debouncedSearch, sortField, sortDir }),
   });
 
   const formas     = data?.data ?? [];
   const pagination = data?.pagination;
+  const handleSortChange = (field: string, dir: 'asc' | 'desc') => { setSortField(field); setSortDir(dir); setPage(1); };
   const inv = () => qc.invalidateQueries({ queryKey: ['formas-pago'] });
 
   const createMut = useMutation({ mutationFn: createFormaPago, onSuccess: () => { inv(); closeModal(); }, onError: (e: any) => setError(e?.response?.data?.message ?? 'Error') });
@@ -69,11 +78,8 @@ export default function FormasPagoPage() {
           onEdit={openEdit} onDelete={(f) => deleteMut.mutate(f.fpag_codigo)}
           deleteConfirmMessage="¿Eliminar esta forma de pago?"
           tableClassName="w-full text-sm"
-          columns={[
-            { key: 'cod',  header: 'Cód.', headerClassName: 'w-16', cell: (f) => f.fpag_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
-            { key: 'desc', header: 'Descripción', cell: (f) => f.fpag_desc, cellClassName: 'font-medium text-gray-800' },
-            { key: 'dias', header: 'Días pago', headerClassName: 'hidden sm:table-cell w-24 text-right', cell: (f) => f.fpag_dia_pago ?? '—', cellClassName: 'hidden sm:table-cell text-right text-gray-500' },
-          ]}
+          sortField={sortField} sortDir={sortDir} onSortChange={handleSortChange}
+          columns={COLUMNS}
         />
         {pagination && <TablePagination total={pagination.total} page={page} limit={limit} totalPages={pagination.totalPages} onPageChange={setPage} onLimitChange={(n) => { setLimit(n); setPage(1); }} />}
       </div>

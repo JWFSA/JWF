@@ -1,6 +1,6 @@
 'use client';
 
-import { Pencil, Trash2 } from 'lucide-react';
+import { ChevronUp, ChevronDown, ChevronsUpDown, Pencil, Trash2 } from 'lucide-react';
 import type { Key, ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
@@ -10,6 +10,8 @@ export interface DataTableColumnDef<T> {
   headerClassName?: string;
   cell: (row: T) => ReactNode;
   cellClassName?: string;
+  /** Si está presente, la columna es ordenable y este valor se pasa al callback onSortChange */
+  sortKey?: string;
 }
 
 export interface DataTableProps<T> {
@@ -24,6 +26,12 @@ export interface DataTableProps<T> {
   tableClassName?: string;
   loadingLabel?: string;
   emptyLabel?: string;
+  /** Campo actualmente ordenado */
+  sortField?: string;
+  /** Dirección del ordenamiento actual */
+  sortDir?: 'asc' | 'desc';
+  /** Llamado cuando el usuario hace clic en un encabezado de columna ordenable */
+  onSortChange?: (field: string, dir: 'asc' | 'desc') => void;
 }
 
 export default function DataTable<T>({
@@ -37,9 +45,21 @@ export default function DataTable<T>({
   tableClassName = 'w-full min-w-[300px] text-sm',
   loadingLabel = 'Cargando...',
   emptyLabel = 'Sin resultados',
+  sortField,
+  sortDir,
+  onSortChange,
 }: DataTableProps<T>) {
   const hasActions = !!(onEdit || onDelete);
   const colSpan = columns.length + (hasActions ? 1 : 0);
+
+  const handleSort = (key: string) => {
+    if (!onSortChange) return;
+    if (sortField === key) {
+      onSortChange(key, sortDir === 'asc' ? 'desc' : 'asc');
+    } else {
+      onSortChange(key, 'asc');
+    }
+  };
 
   return (
     <div className="overflow-x-auto">
@@ -48,7 +68,22 @@ export default function DataTable<T>({
           <tr className="border-b border-gray-100 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
             {columns.map((col) => (
               <th key={col.key} className={cn('px-4 py-3', col.headerClassName)}>
-                {col.header}
+                {col.sortKey ? (
+                  <button
+                    type="button"
+                    onClick={() => handleSort(col.sortKey!)}
+                    className="flex items-center gap-1 hover:text-gray-800 transition select-none"
+                  >
+                    {col.header}
+                    {sortField === col.sortKey ? (
+                      sortDir === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />
+                    ) : (
+                      <ChevronsUpDown size={12} className="opacity-40" />
+                    )}
+                  </button>
+                ) : (
+                  col.header
+                )}
               </th>
             ))}
             {hasActions && <th className="px-4 py-3 w-20"></th>}

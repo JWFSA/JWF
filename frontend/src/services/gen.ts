@@ -8,6 +8,8 @@ export interface ListParams {
   limit?: number;
   search?: string;
   all?: boolean;
+  sortField?: string;
+  sortDir?: 'asc' | 'desc';
 }
 
 // Auth

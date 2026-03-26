@@ -12,12 +12,19 @@ import TablePagination from '@/components/ui/TablePagination';
 
 const emptyForm = { tipr_desc: '' };
 
+const COLUMNS = [
+  { key: 'cod',  header: 'Cód.',        sortKey: 'cod',  headerClassName: 'w-16', cell: (t: TipoProveedor) => t.tipr_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
+  { key: 'desc', header: 'Descripción', sortKey: 'desc',                          cell: (t: TipoProveedor) => t.tipr_desc,   cellClassName: 'font-medium text-gray-800' },
+];
+
 export default function TiposProveedorPage() {
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
+  const [sortField, setSortField] = useState('');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [modal, setModal] = useState(false);
   const [editing, setEditing] = useState<TipoProveedor | null>(null);
   const [form, setForm] = useState(emptyForm);
@@ -29,12 +36,13 @@ export default function TiposProveedorPage() {
   }, [search]);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['tipos-proveedor', { page, limit, search: debouncedSearch }],
-    queryFn: () => getTiposProveedor({ page, limit, search: debouncedSearch }),
+    queryKey: ['tipos-proveedor', { page, limit, search: debouncedSearch, sortField, sortDir }],
+    queryFn: () => getTiposProveedor({ page, limit, search: debouncedSearch, sortField, sortDir }),
   });
 
   const tipos      = data?.data ?? [];
   const pagination = data?.pagination;
+  const handleSortChange = (field: string, dir: 'asc' | 'desc') => { setSortField(field); setSortDir(dir); setPage(1); };
   const inv = () => qc.invalidateQueries({ queryKey: ['tipos-proveedor'] });
 
   const createMut = useMutation({ mutationFn: createTipoProveedor, onSuccess: () => { inv(); closeModal(); }, onError: (e: any) => setError(e?.response?.data?.message ?? 'Error') });
@@ -68,10 +76,8 @@ export default function TiposProveedorPage() {
           onEdit={openEdit} onDelete={(t) => deleteMut.mutate(t.tipr_codigo)}
           deleteConfirmMessage="¿Eliminar este tipo de proveedor?"
           tableClassName="w-full text-sm"
-          columns={[
-            { key: 'cod',  header: 'Cód.', headerClassName: 'w-16', cell: (t) => t.tipr_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
-            { key: 'desc', header: 'Descripción', cell: (t) => t.tipr_desc, cellClassName: 'font-medium text-gray-800' },
-          ]}
+          sortField={sortField} sortDir={sortDir} onSortChange={handleSortChange}
+          columns={COLUMNS}
         />
         {pagination && <TablePagination total={pagination.total} page={page} limit={limit} totalPages={pagination.totalPages} onPageChange={setPage} onLimitChange={(n) => { setLimit(n); setPage(1); }} />}
       </div>

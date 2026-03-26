@@ -7,7 +7,24 @@ import PrimaryAddButton from '@/components/ui/PrimaryAddButton';
 import SearchField from '@/components/ui/SearchField';
 import TablePagination from '@/components/ui/TablePagination';
 import DataTable from '@/components/ui/DataTable';
+import type { Operador } from '@/types/gen';
 import { useState, useEffect } from 'react';
+
+const COLUMNS = [
+  { key: 'codigo',  header: 'Cód.',    sortKey: 'cod',   headerClassName: 'w-16', cell: (op: Operador) => op.oper_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
+  { key: 'nombre',  header: 'Nombre',  sortKey: 'nom',   cell: (op: Operador) => `${op.oper_nombre} ${op.oper_apellido || ''}`.trim(), cellClassName: 'font-medium text-gray-800' },
+  { key: 'login',   header: 'Login',   sortKey: 'login', cell: (op: Operador) => op.oper_login, cellClassName: 'text-gray-600' },
+  { key: 'email',   header: 'Email',   headerClassName: 'hidden md:table-cell', cell: (op: Operador) => op.oper_email || '-', cellClassName: 'text-gray-500 hidden md:table-cell' },
+  { key: 'empresa', header: 'Empresa', sortKey: 'empr',  headerClassName: 'hidden lg:table-cell', cell: (op: Operador) => op.empr_razon_social || '-', cellClassName: 'text-gray-500 hidden lg:table-cell' },
+  { key: 'admin',   header: 'Admin',
+    cell: (op: Operador) => op.oper_ind_admin === 'S'
+      ? <span className="bg-primary-100 text-primary-700 text-xs px-2 py-0.5 rounded-full">Sí</span>
+      : <span className="text-gray-400 text-xs">No</span> },
+  { key: 'estado',  header: 'Estado',
+    cell: (op: Operador) => op.oper_ind_desc === 'N'
+      ? <span className="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full">Activo</span>
+      : <span className="bg-red-100 text-red-600 text-xs px-2 py-0.5 rounded-full">Inactivo</span> },
+];
 
 export default function OperadoresPage() {
   const router = useRouter();
@@ -15,6 +32,8 @@ export default function OperadoresPage() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
+  const [sortField, setSortField] = useState('');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
   useEffect(() => {
     const t = setTimeout(() => { setDebouncedSearch(search); setPage(1); }, 400);
@@ -22,12 +41,14 @@ export default function OperadoresPage() {
   }, [search]);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['operadores', { page, limit, search: debouncedSearch }],
-    queryFn: () => getOperadores({ page, limit, search: debouncedSearch }),
+    queryKey: ['operadores', { page, limit, search: debouncedSearch, sortField, sortDir }],
+    queryFn: () => getOperadores({ page, limit, search: debouncedSearch, sortField, sortDir }),
   });
 
   const rows       = data?.data ?? [];
   const pagination = data?.pagination;
+
+  const handleSortChange = (field: string, dir: 'asc' | 'desc') => { setSortField(field); setSortDir(dir); setPage(1); };
 
   return (
     <div>
@@ -50,27 +71,8 @@ export default function OperadoresPage() {
           getRowKey={(op) => op.oper_codigo}
           onEdit={(op) => router.push(`/gen/operadores/${op.oper_codigo}`)}
           tableClassName="w-full text-sm min-w-[600px]"
-          columns={[
-            { key: 'codigo', header: 'Cód.', headerClassName: 'w-16', cell: (op) => op.oper_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
-            { key: 'nombre', header: 'Nombre', cell: (op) => `${op.oper_nombre} ${op.oper_apellido || ''}`.trim(), cellClassName: 'font-medium text-gray-800' },
-            { key: 'login', header: 'Login', cell: (op) => op.oper_login, cellClassName: 'text-gray-600' },
-            { key: 'email', header: 'Email', headerClassName: 'hidden md:table-cell', cell: (op) => op.oper_email || '-', cellClassName: 'text-gray-500 hidden md:table-cell' },
-            { key: 'empresa', header: 'Empresa', headerClassName: 'hidden lg:table-cell', cell: (op) => op.empr_razon_social || '-', cellClassName: 'text-gray-500 hidden lg:table-cell' },
-            {
-              key: 'admin',
-              header: 'Admin',
-              cell: (op) => op.oper_ind_admin === 'S'
-                ? <span className="bg-primary-100 text-primary-700 text-xs px-2 py-0.5 rounded-full">Sí</span>
-                : <span className="text-gray-400 text-xs">No</span>,
-            },
-            {
-              key: 'estado',
-              header: 'Estado',
-              cell: (op) => op.oper_ind_desc === 'N'
-                ? <span className="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full">Activo</span>
-                : <span className="bg-red-100 text-red-600 text-xs px-2 py-0.5 rounded-full">Inactivo</span>,
-            },
-          ]}
+          sortField={sortField} sortDir={sortDir} onSortChange={handleSortChange}
+          columns={COLUMNS}
         />
 
         {pagination && (

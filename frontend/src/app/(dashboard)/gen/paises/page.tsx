@@ -12,6 +12,12 @@ import DataTable from '@/components/ui/DataTable';
 
 const empty = { pais_desc: '', pais_nacionalidad: '' };
 
+const COLUMNS = [
+  { key: 'codigo',       header: 'Código',       headerClassName: 'w-24', cell: (p: Pais) => p.pais_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
+  { key: 'desc',         header: 'País',          cell: (p: Pais) => p.pais_desc, cellClassName: 'font-medium text-gray-800' },
+  { key: 'nacionalidad', header: 'Nacionalidad',  headerClassName: 'hidden sm:table-cell', cell: (p: Pais) => p.pais_nacionalidad ?? '—', cellClassName: 'text-gray-500 hidden sm:table-cell' },
+];
+
 function matchesPais(p: Pais, q: string) {
   const s = `${p.pais_codigo} ${p.pais_desc} ${p.pais_nacionalidad ?? ''}`.toLowerCase();
   return s.includes(q);
@@ -92,11 +98,7 @@ export default function PaisesPage() {
           deleteConfirmMessage="¿Eliminar este país?"
           tableClassName="w-full min-w-[400px] text-sm"
           emptyLabel="Sin registros"
-          columns={[
-            { key: 'codigo', header: 'Código', headerClassName: 'w-24', cell: (p) => p.pais_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
-            { key: 'desc', header: 'País', cell: (p) => p.pais_desc, cellClassName: 'font-medium text-gray-800' },
-            { key: 'nacionalidad', header: 'Nacionalidad', headerClassName: 'hidden sm:table-cell', cell: (p) => p.pais_nacionalidad ?? '—', cellClassName: 'text-gray-500 hidden sm:table-cell' },
-          ]}
+          columns={COLUMNS}
         />
 
         {!isLoading && (

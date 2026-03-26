@@ -10,6 +10,12 @@ import DataTable from '@/components/ui/DataTable';
 
 const empty = { prog_desc: '', prog_sistema: 0 };
 
+const COLUMNS = [
+  { key: 'clave',   header: 'Clave',        headerClassName: 'w-24', cell: (p: Programa) => p.prog_clave, cellClassName: 'font-mono text-xs text-gray-500' },
+  { key: 'desc',    header: 'Descripción',  cell: (p: Programa) => p.prog_desc, cellClassName: 'font-medium text-gray-800' },
+  { key: 'sistema', header: 'Sistema',      headerClassName: 'hidden md:table-cell', cell: (p: Programa) => p.sist_desc ?? '—', cellClassName: 'text-gray-500 hidden md:table-cell' },
+];
+
 export default function ProgramasPage() {
   const qc = useQueryClient();
   const [sistemaFiltro, setSistemaFiltro] = useState<number | ''>('');

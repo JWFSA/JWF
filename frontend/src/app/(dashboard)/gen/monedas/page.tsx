@@ -12,6 +12,14 @@ import DataTable from '@/components/ui/DataTable';
 
 const empty = { mon_desc: '', mon_simbolo: '', mon_tasa_comp: 0, mon_tasa_vta: 0 };
 
+const COLUMNS = [
+  { key: 'codigo',    header: 'Código',      headerClassName: 'w-24', cell: (m: Moneda) => m.mon_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
+  { key: 'desc',      header: 'Descripción', cell: (m: Moneda) => m.mon_desc, cellClassName: 'font-medium text-gray-800' },
+  { key: 'simbolo',   header: 'Símbolo',     headerClassName: 'w-16', cell: (m: Moneda) => m.mon_simbolo, cellClassName: 'text-gray-500' },
+  { key: 'tasa_comp', header: 'Tasa compra', headerClassName: 'text-right hidden md:table-cell', cell: (m: Moneda) => m.mon_tasa_comp?.toLocaleString(), cellClassName: 'text-right text-gray-600 hidden md:table-cell' },
+  { key: 'tasa_vta',  header: 'Tasa venta',  headerClassName: 'text-right hidden md:table-cell', cell: (m: Moneda) => m.mon_tasa_vta?.toLocaleString(), cellClassName: 'text-right text-gray-600 hidden md:table-cell' },
+];
+
 function matchesMoneda(m: Moneda, q: string) {
   const s = `${m.mon_codigo} ${m.mon_desc} ${m.mon_simbolo ?? ''}`.toLowerCase();
   return s.includes(q);
@@ -92,13 +100,7 @@ export default function MonedasPage() {
           deleteConfirmMessage="¿Eliminar esta moneda?"
           tableClassName="w-full min-w-[560px] text-sm"
           emptyLabel="Sin registros"
-          columns={[
-            { key: 'codigo', header: 'Código', headerClassName: 'w-24', cell: (m) => m.mon_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
-            { key: 'desc', header: 'Descripción', cell: (m) => m.mon_desc, cellClassName: 'font-medium text-gray-800' },
-            { key: 'simbolo', header: 'Símbolo', headerClassName: 'w-16', cell: (m) => m.mon_simbolo, cellClassName: 'text-gray-500' },
-            { key: 'tasa_comp', header: 'Tasa compra', headerClassName: 'text-right hidden md:table-cell', cell: (m) => m.mon_tasa_comp?.toLocaleString(), cellClassName: 'text-right text-gray-600 hidden md:table-cell' },
-            { key: 'tasa_vta', header: 'Tasa venta', headerClassName: 'text-right hidden md:table-cell', cell: (m) => m.mon_tasa_vta?.toLocaleString(), cellClassName: 'text-right text-gray-600 hidden md:table-cell' },
-          ]}
+          columns={COLUMNS}
         />
 
         {!isLoading && (

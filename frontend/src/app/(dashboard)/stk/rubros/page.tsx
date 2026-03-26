@@ -12,12 +12,28 @@ import SearchField from '@/components/ui/SearchField';
 
 const empty = { rub_desc: '', rub_ind_incluir_ranking: 'N' as 'S' | 'N' };
 
+const COLUMNS = [
+  { key: 'codigo', header: 'Código', sortKey: 'cod', headerClassName: 'w-24', cell: (r: Rubro) => r.rub_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
+  { key: 'desc',   header: 'Descripción', sortKey: 'desc', cell: (r: Rubro) => r.rub_desc, cellClassName: 'font-medium text-gray-800' },
+  {
+    key: 'ranking',
+    header: 'Ranking',
+    headerClassName: 'hidden md:table-cell text-center',
+    cell: (r: Rubro) => r.rub_ind_incluir_ranking === 'S'
+      ? <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700">Sí</span>
+      : <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-500">No</span>,
+    cellClassName: 'hidden md:table-cell text-center',
+  },
+];
+
 export default function RubrosPage() {
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
+  const [sortField, setSortField] = useState('');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [modal, setModal] = useState<null | 'nuevo' | Rubro>(null);
   const [form, setForm] = useState(empty);
   const [error, setError] = useState('');
@@ -28,14 +44,15 @@ export default function RubrosPage() {
   }, [search]);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['rubros', { page, limit, search: debouncedSearch }],
-    queryFn: () => getRubros({ page, limit, search: debouncedSearch }),
+    queryKey: ['rubros', { page, limit, search: debouncedSearch, sortField, sortDir }],
+    queryFn: () => getRubros({ page, limit, search: debouncedSearch, sortField, sortDir }),
   });
 
   const rubros = data?.data ?? [];
   const pagination = data?.pagination;
 
   const inv = () => qc.invalidateQueries({ queryKey: ['rubros'] });
+  const handleSortChange = (field: string, dir: 'asc' | 'desc') => { setSortField(field); setSortDir(dir); setPage(1); };
 
   const openNuevo  = () => { setForm(empty); setError(''); setModal('nuevo'); };
   const openEditar = (r: Rubro) => { setForm({ rub_desc: r.rub_desc, rub_ind_incluir_ranking: (r.rub_ind_incluir_ranking as 'S' | 'N') ?? 'N' }); setError(''); setModal(r); };
@@ -73,21 +90,8 @@ export default function RubrosPage() {
           onEdit={openEditar}
           onDelete={(r) => deleteMut.mutate(r.rub_codigo)}
           deleteConfirmMessage="¿Eliminar este rubro?"
-          columns={[
-            { key: 'codigo', header: 'Código', headerClassName: 'w-24', cell: (r) => r.rub_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
-            { key: 'desc', header: 'Descripción', cell: (r) => r.rub_desc, cellClassName: 'font-medium text-gray-800' },
-            {
-              key: 'ranking',
-              header: 'Ranking',
-              headerClassName: 'hidden md:table-cell text-center',
-              cell: (r) => r.rub_ind_incluir_ranking === 'S' ? (
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700">Sí</span>
-              ) : (
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-500">No</span>
-              ),
-              cellClassName: 'hidden md:table-cell text-center',
-            },
-          ]}
+          columns={COLUMNS}
+          sortField={sortField} sortDir={sortDir} onSortChange={handleSortChange}
         />
 
         {pagination && (
