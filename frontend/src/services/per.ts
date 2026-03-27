@@ -1,5 +1,5 @@
 import api from '@/lib/api';
-import type { Cargo, Categoria, Area, Seccion, Turno, TipoContrato, MotivoAusencia, FormaPago, TipoLiquidacion, TipoPago, TipoFamiliar, Idioma, Carrera, Bachillerato, Capacitacion, NivelCapacitacion, EstadoEstudio, Funcion, ClasificacionDescuento, TipoSalario, MotivoLicencia, InstEducativa, Empleado, Paginated } from '@/types/per';
+import type { Cargo, Categoria, Area, Seccion, Turno, TipoContrato, MotivoAusencia, FormaPago, TipoLiquidacion, TipoPago, TipoFamiliar, Idioma, Carrera, Bachillerato, Capacitacion, NivelCapacitacion, EstadoEstudio, Funcion, ClasificacionDescuento, TipoSalario, MotivoLicencia, InstEducativa, Contrato, Familiar, Empleado, Paginated } from '@/types/per';
 import type { ListParams } from '@/services/gen';
 
 // Cargos
@@ -133,6 +133,18 @@ export const getInstEducativas    = (params?: ListParams) => api.get<Paginated<I
 export const createInstEducativa  = (data: Partial<InstEducativa>) => api.post<InstEducativa>('/per/maestros/inst-educativas', data).then((r) => r.data);
 export const updateInstEducativa  = (id: number, data: Partial<InstEducativa>) => api.put<InstEducativa>(`/per/maestros/inst-educativas/${id}`, data).then((r) => r.data);
 export const deleteInstEducativa  = (id: number) => api.delete(`/per/maestros/inst-educativas/${id}`);
+
+// Contratos
+export const getContratos    = (params?: ListParams & { empleado?: number }) => api.get<Paginated<Contrato>>('/per/contratos', { params }).then((r) => r.data);
+export const createContrato  = (data: Partial<Contrato>) => api.post<Contrato>('/per/contratos', data).then((r) => r.data);
+export const updateContrato  = (id: string, data: Partial<Contrato>) => api.put<Contrato>(`/per/contratos/${id}`, data).then((r) => r.data);
+export const deleteContrato  = (id: string) => api.delete(`/per/contratos/${id}`);
+
+// Familiares
+export const getFamiliares    = (params?: ListParams & { empleado?: number }) => api.get<Paginated<Familiar>>('/per/familiares', { params }).then((r) => r.data);
+export const createFamiliar   = (data: Partial<Familiar>) => api.post<Familiar>('/per/familiares', data).then((r) => r.data);
+export const updateFamiliar   = (empleado: number, id: number, data: Partial<Familiar>) => api.put<Familiar>(`/per/familiares/${empleado}/${id}`, data).then((r) => r.data);
+export const deleteFamiliar   = (empleado: number, id: number) => api.delete(`/per/familiares/${empleado}/${id}`);
 
 // Empleados
 export const getEmpleados = (params?: ListParams) =>

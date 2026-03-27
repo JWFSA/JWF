@@ -2,6 +2,8 @@ const router = require('express').Router();
 const { verifyToken } = require('../../../middlewares/auth');
 const m  = require('../controllers/maestrosController');
 const ec = require('../controllers/empleadoController');
+const cc = require('../controllers/contratoController');
+const fc = require('../controllers/familiaController');
 
 // Cargos
 router.get('/maestros/cargos',         verifyToken, m.cargos.getAll);
@@ -141,5 +143,17 @@ router.get('/empleados/:id',  verifyToken, ec.getById);
 router.post('/empleados',     verifyToken, ec.create);
 router.put('/empleados/:id',  verifyToken, ec.update);
 router.delete('/empleados/:id', verifyToken, ec.remove);
+
+// Contratos
+router.get('/contratos',         verifyToken, cc.getAll);
+router.post('/contratos',        verifyToken, cc.create);
+router.put('/contratos/:id',     verifyToken, cc.update);
+router.delete('/contratos/:id',  verifyToken, cc.remove);
+
+// Familiares
+router.get('/familiares',                        verifyToken, fc.getAll);
+router.post('/familiares',                       verifyToken, fc.create);
+router.put('/familiares/:empleado/:id',          verifyToken, fc.update);
+router.delete('/familiares/:empleado/:id',       verifyToken, fc.remove);
 
 module.exports = router;

@@ -196,6 +196,8 @@ Cada vez que se cree una nueva página de listado, agregarla aquí. Usar esta li
 | `per/tipos-salario` | Tipos de salario | `desc` asc |
 | `per/motivos-licencia` | Motivos de licencia | `desc` asc |
 | `per/inst-educativas` | Instituciones educativas | `desc` asc |
+| `per/contratos` | Contratos | `fecha` desc |
+| `per/familiares` | Familiares | `nombre` asc |
 
 ---
 

@@ -129,6 +129,35 @@ export interface InstEducativa {
   inst_i: string | null;
 }
 
+export interface Contrato {
+  con_codigo: string;
+  con_empleado: number;
+  empl_nombre?: string;
+  empl_ape?: string;
+  con_tipo_contrato: number | null;
+  tipcon_descripcion?: string;
+  con_fecha_ini: string;
+  con_fecha_fin: string | null;
+  con_observacion: string | null;
+  con_dias_preaviso: number | null;
+  con_mov_propia: string | null;
+}
+
+export interface Familiar {
+  fam_codigo: number;
+  fam_empl_codigo: number;
+  empl_nombre?: string;
+  empl_ape?: string;
+  fam_nombre: string;
+  fam_fec_nac: string | null;
+  fam_tipo: number | null;
+  tipo_desc?: string;
+  fam_sexo: string | null;
+  fam_ind_cobra: string | null;
+  fam_imp_bonif: number | null;
+  fam_ind_disc: string | null;
+}
+
 export interface Empleado {
   empl_legajo: number;
   empl_nombre: string;
