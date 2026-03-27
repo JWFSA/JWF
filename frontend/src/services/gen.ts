@@ -12,6 +12,10 @@ export interface ListParams {
   sortDir?: 'asc' | 'desc';
 }
 
+// Dashboard
+export const getDashboard = () =>
+  api.get('/gen/dashboard').then((r) => r.data);
+
 // Auth
 export const login = (data: { login: string; password: string }) =>
   api.post('/gen/auth/login', data).then((r) => r.data);

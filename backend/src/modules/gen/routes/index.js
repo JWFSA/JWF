@@ -6,10 +6,14 @@ const operadorCtrl = require('../controllers/operadorController');
 const rolCtrl = require('../controllers/rolController');
 const empresaCtrl = require('../controllers/empresaController');
 const maestrosCtrl = require('../controllers/maestrosController');
+const dashboardCtrl = require('../controllers/dashboardController');
 
 // Auth (public)
 router.post('/auth/login', authCtrl.login);
 router.get('/auth/me', verifyToken, authCtrl.me);
+
+// Dashboard
+router.get('/dashboard', verifyToken, dashboardCtrl.getStats);
 
 // Operadores
 router.get('/operadores', verifyToken, operadorCtrl.getAll);
