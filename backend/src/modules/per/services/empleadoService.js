@@ -17,7 +17,7 @@ const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortFiel
     cargo:    'c."CAR_DESC"',
   };
   const dir     = sortDir === 'desc' ? 'DESC' : 'ASC';
-  const orderBy = allowedSort[sortField] ? `${allowedSort[sortField]} ${dir}` : 'e."EMPL_LEGAJO" ASC';
+  const orderBy = allowedSort[sortField] ? `${allowedSort[sortField]} ${dir}` : 'e."EMPL_NOMBRE" ASC';
   const select  = `
     SELECT e."EMPL_LEGAJO" AS empl_legajo,
            e."EMPL_NOMBRE" AS empl_nombre, e."EMPL_APE" AS empl_ape,

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import type { CuentaBancaria } from '@/types/fin';
 import type { Banco } from '@/types/fin';
 import type { Moneda } from '@/types/gen';
+import { toInputDate } from '@/lib/utils';
 
 interface Props {
   initialData?: CuentaBancaria;
@@ -31,7 +32,7 @@ export default function CuentaBancariaForm({ initialData, bancos, monedas, isPen
     cta_tipo_cta:   initialData?.cta_tipo_cta ?? '',
     cta_mon:        initialData?.cta_mon?.toString() ?? '',
     cta_fec_habilit: initialData?.cta_fec_habilit
-      ? initialData.cta_fec_habilit.toString().substring(0, 10)
+      ? toInputDate(initialData.cta_fec_habilit)
       : '',
   });
   const [localError, setLocalError] = useState('');

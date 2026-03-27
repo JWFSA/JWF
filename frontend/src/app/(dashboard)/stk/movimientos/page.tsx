@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { getMovimientos, deleteMovimiento } from '@/services/stk';
+import { formatDate } from '@/lib/utils';
 import type { Movimiento } from '@/types/stk';
 import DataTable from '@/components/ui/DataTable';
 import PrimaryAddButton from '@/components/ui/PrimaryAddButton';
@@ -14,7 +15,7 @@ const ENT_SAL: Record<string, string> = { E: 'Entrada', S: 'Salida' };
 
 const COLUMNS = [
   { key: 'nro',   header: 'Nro.',          sortKey: 'nro',   headerClassName: 'w-20',                   cell: (r: Movimiento) => r.docu_nro_doc,                           cellClassName: 'font-mono text-xs text-gray-500' },
-  { key: 'fecha', header: 'Fecha',          sortKey: 'fecha', headerClassName: 'w-28',                   cell: (r: Movimiento) => r.docu_fec_emis?.toString().substring(0, 10) ?? '—', cellClassName: 'text-gray-600 text-xs' },
+  { key: 'fecha', header: 'Fecha',          sortKey: 'fecha', headerClassName: 'w-28',                   cell: (r: Movimiento) => formatDate(r.docu_fec_emis), cellClassName: 'text-gray-600 text-xs' },
   { key: 'oper',  header: 'Operación',      sortKey: 'oper',                                             cell: (r: Movimiento) => r.oper_desc ?? '—',                       cellClassName: 'font-medium text-gray-800' },
   { key: 'tipo',  header: 'Tipo',                             headerClassName: 'hidden sm:table-cell w-20', cell: (r: Movimiento) => r.oper_ent_sal ? ENT_SAL[r.oper_ent_sal] ?? '—' : '—', cellClassName: 'hidden sm:table-cell text-xs text-gray-500' },
   { key: 'dep',   header: 'Depósito orig.', sortKey: 'dep',   headerClassName: 'hidden md:table-cell',   cell: (r: Movimiento) => r.dep_orig_desc ?? '—',                   cellClassName: 'hidden md:table-cell text-gray-500' },

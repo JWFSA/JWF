@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { getEmpleados, deleteEmpleado } from '@/services/per';
+import { formatDate } from '@/lib/utils';
 import type { Empleado } from '@/types/per';
 import DataTable from '@/components/ui/DataTable';
 import PrimaryAddButton from '@/components/ui/PrimaryAddButton';
@@ -17,7 +18,7 @@ const COLUMNS = [
   { key: 'nombre',  header: 'Nombre',    sortKey: 'nombre',                                               cell: (r: Empleado) => `${r.empl_nombre ?? ''} ${r.empl_ape ?? ''}`.trim() || '—', cellClassName: 'font-medium text-gray-800' },
   { key: 'ci',      header: 'C.I.',                          headerClassName: 'hidden sm:table-cell w-28', cell: (r: Empleado) => r.empl_doc_ident ?? '—',                                     cellClassName: 'hidden sm:table-cell text-xs text-gray-500' },
   { key: 'cargo',   header: 'Cargo',                         headerClassName: 'hidden md:table-cell',      cell: (r: Empleado) => r.car_desc ?? '—',                                           cellClassName: 'hidden md:table-cell text-xs text-gray-500' },
-  { key: 'ingreso', header: 'Ingreso',   sortKey: 'ingreso', headerClassName: 'hidden md:table-cell w-28', cell: (r: Empleado) => r.empl_fec_ingreso?.toString().substring(0, 10) ?? '—',     cellClassName: 'hidden md:table-cell text-xs text-gray-500' },
+  { key: 'ingreso', header: 'Ingreso',   sortKey: 'ingreso', headerClassName: 'hidden md:table-cell w-28', cell: (r: Empleado) => formatDate(r.empl_fec_ingreso),     cellClassName: 'hidden md:table-cell text-xs text-gray-500' },
   { key: 'sit',     header: 'Situación',                     headerClassName: 'hidden lg:table-cell w-24',
     cell: (r: Empleado) => (
       <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${r.empl_situacion === 'A' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
@@ -35,7 +36,7 @@ export default function EmpleadosPage() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
-  const [sortField, setSortField] = useState('legajo');
+  const [sortField, setSortField] = useState('nombre');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
   useEffect(() => {

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { getOperaciones, getDepositos, getArticulos } from '@/services/stk';
 import type { Movimiento, MovimientoDetalle, Operacion, Articulo } from '@/types/stk';
 import { Search, Plus, Trash2 } from 'lucide-react';
+import { toInputDate } from '@/lib/utils';
 
 interface Props {
   initial?: Partial<Movimiento>;
@@ -29,7 +30,7 @@ export default function MovimientoForm({ initial, onSave, isPending, error }: Pr
     ...empty,
     ...initial,
     docu_fec_emis: initial?.docu_fec_emis
-      ? initial.docu_fec_emis.toString().substring(0, 10)
+      ? toInputDate(initial.docu_fec_emis)
       : empty.docu_fec_emis,
   });
   const [items, setItems] = useState<MovimientoDetalle[]>(initial?.items ?? []);

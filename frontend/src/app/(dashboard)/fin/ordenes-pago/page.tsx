@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { getOrdenesPago, deleteOrdenPago } from '@/services/fin';
+import { formatDate } from '@/lib/utils';
 import type { OrdenPago } from '@/types/fin';
 import DataTable from '@/components/ui/DataTable';
 import PrimaryAddButton from '@/components/ui/PrimaryAddButton';
@@ -16,7 +17,7 @@ const fmt = (n: number | null | undefined) =>
 
 const COLUMNS = [
   { key: 'codigo',  header: 'Nro.',        sortKey: 'codigo', headerClassName: 'w-20',                   cell: (r: OrdenPago) => r.ordp_codigo,                              cellClassName: 'font-mono text-xs text-gray-500' },
-  { key: 'fecha',   header: 'Fecha',        sortKey: 'fecha',  headerClassName: 'w-28',                   cell: (r: OrdenPago) => r.ordp_fec_orden?.toString().substring(0, 10) ?? '—', cellClassName: 'text-xs text-gray-600' },
+  { key: 'fecha',   header: 'Fecha',        sortKey: 'fecha',  headerClassName: 'w-28',                   cell: (r: OrdenPago) => formatDate(r.ordp_fec_orden), cellClassName: 'text-xs text-gray-600' },
   { key: 'benef',   header: 'Beneficiario', sortKey: 'benef',                                              cell: (r: OrdenPago) => r.ordp_beneficiario ?? r.prov_nom ?? '—',   cellClassName: 'font-medium text-gray-800' },
   { key: 'mon',     header: 'Moneda',                          headerClassName: 'hidden sm:table-cell w-20', cell: (r: OrdenPago) => r.mon_desc ?? '—',                        cellClassName: 'hidden sm:table-cell text-xs text-gray-500' },
   { key: 'total',   header: 'Total',        sortKey: 'total',  headerClassName: 'hidden md:table-cell w-32 text-right', cell: (r: OrdenPago) => fmt(r.ordp_tot_pago),          cellClassName: 'hidden md:table-cell text-right tabular-nums text-gray-700' },

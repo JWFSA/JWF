@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { getCargos, getCategorias, getAreas, getSecciones, getTurnos } from '@/services/per';
 import type { Empleado } from '@/types/per';
+import { toInputDate } from '@/lib/utils';
 
 interface Props {
   initial?: Partial<Empleado>;
@@ -12,8 +13,6 @@ interface Props {
   isPending: boolean;
   error?: string;
 }
-
-const normDate = (v: string | null | undefined) => v ? v.toString().substring(0, 10) : '';
 
 const empty: Partial<Empleado> = {
   empl_nombre: '', empl_ape: '', empl_doc_ident: null, empl_ruc: '',
@@ -35,9 +34,9 @@ export default function EmpleadoForm({ initial, onSave, isPending, error }: Prop
   const [form, setForm] = useState<Partial<Empleado>>({
     ...empty,
     ...initial,
-    empl_fec_nac:      normDate(initial?.empl_fec_nac),
-    empl_fec_ingreso:  normDate(initial?.empl_fec_ingreso),
-    empl_fec_salida:   normDate(initial?.empl_fec_salida),
+    empl_fec_nac:      toInputDate(initial?.empl_fec_nac),
+    empl_fec_ingreso:  toInputDate(initial?.empl_fec_ingreso),
+    empl_fec_salida:   toInputDate(initial?.empl_fec_salida),
   });
 
   const set = (k: keyof Empleado, v: unknown) => setForm((f) => ({ ...f, [k]: v }));

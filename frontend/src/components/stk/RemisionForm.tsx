@@ -7,6 +7,7 @@ import { getDepositos, getArticulos } from '@/services/stk';
 import { getClientes } from '@/services/fac';
 import type { Remision, RemisionDetalle, Articulo } from '@/types/stk';
 import { Search, Plus, Trash2 } from 'lucide-react';
+import { toInputDate } from '@/lib/utils';
 
 interface Props {
   initial?: Partial<Remision>;
@@ -32,7 +33,7 @@ export default function RemisionForm({ initial, onSave, isPending, error }: Prop
     ...empty,
     ...initial,
     rem_fec_emis: initial?.rem_fec_emis
-      ? initial.rem_fec_emis.toString().substring(0, 10)
+      ? toInputDate(initial.rem_fec_emis)
       : empty.rem_fec_emis,
   });
   const [items, setItems] = useState<RemisionDetalle[]>(initial?.items ?? []);

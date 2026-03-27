@@ -7,6 +7,7 @@ import { getProveedores, getCuentasBancarias, getFormasPago } from '@/services/f
 import { getMonedas } from '@/services/gen';
 import type { OrdenPago, Proveedor } from '@/types/fin';
 import { Search } from 'lucide-react';
+import { toInputDate } from '@/lib/utils';
 
 interface Props {
   initialData?: OrdenPago;
@@ -21,7 +22,7 @@ const ESTADOS: Record<string, string> = { P: 'Pendiente', A: 'Aprobada', C: 'Com
 export default function OrdenPagoForm({ initialData, isPending, error, onSubmit, onCancel }: Props) {
   const router = useRouter();
   const [form, setForm] = useState({
-    ordp_fec_orden:    initialData?.ordp_fec_orden    ? initialData.ordp_fec_orden.toString().substring(0, 10) : new Date().toISOString().split('T')[0],
+    ordp_fec_orden:    initialData?.ordp_fec_orden    ? toInputDate(initialData.ordp_fec_orden) : new Date().toISOString().split('T')[0],
     ordp_beneficiario: initialData?.ordp_beneficiario ?? '',
     ordp_prov:         initialData?.ordp_prov?.toString() ?? '',
     ordp_cta_bco:      initialData?.ordp_cta_bco?.toString() ?? '',
@@ -29,7 +30,7 @@ export default function OrdenPagoForm({ initialData, isPending, error, onSubmit,
     ordp_fcon_codigo:  initialData?.ordp_fcon_codigo?.toString() ?? '',
     ordp_mon:          initialData?.ordp_mon?.toString() ?? '',
     ordp_cheq_nro:     initialData?.ordp_cheq_nro ?? '',
-    ordp_cheq_fec:     initialData?.ordp_cheq_fec ? initialData.ordp_cheq_fec.toString().substring(0, 10) : '',
+    ordp_cheq_fec:     initialData?.ordp_cheq_fec ? toInputDate(initialData.ordp_cheq_fec) : '',
     ordp_cheq_importe: initialData?.ordp_cheq_importe?.toString() ?? '',
     ordp_tot_pago:     initialData?.ordp_tot_pago?.toString() ?? '',
     ordp_estado:       initialData?.ordp_estado ?? 'P',

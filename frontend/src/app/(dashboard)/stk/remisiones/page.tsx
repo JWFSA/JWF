@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { getRemisiones, deleteRemision } from '@/services/stk';
+import { formatDate } from '@/lib/utils';
 import type { Remision } from '@/types/stk';
 import DataTable from '@/components/ui/DataTable';
 import PrimaryAddButton from '@/components/ui/PrimaryAddButton';
@@ -12,7 +13,7 @@ import TablePagination from '@/components/ui/TablePagination';
 
 const COLUMNS = [
   { key: 'nro',    header: 'Nro.',    sortKey: 'nro',    headerClassName: 'w-36',                    cell: (r: Remision) => r.rem_nro,                                          cellClassName: 'font-mono text-xs text-gray-500' },
-  { key: 'fecha',  header: 'Fecha',   sortKey: 'fecha',  headerClassName: 'w-28',                    cell: (r: Remision) => r.rem_fec_emis?.toString().substring(0, 10) ?? '—', cellClassName: 'text-xs text-gray-600' },
+  { key: 'fecha',  header: 'Fecha',   sortKey: 'fecha',  headerClassName: 'w-28',                    cell: (r: Remision) => formatDate(r.rem_fec_emis), cellClassName: 'text-xs text-gray-600' },
   { key: 'cli',    header: 'Cliente', sortKey: 'cliente',                                             cell: (r: Remision) => r.cli_nom ?? '—',                                   cellClassName: 'font-medium text-gray-800' },
   { key: 'dep',    header: 'Depósito',                   headerClassName: 'hidden sm:table-cell w-28', cell: (r: Remision) => r.dep_desc ?? '—',                                cellClassName: 'hidden sm:table-cell text-xs text-gray-500' },
   { key: 'timb',   header: 'Timbrado',                   headerClassName: 'hidden md:table-cell w-36', cell: (r: Remision) => r.rem_nro_timbrado ?? '—',                        cellClassName: 'hidden md:table-cell text-xs text-gray-500' },

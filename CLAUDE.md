@@ -167,7 +167,7 @@ Cada vez que se cree una nueva página de listado, agregarla aquí. Usar esta li
 | `fin/personeria` | Personerías | `desc` asc |
 | `fin/clases-doc` | Clases de documento | `desc` asc |
 | `fin/cuentas-bancarias` | Cuentas bancarias | `desc` asc |
-| `per/empleados` | Empleados | `legajo` asc |
+| `per/empleados` | Empleados | `nombre` asc |
 | `per/cargos` | Cargos | `desc` asc |
 | `per/categorias` | Categorías de personal | `desc` asc |
 | `per/areas` | Áreas | `desc` asc |
@@ -346,6 +346,23 @@ Todos los componentes deben ser responsive. Reglas:
 - **Botones header:** texto largo con `hidden sm:inline`, texto corto con `sm:hidden`
 - **Botones formulario:** `flex-col-reverse sm:flex-row` con `w-full sm:w-auto`
 - **Sidebar:** drawer en mobile, siempre visible en `md+`
+
+### Frontend — Fechas (OBLIGATORIO)
+Todas las fechas en el frontend deben usar las utilidades de `@/lib/utils`:
+
+- **En tablas/listas** (mostrar al usuario): usar `formatDate(value)` → produce `dd/mm/aaaa`
+- **En `<input type="date">`** (formularios): usar `toInputDate(value)` → produce `yyyy-mm-dd`
+- **Nunca** usar `.toString().substring(0, 10)`, `.split('T')[0]` ni ninguna manipulación manual de strings de fecha directamente en componentes
+
+```ts
+import { formatDate, toInputDate } from '@/lib/utils';
+
+// En columna de DataTable:
+cell: (r) => formatDate(r.fecha_emision)
+
+// En useState inicial de formulario:
+const [form, setForm] = useState({ fecha: toInputDate(initial?.fecha) });
+```
 
 ### Frontend — TypeScript
 - Interfaces en `types/{mod}.ts`
