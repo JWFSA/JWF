@@ -15,6 +15,7 @@ export interface FormModalProps {
   submitLabel?: string;
   pendingLabel?: string;
   showSaveIcon?: boolean;
+  wide?: boolean;
 }
 
 export default function FormModal({
@@ -28,9 +29,10 @@ export default function FormModal({
   submitLabel = 'Guardar',
   pendingLabel = 'Guardando...',
   showSaveIcon = true,
+  wide = false,
 }: FormModalProps) {
   return (
-    <Modal title={title} onClose={onClose}>
+    <Modal title={title} onClose={onClose} wide={wide}>
       <div className="space-y-4">
         {children}
         {error ? (

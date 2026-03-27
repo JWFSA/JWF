@@ -98,6 +98,13 @@ export interface Funcion {
   fun_desc: string;
 }
 
+export interface ClasificacionConcepto {
+  clco_codigo: number;
+  clco_desc: string;
+  clco_tipo: string;
+  clco_orden: number;
+}
+
 export interface ClasificacionDescuento {
   clde_codigo: number;
   clde_desc: string;
@@ -127,6 +134,32 @@ export interface InstEducativa {
   inst_s: string | null;
   inst_t: string | null;
   inst_i: string | null;
+}
+
+export interface Concepto {
+  pcon_clave: number;
+  pcon_clave_concepto: number | null;
+  pcon_desc: string;
+  pcon_ind_fijo: string | null;
+  pcon_clave_ctaco: number | null;
+  pcon_ind_aguinaldo: string | null;
+  pcon_clas_concepto: number | null;
+  clco_desc?: string;
+  clco_tipo?: string;
+  pcon_clas_conc_descuento: number | null;
+  clde_desc?: string;
+  pcon_conc_aguinaldo: string | null;
+  pcon_conc_horas_extras: string | null;
+  pcon_conc_bonif_familiar: string | null;
+  pcon_ind_sum_ips: string | null;
+  pcon_recibo_salario: string | null;
+  pcon_ind_otros_beneficios: string | null;
+  pcon_anticipo: string | null;
+  pcon_ind_mjt: string | null;
+  pcon_conc_comision: string | null;
+  pcon_empresa: string | null;
+  pcon_suma_bf: string | null;
+  pcon_orden: number | null;
 }
 
 export interface Contrato {

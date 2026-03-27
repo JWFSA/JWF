@@ -1,5 +1,5 @@
 import api from '@/lib/api';
-import type { Cargo, Categoria, Area, Seccion, Turno, TipoContrato, MotivoAusencia, FormaPago, TipoLiquidacion, TipoPago, TipoFamiliar, Idioma, Carrera, Bachillerato, Capacitacion, NivelCapacitacion, EstadoEstudio, Funcion, ClasificacionDescuento, TipoSalario, MotivoLicencia, InstEducativa, Contrato, Familiar, Empleado, Paginated } from '@/types/per';
+import type { Cargo, Categoria, Area, Seccion, Turno, TipoContrato, MotivoAusencia, FormaPago, TipoLiquidacion, TipoPago, TipoFamiliar, Idioma, Carrera, Bachillerato, Capacitacion, NivelCapacitacion, EstadoEstudio, Funcion, ClasificacionConcepto, ClasificacionDescuento, TipoSalario, MotivoLicencia, InstEducativa, Concepto, Contrato, Familiar, Empleado, Paginated } from '@/types/per';
 import type { ListParams } from '@/services/gen';
 
 // Cargos
@@ -133,6 +133,15 @@ export const getInstEducativas    = (params?: ListParams) => api.get<Paginated<I
 export const createInstEducativa  = (data: Partial<InstEducativa>) => api.post<InstEducativa>('/per/maestros/inst-educativas', data).then((r) => r.data);
 export const updateInstEducativa  = (id: number, data: Partial<InstEducativa>) => api.put<InstEducativa>(`/per/maestros/inst-educativas/${id}`, data).then((r) => r.data);
 export const deleteInstEducativa  = (id: number) => api.delete(`/per/maestros/inst-educativas/${id}`);
+
+// Clasificaciones de concepto
+export const getClasificacionesConcepto = (params?: ListParams) => api.get<Paginated<ClasificacionConcepto>>('/per/maestros/clasificaciones-concepto', { params }).then((r) => r.data);
+
+// Conceptos de liquidación
+export const getConceptos    = (params?: ListParams) => api.get<Paginated<Concepto>>('/per/conceptos', { params }).then((r) => r.data);
+export const createConcepto  = (data: Partial<Concepto>) => api.post<Concepto>('/per/conceptos', data).then((r) => r.data);
+export const updateConcepto  = (id: number, data: Partial<Concepto>) => api.put<Concepto>(`/per/conceptos/${id}`, data).then((r) => r.data);
+export const deleteConcepto  = (id: number) => api.delete(`/per/conceptos/${id}`);
 
 // Contratos
 export const getContratos    = (params?: ListParams & { empleado?: number }) => api.get<Paginated<Contrato>>('/per/contratos', { params }).then((r) => r.data);

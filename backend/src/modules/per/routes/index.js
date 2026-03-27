@@ -4,6 +4,7 @@ const m  = require('../controllers/maestrosController');
 const ec = require('../controllers/empleadoController');
 const cc = require('../controllers/contratoController');
 const fc = require('../controllers/familiaController');
+const conc = require('../controllers/conceptoController');
 
 // Cargos
 router.get('/maestros/cargos',         verifyToken, m.cargos.getAll);
@@ -131,6 +132,9 @@ router.post('/maestros/motivos-licencia',        verifyToken, m.motivosLicencia.
 router.put('/maestros/motivos-licencia/:id',     verifyToken, m.motivosLicencia.update);
 router.delete('/maestros/motivos-licencia/:id',  verifyToken, m.motivosLicencia.remove);
 
+// Clasificaciones de concepto (solo lectura)
+router.get('/maestros/clasificaciones-concepto', verifyToken, m.clasificacionesConcepto.getAll);
+
 // Instituciones educativas
 router.get('/maestros/inst-educativas',         verifyToken, m.instEducativas.getAll);
 router.post('/maestros/inst-educativas',        verifyToken, m.instEducativas.create);
@@ -155,5 +159,11 @@ router.get('/familiares',                        verifyToken, fc.getAll);
 router.post('/familiares',                       verifyToken, fc.create);
 router.put('/familiares/:empleado/:id',          verifyToken, fc.update);
 router.delete('/familiares/:empleado/:id',       verifyToken, fc.remove);
+
+// Conceptos
+router.get('/conceptos',         verifyToken, conc.getAll);
+router.post('/conceptos',        verifyToken, conc.create);
+router.put('/conceptos/:id',     verifyToken, conc.update);
+router.delete('/conceptos/:id',  verifyToken, conc.remove);
 
 module.exports = router;

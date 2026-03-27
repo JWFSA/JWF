@@ -766,6 +766,13 @@ const deleteInstEducativa = async (id) => {
   await pool.query(`DELETE FROM per_inst_educativa WHERE "INST_CODIGO" = $1`, [id]);
 };
 
+// ─── CLASIFICACIONES DE CONCEPTO (solo lectura para selects) ─────────────────
+
+const getClasificacionesConcepto = async ({ all = false } = {}) => {
+  const { rows } = await pool.query(`SELECT "CLCO_CODIGO" AS clco_codigo, "CLCO_DESC" AS clco_desc, "CLCO_TIPO" AS clco_tipo, "CLCO_ORDEN" AS clco_orden FROM per_clasificacion_concepto ORDER BY "CLCO_ORDEN"`);
+  return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
+};
+
 module.exports = {
   getCargos, createCargo, updateCargo, deleteCargo,
   getCategorias, createCategoria, updateCategoria, deleteCategoria,
@@ -789,4 +796,5 @@ module.exports = {
   getTiposSalario, createTipoSalario, updateTipoSalario, deleteTipoSalario,
   getMotivosLicencia, createMotivoLicencia, updateMotivoLicencia, deleteMotivoLicencia,
   getInstEducativas, createInstEducativa, updateInstEducativa, deleteInstEducativa,
+  getClasificacionesConcepto,
 };

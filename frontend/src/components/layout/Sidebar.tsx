@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Users, Building2, Shield, Globe, Settings, LayoutDashboard, ChevronDown, X, Package, Warehouse, Tag, Layers, BookOpen, DollarSign, MapPin, Map, Code, Ruler, Grid3x3, Building, Percent, ShoppingCart, UserCheck, MapPinned, LayoutList, Handshake, ClipboardList, ListOrdered, Landmark, CreditCard, Briefcase, Truck, FileText, Banknote, Scale, ArrowLeftRight, BarChart3, Receipt, HardHat, UserCog, Network, Columns, Languages, GraduationCap, Award, Brain, Signal, CheckCircle, Wrench, FolderMinus, Heart, Wallet, Stethoscope, MapPinHouse, Ban, Home, CircleDollarSign, ShieldAlert, School, ScrollText, UsersRound } from 'lucide-react';
+import { Users, Building2, Shield, Globe, Settings, LayoutDashboard, ChevronDown, X, Package, Warehouse, Tag, Layers, BookOpen, DollarSign, MapPin, Map, Code, Ruler, Grid3x3, Building, Percent, ShoppingCart, UserCheck, MapPinned, LayoutList, Handshake, ClipboardList, ListOrdered, Landmark, CreditCard, Briefcase, Truck, FileText, Banknote, Scale, ArrowLeftRight, BarChart3, Receipt, HardHat, UserCog, Network, Columns, Languages, GraduationCap, Award, Brain, Signal, CheckCircle, Wrench, FolderMinus, Heart, Wallet, Stethoscope, MapPinHouse, Ban, Home, CircleDollarSign, ShieldAlert, School, ScrollText, UsersRound, Calculator } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import Image from 'next/image';
@@ -110,6 +110,7 @@ const menu = [
       { label: 'Inst. educativas', href: '/per/inst-educativas',    icon: School },
       { label: 'Contratos',       href: '/per/contratos',          icon: ScrollText },
       { label: 'Familiares',      href: '/per/familiares',         icon: UsersRound },
+      { label: 'Conceptos liq.',  href: '/per/conceptos',          icon: Calculator },
     ],
   },
 ];

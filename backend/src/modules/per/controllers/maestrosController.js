@@ -46,4 +46,5 @@ module.exports = {
   tiposSalario:    handler(s.getTiposSalario,    s.createTipoSalario,    s.updateTipoSalario,    s.deleteTipoSalario),
   motivosLicencia: handler(s.getMotivosLicencia, s.createMotivoLicencia, s.updateMotivoLicencia, s.deleteMotivoLicencia),
   instEducativas:  handler(s.getInstEducativas,  s.createInstEducativa,  s.updateInstEducativa,  s.deleteInstEducativa),
+  clasificacionesConcepto: { getAll: async (req, res, next) => { try { res.json(await s.getClasificacionesConcepto()); } catch (e) { next(e); } } },
 };

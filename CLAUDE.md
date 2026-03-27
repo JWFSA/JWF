@@ -198,6 +198,7 @@ Cada vez que se cree una nueva página de listado, agregarla aquí. Usar esta li
 | `per/inst-educativas` | Instituciones educativas | `desc` asc |
 | `per/contratos` | Contratos | `fecha` desc |
 | `per/familiares` | Familiares | `nombre` asc |
+| `per/conceptos` | Conceptos de liquidación | `desc` asc |
 
 ---
 
