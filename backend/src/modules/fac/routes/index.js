@@ -22,10 +22,14 @@ router.post('/maestros/condiciones',       verifyToken, maestrosController.creat
 router.delete('/maestros/condiciones/:id', verifyToken, maestrosController.deleteCondicion);
 
 // Listas de precio
-router.get('/maestros/listas-precio',         verifyToken, maestrosController.getListasPrecio);
-router.post('/maestros/listas-precio',        verifyToken, maestrosController.createListaPrecio);
-router.put('/maestros/listas-precio/:id',     verifyToken, maestrosController.updateListaPrecio);
-router.delete('/maestros/listas-precio/:id',  verifyToken, maestrosController.deleteListaPrecio);
+router.get('/maestros/listas-precio',                          verifyToken, maestrosController.getListasPrecio);
+router.post('/maestros/listas-precio',                         verifyToken, maestrosController.createListaPrecio);
+router.get('/maestros/listas-precio/:id',                      verifyToken, async (req, res, next) => { try { const s = require('../services/maestrosService'); res.json(await s.getListaPrecio(req.params.id)); } catch (e) { next(e); } });
+router.put('/maestros/listas-precio/:id',                      verifyToken, maestrosController.updateListaPrecio);
+router.delete('/maestros/listas-precio/:id',                   verifyToken, maestrosController.deleteListaPrecio);
+router.get('/maestros/listas-precio/:id/items',                verifyToken, maestrosController.getListaPrecioItems);
+router.post('/maestros/listas-precio/:id/items',               verifyToken, maestrosController.upsertListaPrecioItem);
+router.delete('/maestros/listas-precio/:id/items/:art',        verifyToken, maestrosController.deleteListaPrecioItem);
 
 // Barrios
 router.get('/maestros/barrios',         verifyToken, maestrosController.getBarrios);

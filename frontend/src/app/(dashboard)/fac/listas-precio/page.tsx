@@ -2,8 +2,10 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 import { getListasPrecio, createListaPrecio, updateListaPrecio, deleteListaPrecio } from '@/services/fac';
 import type { ListaPrecio } from '@/types/fac';
+import { List } from 'lucide-react';
 import DataTable from '@/components/ui/DataTable';
 import FormModal from '@/components/ui/FormModal';
 import PrimaryAddButton from '@/components/ui/PrimaryAddButton';
@@ -13,7 +15,7 @@ import { useEffect } from 'react';
 
 const emptyForm = { lipe_desc: '', lipe_mon: '', lipe_estado: 'A' as 'A' | 'I' };
 
-const COLUMNS = [
+const makeColumns = (onVerArticulos: (l: ListaPrecio) => void) => [
   { key: 'nro',    header: 'Nro.',        sortKey: 'nro',    headerClassName: 'w-16', cell: (l: ListaPrecio) => l.lipe_nro_lista_precio, cellClassName: 'font-mono text-xs text-gray-500' },
   { key: 'desc',   header: 'Descripción', sortKey: 'desc',   cell: (l: ListaPrecio) => l.lipe_desc, cellClassName: 'font-medium text-gray-800' },
   { key: 'estado', header: 'Estado',      sortKey: 'estado',
@@ -22,9 +24,17 @@ const COLUMNS = [
         {l.lipe_estado === 'A' ? 'Activa' : 'Inactiva'}
       </span>
     ) },
+  { key: 'items', header: '', headerClassName: 'w-10',
+    cell: (l: ListaPrecio) => (
+      <button type="button" onClick={(e) => { e.stopPropagation(); onVerArticulos(l); }}
+        title="Ver artículos" className="p-1 text-gray-400 hover:text-primary-600 rounded transition">
+        <List size={15} />
+      </button>
+    ), cellClassName: 'text-center' },
 ];
 
 export default function ListasPrecioPage() {
+  const router = useRouter();
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -115,7 +125,7 @@ export default function ListasPrecioPage() {
           deleteConfirmMessage="¿Eliminar esta lista de precio?"
           tableClassName="w-full min-w-[400px] text-sm"
           sortField={sortField} sortDir={sortDir} onSortChange={handleSortChange}
-          columns={COLUMNS}
+          columns={makeColumns((l) => router.push(`/fac/listas-precio/${l.lipe_nro_lista_precio}`))}
         />
 
         {pagination && (

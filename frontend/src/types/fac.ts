@@ -119,6 +119,16 @@ export interface ListaPrecio {
   lipe_estado: 'A' | 'I';
 }
 
+export interface ListaPrecioDetalle {
+  lipr_nro_lista_precio: number;
+  lipr_art: number;
+  art_desc: string;
+  art_unid_med: string | null;
+  lipr_precio_unitario: number;
+  lipr_dcto: number;
+  lipr_dctob: number;
+}
+
 export interface FacturaDet {
   det_clave_doc?: number;
   det_nro_item?: number;

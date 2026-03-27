@@ -258,6 +258,66 @@ const deleteListaPrecio = async (nro) => {
   );
 };
 
+// ─── LISTA DE PRECIO — DETALLE ───────────────────────────────────────────────
+
+const getListaPrecioItems = async (listaId, { page = 1, limit = 20, search = '', all = false } = {}) => {
+  const where = search
+    ? `WHERE d."LIPR_NRO_LISTA_PRECIO" = $1 AND d."LIPR_EMPR" = 1 AND a."ART_DESC" ILIKE $2`
+    : `WHERE d."LIPR_NRO_LISTA_PRECIO" = $1 AND d."LIPR_EMPR" = 1`;
+  const params = search ? [listaId, `%${search}%`] : [listaId];
+  const countRes = await pool.query(
+    `SELECT COUNT(*) FROM fac_lista_precio_det d
+     JOIN stk_articulo a ON a."ART_CODIGO" = d."LIPR_ART" ${where}`, params
+  );
+  const total = parseInt(countRes.rows[0].count);
+  const select = `
+    SELECT d."LIPR_NRO_LISTA_PRECIO" AS lipr_nro_lista_precio,
+           d."LIPR_ART" AS lipr_art,
+           a."ART_DESC" AS art_desc,
+           a."ART_UNID_MED" AS art_unid_med,
+           d."LIPR_PRECIO_UNITARIO" AS lipr_precio_unitario,
+           d."LIPR_DCTO" AS lipr_dcto,
+           d."LIPR_DCTOB" AS lipr_dctob
+    FROM fac_lista_precio_det d
+    JOIN stk_articulo a ON a."ART_CODIGO" = d."LIPR_ART"
+    ${where} ORDER BY a."ART_DESC"`;
+  if (all) {
+    const { rows } = await pool.query(select, params);
+    return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
+  }
+  const offset = (page - 1) * limit;
+  const { rows } = await pool.query(`${select} LIMIT $${params.length + 1} OFFSET $${params.length + 2}`, [...params, limit, offset]);
+  return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+};
+
+const upsertListaPrecioItem = async (listaId, data) => {
+  const { lipr_art, lipr_precio_unitario, lipr_dcto = 0, lipr_dctob = 0 } = data;
+  const { rows } = await pool.query(
+    `SELECT 1 FROM fac_lista_precio_det WHERE "LIPR_EMPR" = 1 AND "LIPR_NRO_LISTA_PRECIO" = $1 AND "LIPR_ART" = $2`,
+    [listaId, lipr_art]
+  );
+  if (rows.length) {
+    await pool.query(
+      `UPDATE fac_lista_precio_det SET "LIPR_PRECIO_UNITARIO" = $1, "LIPR_DCTO" = $2, "LIPR_DCTOB" = $3
+       WHERE "LIPR_EMPR" = 1 AND "LIPR_NRO_LISTA_PRECIO" = $4 AND "LIPR_ART" = $5`,
+      [lipr_precio_unitario, lipr_dcto, lipr_dctob, listaId, lipr_art]
+    );
+  } else {
+    await pool.query(
+      `INSERT INTO fac_lista_precio_det ("LIPR_EMPR","LIPR_NRO_LISTA_PRECIO","LIPR_ART","LIPR_PRECIO_UNITARIO","LIPR_DCTO","LIPR_DCTOB")
+       VALUES (1,$1,$2,$3,$4,$5)`,
+      [listaId, lipr_art, lipr_precio_unitario, lipr_dcto, lipr_dctob]
+    );
+  }
+};
+
+const deleteListaPrecioItem = async (listaId, artCodigo) => {
+  await pool.query(
+    `DELETE FROM fac_lista_precio_det WHERE "LIPR_EMPR" = 1 AND "LIPR_NRO_LISTA_PRECIO" = $1 AND "LIPR_ART" = $2`,
+    [listaId, artCodigo]
+  );
+};
+
 // ─── BARRIOS ─────────────────────────────────────────────────────────────────
 
 const getBarrios = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
@@ -316,5 +376,6 @@ module.exports = {
   getCondiciones, createCondicion, deleteCondicion,
   getVendedores, getVendedor, createVendedor, updateVendedor, deleteVendedor,
   getListasPrecio, getListaPrecio, createListaPrecio, updateListaPrecio, deleteListaPrecio,
+  getListaPrecioItems, upsertListaPrecioItem, deleteListaPrecioItem,
   getBarrios, getBarrio, createBarrio, updateBarrio, deleteBarrio,
 };
