@@ -140,6 +140,11 @@ Cada vez que se cree una nueva página de listado, agregarla aquí. Usar esta li
 | `gen/tipos-impuesto` | Tipos de impuesto | — (sin sort) |
 | `gen/sistemas` | Sistemas | — (sin sort) |
 | `gen/programas` | Programas | — (sin sort) |
+| `gen/profesiones` | Profesiones | `desc` asc |
+| `gen/distritos` | Distritos | `desc` asc |
+| `gen/motivos-anulacion` | Motivos de anulación | `desc` asc |
+| `gen/localidades` | Localidades | `desc` asc |
+| `gen/barrios` | Barrios | `desc` asc |
 | `stk/lineas` | Líneas | `desc` asc |
 | `stk/marcas` | Marcas | `desc` asc |
 | `stk/rubros` | Rubros | `desc` asc |
@@ -188,6 +193,9 @@ Cada vez que se cree una nueva página de listado, agregarla aquí. Usar esta li
 | `per/estados-estudio` | Estados de estudio | `desc` asc |
 | `per/funciones` | Funciones | `desc` asc |
 | `per/clasificaciones-descuento` | Clasificaciones de descuento | `desc` asc |
+| `per/tipos-salario` | Tipos de salario | `desc` asc |
+| `per/motivos-licencia` | Motivos de licencia | `desc` asc |
+| `per/inst-educativas` | Instituciones educativas | `desc` asc |
 
 ---
 

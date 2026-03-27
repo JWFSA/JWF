@@ -91,4 +91,34 @@ router.post('/maestros/tipos-impuesto',        verifyToken, maestrosCtrl.createT
 router.put('/maestros/tipos-impuesto/:id',     verifyToken, maestrosCtrl.updateTipoImpuesto);
 router.delete('/maestros/tipos-impuesto/:id',  verifyToken, maestrosCtrl.deleteTipoImpuesto);
 
+// Profesiones
+router.get('/maestros/profesiones',         verifyToken, maestrosCtrl.getProfesiones);
+router.post('/maestros/profesiones',        verifyToken, maestrosCtrl.createProfesion);
+router.put('/maestros/profesiones/:id',     verifyToken, maestrosCtrl.updateProfesion);
+router.delete('/maestros/profesiones/:id',  verifyToken, maestrosCtrl.deleteProfesion);
+
+// Distritos
+router.get('/maestros/distritos',         verifyToken, maestrosCtrl.getDistritos);
+router.post('/maestros/distritos',        verifyToken, maestrosCtrl.createDistrito);
+router.put('/maestros/distritos/:id',     verifyToken, maestrosCtrl.updateDistrito);
+router.delete('/maestros/distritos/:id',  verifyToken, maestrosCtrl.deleteDistrito);
+
+// Motivos de anulación
+router.get('/maestros/motivos-anulacion',         verifyToken, maestrosCtrl.getMotivosAnulacion);
+router.post('/maestros/motivos-anulacion',        verifyToken, maestrosCtrl.createMotivoAnulacion);
+router.put('/maestros/motivos-anulacion/:id',     verifyToken, maestrosCtrl.updateMotivoAnulacion);
+router.delete('/maestros/motivos-anulacion/:id',  verifyToken, maestrosCtrl.deleteMotivoAnulacion);
+
+// Localidades
+router.get('/maestros/localidades',         verifyToken, maestrosCtrl.getLocalidades);
+router.post('/maestros/localidades',        verifyToken, maestrosCtrl.createLocalidad);
+router.put('/maestros/localidades/:id',     verifyToken, maestrosCtrl.updateLocalidad);
+router.delete('/maestros/localidades/:id',  verifyToken, maestrosCtrl.deleteLocalidad);
+
+// Barrios
+router.get('/maestros/barrios',         verifyToken, maestrosCtrl.getBarrios);
+router.post('/maestros/barrios',        verifyToken, maestrosCtrl.createBarrio);
+router.put('/maestros/barrios/:id',     verifyToken, maestrosCtrl.updateBarrio);
+router.delete('/maestros/barrios/:id',  verifyToken, maestrosCtrl.deleteBarrio);
+
 module.exports = router;

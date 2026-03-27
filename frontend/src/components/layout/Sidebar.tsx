@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Users, Building2, Shield, Globe, Settings, LayoutDashboard, ChevronDown, X, Package, Warehouse, Tag, Layers, BookOpen, DollarSign, MapPin, Map, Code, Ruler, Grid3x3, Building, Percent, ShoppingCart, UserCheck, MapPinned, LayoutList, Handshake, ClipboardList, ListOrdered, Landmark, CreditCard, Briefcase, Truck, FileText, Banknote, Scale, ArrowLeftRight, BarChart3, Receipt, HardHat, UserCog, Network, Columns, Languages, GraduationCap, Award, Brain, Signal, CheckCircle, Wrench, FolderMinus, Heart, Wallet } from 'lucide-react';
+import { Users, Building2, Shield, Globe, Settings, LayoutDashboard, ChevronDown, X, Package, Warehouse, Tag, Layers, BookOpen, DollarSign, MapPin, Map, Code, Ruler, Grid3x3, Building, Percent, ShoppingCart, UserCheck, MapPinned, LayoutList, Handshake, ClipboardList, ListOrdered, Landmark, CreditCard, Briefcase, Truck, FileText, Banknote, Scale, ArrowLeftRight, BarChart3, Receipt, HardHat, UserCog, Network, Columns, Languages, GraduationCap, Award, Brain, Signal, CheckCircle, Wrench, FolderMinus, Heart, Wallet, Stethoscope, MapPinHouse, Ban, Home, CircleDollarSign, ShieldAlert, School } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import Image from 'next/image';
@@ -25,6 +25,11 @@ const menu = [
       { label: 'Monedas',      href: '/gen/monedas',      icon: DollarSign },
       { label: 'Países',         href: '/gen/paises',          icon: MapPin },
       { label: 'Departamentos',  href: '/gen/departamentos',   icon: Map },
+      { label: 'Distritos',      href: '/gen/distritos',       icon: MapPinHouse },
+      { label: 'Localidades',    href: '/gen/localidades',     icon: Home },
+      { label: 'Barrios',        href: '/gen/barrios',         icon: Building },
+      { label: 'Profesiones',    href: '/gen/profesiones',     icon: Stethoscope },
+      { label: 'Mot. anulación', href: '/gen/motivos-anulacion', icon: Ban },
       { label: 'Ciudades',       href: '/gen/ciudades',         icon: Building },
       { label: 'Impuestos',      href: '/gen/impuestos',        icon: Percent },
       { label: 'Tipos impuesto', href: '/gen/tipos-impuesto',   icon: Percent },
@@ -100,6 +105,9 @@ const menu = [
       { label: 'Est. estudio',    href: '/per/estados-estudio', icon: CheckCircle },
       { label: 'Funciones',       href: '/per/funciones',       icon: Wrench },
       { label: 'Clasif. descuento', href: '/per/clasificaciones-descuento', icon: FolderMinus },
+      { label: 'Tipos salario',   href: '/per/tipos-salario',       icon: CircleDollarSign },
+      { label: 'Mot. licencia',   href: '/per/motivos-licencia',    icon: ShieldAlert },
+      { label: 'Inst. educativas', href: '/per/inst-educativas',    icon: School },
     ],
   },
 ];

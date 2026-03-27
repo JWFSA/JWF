@@ -1,5 +1,5 @@
 import api from '@/lib/api';
-import type { Operador, Rol, Empresa, Sucursal, Sistema, Programa, Moneda, Pais, Departamento, Seccion, Ciudad, Impuesto, TipoImpuesto, Paginated } from '@/types/gen';
+import type { Operador, Rol, Empresa, Sucursal, Sistema, Programa, Moneda, Pais, Departamento, Seccion, Ciudad, Impuesto, TipoImpuesto, Profesion, Distrito, MotivoAnulacion, Localidad, Barrio, Paginated } from '@/types/gen';
 
 export type { Pais, Departamento, Seccion };
 
@@ -134,3 +134,33 @@ export const getProgramas  = (sistema?: number) => api.get<Programa[]>('/gen/mae
 export const createPrograma = (data: Partial<Programa>) => api.post<Programa>('/gen/maestros/programas', data).then((r) => r.data);
 export const updatePrograma = (id: number, data: Partial<Programa>) => api.put<Programa>(`/gen/maestros/programas/${id}`, data).then((r) => r.data);
 export const deletePrograma = (id: number) => api.delete(`/gen/maestros/programas/${id}`);
+
+// Profesiones
+export const getProfesiones    = (params?: ListParams) => api.get<Paginated<Profesion>>('/gen/maestros/profesiones', { params }).then((r) => r.data);
+export const createProfesion   = (data: Partial<Profesion>) => api.post<Profesion>('/gen/maestros/profesiones', data).then((r) => r.data);
+export const updateProfesion   = (id: number, data: Partial<Profesion>) => api.put<Profesion>(`/gen/maestros/profesiones/${id}`, data).then((r) => r.data);
+export const deleteProfesion   = (id: number) => api.delete(`/gen/maestros/profesiones/${id}`);
+
+// Distritos
+export const getDistritos      = (params?: ListParams) => api.get<Paginated<Distrito>>('/gen/maestros/distritos', { params }).then((r) => r.data);
+export const createDistrito    = (data: Partial<Distrito>) => api.post<Distrito>('/gen/maestros/distritos', data).then((r) => r.data);
+export const updateDistrito    = (id: number, data: Partial<Distrito>) => api.put<Distrito>(`/gen/maestros/distritos/${id}`, data).then((r) => r.data);
+export const deleteDistrito    = (id: number) => api.delete(`/gen/maestros/distritos/${id}`);
+
+// Motivos de anulación
+export const getMotivosAnulacion   = (params?: ListParams) => api.get<Paginated<MotivoAnulacion>>('/gen/maestros/motivos-anulacion', { params }).then((r) => r.data);
+export const createMotivoAnulacion = (data: Partial<MotivoAnulacion>) => api.post<MotivoAnulacion>('/gen/maestros/motivos-anulacion', data).then((r) => r.data);
+export const updateMotivoAnulacion = (id: number, data: Partial<MotivoAnulacion>) => api.put<MotivoAnulacion>(`/gen/maestros/motivos-anulacion/${id}`, data).then((r) => r.data);
+export const deleteMotivoAnulacion = (id: number) => api.delete(`/gen/maestros/motivos-anulacion/${id}`);
+
+// Localidades
+export const getLocalidades    = (params?: ListParams) => api.get<Paginated<Localidad>>('/gen/maestros/localidades', { params }).then((r) => r.data);
+export const createLocalidad   = (data: Partial<Localidad>) => api.post<Localidad>('/gen/maestros/localidades', data).then((r) => r.data);
+export const updateLocalidad   = (id: number, data: Partial<Localidad>) => api.put<Localidad>(`/gen/maestros/localidades/${id}`, data).then((r) => r.data);
+export const deleteLocalidad   = (id: number) => api.delete(`/gen/maestros/localidades/${id}`);
+
+// Barrios
+export const getBarrios        = (params?: ListParams) => api.get<Paginated<Barrio>>('/gen/maestros/barrios', { params }).then((r) => r.data);
+export const createBarrio      = (data: Partial<Barrio>) => api.post<Barrio>('/gen/maestros/barrios', data).then((r) => r.data);
+export const updateBarrio      = (id: number, data: Partial<Barrio>) => api.put<Barrio>(`/gen/maestros/barrios/${id}`, data).then((r) => r.data);
+export const deleteBarrio      = (id: number) => api.delete(`/gen/maestros/barrios/${id}`);

@@ -656,6 +656,116 @@ const deleteClasificacionDescuento = async (id) => {
   await pool.query(`DELETE FROM per_clasificacion_descuento WHERE "CLDE_CODIGO" = $1`, [id]);
 };
 
+// ─── TIPOS DE SALARIO ────────────────────────────────────────────────────────
+
+const getTiposSalario = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  const params = search ? [`%${search}%`] : [];
+  const where  = search ? `WHERE "PTIPO_SAL_DESC" ILIKE $1` : '';
+  const { rows: [{ count }] } = await pool.query(`SELECT COUNT(*) FROM per_tipo_salario ${where}`, params);
+  const total = parseInt(count);
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const allowedSort = { desc: `"PTIPO_SAL_DESC"`, tipo: `"PTIPO_SAL_TIPO"` };
+  const orderCol = allowedSort[sortField] || `"PTIPO_SAL_CODIGO"`;
+  const select = `SELECT "PTIPO_SAL_CODIGO" AS ptipo_sal_codigo, "PTIPO_SAL_DESC" AS ptipo_sal_desc, "PTIPO_SAL_DIAS_TRAB" AS ptipo_sal_dias_trab, "PTIPO_SAL_TIPO" AS ptipo_sal_tipo FROM per_tipo_salario ${where} ORDER BY ${orderCol} ${dir}`;
+  if (all) {
+    const { rows } = await pool.query(select, params);
+    return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
+  }
+  const offset = (page - 1) * limit;
+  const { rows } = await pool.query(`${select} LIMIT $${params.length+1} OFFSET $${params.length+2}`, [...params, limit, offset]);
+  return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+};
+
+const createTipoSalario = async ({ ptipo_sal_desc, ptipo_sal_dias_trab, ptipo_sal_tipo }) => {
+  const { rows: [{ next }] } = await pool.query(`SELECT COALESCE(MAX("PTIPO_SAL_CODIGO"), 0) + 1 AS next FROM per_tipo_salario`);
+  await pool.query(`INSERT INTO per_tipo_salario ("PTIPO_SAL_CODIGO","PTIPO_SAL_DESC","PTIPO_SAL_DIAS_TRAB","PTIPO_SAL_TIPO") VALUES ($1,$2,$3,$4)`,
+    [next, ptipo_sal_desc, ptipo_sal_dias_trab ?? null, ptipo_sal_tipo || null]);
+  return { ptipo_sal_codigo: next, ptipo_sal_desc, ptipo_sal_dias_trab, ptipo_sal_tipo };
+};
+
+const updateTipoSalario = async (id, { ptipo_sal_desc, ptipo_sal_dias_trab, ptipo_sal_tipo }) => {
+  await pool.query(`UPDATE per_tipo_salario SET "PTIPO_SAL_DESC" = $1, "PTIPO_SAL_DIAS_TRAB" = $2, "PTIPO_SAL_TIPO" = $3 WHERE "PTIPO_SAL_CODIGO" = $4`,
+    [ptipo_sal_desc, ptipo_sal_dias_trab ?? null, ptipo_sal_tipo || null, id]);
+  return { ptipo_sal_codigo: id, ptipo_sal_desc, ptipo_sal_dias_trab, ptipo_sal_tipo };
+};
+
+const deleteTipoSalario = async (id) => {
+  await pool.query(`DELETE FROM per_tipo_salario WHERE "PTIPO_SAL_CODIGO" = $1`, [id]);
+};
+
+// ─── MOTIVOS DE LICENCIA ─────────────────────────────────────────────────────
+
+const getMotivosLicencia = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  const params = search ? [`%${search}%`] : [];
+  const where  = search ? `WHERE "MLIC_DESC" ILIKE $1` : '';
+  const { rows: [{ count }] } = await pool.query(`SELECT COUNT(*) FROM per_motivo_licencia ${where}`, params);
+  const total = parseInt(count);
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const allowedSort = { desc: `"MLIC_DESC"`, tipo: `"MLIC_TIPO"` };
+  const orderCol = allowedSort[sortField] || `"MLIC_CODIGO"`;
+  const select = `SELECT "MLIC_CODIGO" AS mlic_codigo, "MLIC_DESC" AS mlic_desc, "MLIC_TIPO" AS mlic_tipo, "MLIC_CAT_DIAS" AS mlic_cat_dias, "MLIC_IPS" AS mlic_ips, "MLIC_CONTROL_DEFICIT" AS mlic_control_deficit FROM per_motivo_licencia ${where} ORDER BY ${orderCol} ${dir}`;
+  if (all) {
+    const { rows } = await pool.query(select, params);
+    return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
+  }
+  const offset = (page - 1) * limit;
+  const { rows } = await pool.query(`${select} LIMIT $${params.length+1} OFFSET $${params.length+2}`, [...params, limit, offset]);
+  return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+};
+
+const createMotivoLicencia = async ({ mlic_desc, mlic_tipo, mlic_cat_dias, mlic_ips, mlic_control_deficit }) => {
+  const { rows: [{ next }] } = await pool.query(`SELECT COALESCE(MAX("MLIC_CODIGO"), 0) + 1 AS next FROM per_motivo_licencia`);
+  await pool.query(`INSERT INTO per_motivo_licencia ("MLIC_CODIGO","MLIC_DESC","MLIC_TIPO","MLIC_CAT_DIAS","MLIC_IPS","MLIC_CONTROL_DEFICIT") VALUES ($1,$2,$3,$4,$5,$6)`,
+    [next, mlic_desc, mlic_tipo || null, mlic_cat_dias ?? null, mlic_ips || 'N', mlic_control_deficit || 'N']);
+  return { mlic_codigo: next, mlic_desc, mlic_tipo, mlic_cat_dias, mlic_ips: mlic_ips || 'N', mlic_control_deficit: mlic_control_deficit || 'N' };
+};
+
+const updateMotivoLicencia = async (id, { mlic_desc, mlic_tipo, mlic_cat_dias, mlic_ips, mlic_control_deficit }) => {
+  await pool.query(`UPDATE per_motivo_licencia SET "MLIC_DESC" = $1, "MLIC_TIPO" = $2, "MLIC_CAT_DIAS" = $3, "MLIC_IPS" = $4, "MLIC_CONTROL_DEFICIT" = $5 WHERE "MLIC_CODIGO" = $6`,
+    [mlic_desc, mlic_tipo || null, mlic_cat_dias ?? null, mlic_ips || 'N', mlic_control_deficit || 'N', id]);
+  return { mlic_codigo: id, mlic_desc, mlic_tipo, mlic_cat_dias, mlic_ips, mlic_control_deficit };
+};
+
+const deleteMotivoLicencia = async (id) => {
+  await pool.query(`DELETE FROM per_motivo_licencia WHERE "MLIC_CODIGO" = $1`, [id]);
+};
+
+// ─── INSTITUCIONES EDUCATIVAS ────────────────────────────────────────────────
+
+const getInstEducativas = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  const params = search ? [`%${search}%`] : [];
+  const where  = search ? `WHERE "INST_DESCRIPCION" ILIKE $1` : '';
+  const { rows: [{ count }] } = await pool.query(`SELECT COUNT(*) FROM per_inst_educativa ${where}`, params);
+  const total = parseInt(count);
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = sortField === 'desc' ? `"INST_DESCRIPCION" ${dir}` : `"INST_CODIGO" ${dir}`;
+  const select = `SELECT "INST_CODIGO" AS inst_codigo, "INST_DESCRIPCION" AS inst_descripcion, "INST_PP" AS inst_pp, "INST_P" AS inst_p, "INST_S" AS inst_s, "INST_T" AS inst_t, "INST_I" AS inst_i FROM per_inst_educativa ${where} ORDER BY ${orderBy}`;
+  if (all) {
+    const { rows } = await pool.query(select, params);
+    return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
+  }
+  const offset = (page - 1) * limit;
+  const { rows } = await pool.query(`${select} LIMIT $${params.length+1} OFFSET $${params.length+2}`, [...params, limit, offset]);
+  return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+};
+
+const createInstEducativa = async ({ inst_descripcion, inst_pp, inst_p, inst_s, inst_t, inst_i }) => {
+  const { rows: [{ next }] } = await pool.query(`SELECT COALESCE(MAX("INST_CODIGO"), 0) + 1 AS next FROM per_inst_educativa`);
+  await pool.query(`INSERT INTO per_inst_educativa ("INST_CODIGO","INST_DESCRIPCION","INST_PP","INST_P","INST_S","INST_T","INST_I") VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+    [next, inst_descripcion, inst_pp || 'N', inst_p || 'N', inst_s || 'N', inst_t || 'N', inst_i || 'N']);
+  return { inst_codigo: next, inst_descripcion, inst_pp: inst_pp || 'N', inst_p: inst_p || 'N', inst_s: inst_s || 'N', inst_t: inst_t || 'N', inst_i: inst_i || 'N' };
+};
+
+const updateInstEducativa = async (id, { inst_descripcion, inst_pp, inst_p, inst_s, inst_t, inst_i }) => {
+  await pool.query(`UPDATE per_inst_educativa SET "INST_DESCRIPCION" = $1, "INST_PP" = $2, "INST_P" = $3, "INST_S" = $4, "INST_T" = $5, "INST_I" = $6 WHERE "INST_CODIGO" = $7`,
+    [inst_descripcion, inst_pp || 'N', inst_p || 'N', inst_s || 'N', inst_t || 'N', inst_i || 'N', id]);
+  return { inst_codigo: id, inst_descripcion, inst_pp, inst_p, inst_s, inst_t, inst_i };
+};
+
+const deleteInstEducativa = async (id) => {
+  await pool.query(`DELETE FROM per_inst_educativa WHERE "INST_CODIGO" = $1`, [id]);
+};
+
 module.exports = {
   getCargos, createCargo, updateCargo, deleteCargo,
   getCategorias, createCategoria, updateCategoria, deleteCategoria,
@@ -676,4 +786,7 @@ module.exports = {
   getEstadosEstudio, createEstadoEstudio, updateEstadoEstudio, deleteEstadoEstudio,
   getFunciones, createFuncion, updateFuncion, deleteFuncion,
   getClasificacionesDescuento, createClasificacionDescuento, updateClasificacionDescuento, deleteClasificacionDescuento,
+  getTiposSalario, createTipoSalario, updateTipoSalario, deleteTipoSalario,
+  getMotivosLicencia, createMotivoLicencia, updateMotivoLicencia, deleteMotivoLicencia,
+  getInstEducativas, createInstEducativa, updateInstEducativa, deleteInstEducativa,
 };

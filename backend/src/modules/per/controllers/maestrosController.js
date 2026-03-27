@@ -43,4 +43,7 @@ module.exports = {
   estadosEstudio:  handler(s.getEstadosEstudio,  s.createEstadoEstudio,  s.updateEstadoEstudio,  s.deleteEstadoEstudio),
   funciones:       handler(s.getFunciones,       s.createFuncion,        s.updateFuncion,        s.deleteFuncion),
   clasificacionesDescuento: handler(s.getClasificacionesDescuento, s.createClasificacionDescuento, s.updateClasificacionDescuento, s.deleteClasificacionDescuento),
+  tiposSalario:    handler(s.getTiposSalario,    s.createTipoSalario,    s.updateTipoSalario,    s.deleteTipoSalario),
+  motivosLicencia: handler(s.getMotivosLicencia, s.createMotivoLicencia, s.updateMotivoLicencia, s.deleteMotivoLicencia),
+  instEducativas:  handler(s.getInstEducativas,  s.createInstEducativa,  s.updateInstEducativa,  s.deleteInstEducativa),
 };

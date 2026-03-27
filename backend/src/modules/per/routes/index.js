@@ -117,6 +117,24 @@ router.post('/maestros/clasificaciones-descuento',        verifyToken, m.clasifi
 router.put('/maestros/clasificaciones-descuento/:id',     verifyToken, m.clasificacionesDescuento.update);
 router.delete('/maestros/clasificaciones-descuento/:id',  verifyToken, m.clasificacionesDescuento.remove);
 
+// Tipos de salario
+router.get('/maestros/tipos-salario',         verifyToken, m.tiposSalario.getAll);
+router.post('/maestros/tipos-salario',        verifyToken, m.tiposSalario.create);
+router.put('/maestros/tipos-salario/:id',     verifyToken, m.tiposSalario.update);
+router.delete('/maestros/tipos-salario/:id',  verifyToken, m.tiposSalario.remove);
+
+// Motivos de licencia
+router.get('/maestros/motivos-licencia',         verifyToken, m.motivosLicencia.getAll);
+router.post('/maestros/motivos-licencia',        verifyToken, m.motivosLicencia.create);
+router.put('/maestros/motivos-licencia/:id',     verifyToken, m.motivosLicencia.update);
+router.delete('/maestros/motivos-licencia/:id',  verifyToken, m.motivosLicencia.remove);
+
+// Instituciones educativas
+router.get('/maestros/inst-educativas',         verifyToken, m.instEducativas.getAll);
+router.post('/maestros/inst-educativas',        verifyToken, m.instEducativas.create);
+router.put('/maestros/inst-educativas/:id',     verifyToken, m.instEducativas.update);
+router.delete('/maestros/inst-educativas/:id',  verifyToken, m.instEducativas.remove);
+
 // Empleados
 router.get('/empleados',      verifyToken, ec.getAll);
 router.get('/empleados/:id',  verifyToken, ec.getById);

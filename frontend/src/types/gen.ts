@@ -116,6 +116,39 @@ export interface TipoImpuesto {
   timpu_ind_imputa: 'S' | 'N';
 }
 
+export interface Profesion {
+  prof_codigo: number;
+  prof_desc: string;
+}
+
+export interface Distrito {
+  dist_codigo: number;
+  dist_desc: string;
+}
+
+export interface MotivoAnulacion {
+  moan_codigo: number;
+  moan_desc: string;
+}
+
+export interface Localidad {
+  loc_codigo: number;
+  loc_desc: string;
+  loc_dep_codigo: number | null;
+  dpto_desc?: string;
+  loc_distrito: number | null;
+  dist_desc?: string;
+}
+
+export interface Barrio {
+  barr_codigo: number;
+  barr_desc: string;
+  barr_codigo_loc: number | null;
+  loc_desc?: string;
+  barr_codigo_dep: number | null;
+  dpto_desc?: string;
+}
+
 export interface AuthUser {
   codigo: number;
   nombre: string;

@@ -404,6 +404,194 @@ const deletePrograma = async (clave) => {
   await pool.query('DELETE FROM gen_programa WHERE "PROG_CLAVE" = $1', [clave]);
 };
 
+// ─── PROFESIONES ────────────────────────────────────────────────────────────
+
+const getProfesiones = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  const params = search ? [`%${search}%`] : [];
+  const where  = search ? `WHERE "PROF_DESC" ILIKE $1` : '';
+  const { rows: [{ count }] } = await pool.query(`SELECT COUNT(*) FROM gen_profesion ${where}`, params);
+  const total = parseInt(count);
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = sortField === 'desc' ? `"PROF_DESC" ${dir}` : `"PROF_CODIGO" ${dir}`;
+  const select = `SELECT "PROF_CODIGO" AS prof_codigo, "PROF_DESC" AS prof_desc FROM gen_profesion ${where} ORDER BY ${orderBy}`;
+  if (all) {
+    const { rows } = await pool.query(select, params);
+    return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
+  }
+  const offset = (page - 1) * limit;
+  const { rows } = await pool.query(`${select} LIMIT $${params.length+1} OFFSET $${params.length+2}`, [...params, limit, offset]);
+  return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+};
+
+const createProfesion = async ({ prof_desc }) => {
+  const { rows: [{ next }] } = await pool.query(`SELECT COALESCE(MAX("PROF_CODIGO"), 0) + 1 AS next FROM gen_profesion`);
+  await pool.query(`INSERT INTO gen_profesion ("PROF_CODIGO","PROF_DESC") VALUES ($1,$2)`, [next, prof_desc]);
+  return { prof_codigo: next, prof_desc };
+};
+
+const updateProfesion = async (id, { prof_desc }) => {
+  await pool.query(`UPDATE gen_profesion SET "PROF_DESC" = $1 WHERE "PROF_CODIGO" = $2`, [prof_desc, id]);
+  return { prof_codigo: id, prof_desc };
+};
+
+const deleteProfesion = async (id) => {
+  await pool.query(`DELETE FROM gen_profesion WHERE "PROF_CODIGO" = $1`, [id]);
+};
+
+// ─── DISTRITOS ──────────────────────────────────────────────────────────────
+
+const getDistritos = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  const params = search ? [`%${search}%`] : [];
+  const where  = search ? `WHERE "DIST_DESC" ILIKE $1` : '';
+  const { rows: [{ count }] } = await pool.query(`SELECT COUNT(*) FROM gen_distrito ${where}`, params);
+  const total = parseInt(count);
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = sortField === 'desc' ? `"DIST_DESC" ${dir}` : `"DIST_CODIGO" ${dir}`;
+  const select = `SELECT "DIST_CODIGO" AS dist_codigo, "DIST_DESC" AS dist_desc FROM gen_distrito ${where} ORDER BY ${orderBy}`;
+  if (all) {
+    const { rows } = await pool.query(select, params);
+    return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
+  }
+  const offset = (page - 1) * limit;
+  const { rows } = await pool.query(`${select} LIMIT $${params.length+1} OFFSET $${params.length+2}`, [...params, limit, offset]);
+  return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+};
+
+const createDistrito = async ({ dist_desc }) => {
+  const { rows: [{ next }] } = await pool.query(`SELECT COALESCE(MAX("DIST_CODIGO"), 0) + 1 AS next FROM gen_distrito`);
+  await pool.query(`INSERT INTO gen_distrito ("DIST_CODIGO","DIST_DESC") VALUES ($1,$2)`, [next, dist_desc]);
+  return { dist_codigo: next, dist_desc };
+};
+
+const updateDistrito = async (id, { dist_desc }) => {
+  await pool.query(`UPDATE gen_distrito SET "DIST_DESC" = $1 WHERE "DIST_CODIGO" = $2`, [dist_desc, id]);
+  return { dist_codigo: id, dist_desc };
+};
+
+const deleteDistrito = async (id) => {
+  await pool.query(`DELETE FROM gen_distrito WHERE "DIST_CODIGO" = $1`, [id]);
+};
+
+// ─── MOTIVOS DE ANULACIÓN ───────────────────────────────────────────────────
+
+const getMotivosAnulacion = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  const params = search ? [`%${search}%`] : [];
+  const where  = search ? `WHERE "MOAN_DESC" ILIKE $1` : '';
+  const { rows: [{ count }] } = await pool.query(`SELECT COUNT(*) FROM gen_motivo_anulacion ${where}`, params);
+  const total = parseInt(count);
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = sortField === 'desc' ? `"MOAN_DESC" ${dir}` : `"MOAN_CODIGO" ${dir}`;
+  const select = `SELECT "MOAN_CODIGO" AS moan_codigo, "MOAN_DESC" AS moan_desc FROM gen_motivo_anulacion ${where} ORDER BY ${orderBy}`;
+  if (all) {
+    const { rows } = await pool.query(select, params);
+    return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
+  }
+  const offset = (page - 1) * limit;
+  const { rows } = await pool.query(`${select} LIMIT $${params.length+1} OFFSET $${params.length+2}`, [...params, limit, offset]);
+  return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+};
+
+const createMotivoAnulacion = async ({ moan_desc }) => {
+  const { rows: [{ next }] } = await pool.query(`SELECT COALESCE(MAX("MOAN_CODIGO"), 0) + 1 AS next FROM gen_motivo_anulacion`);
+  await pool.query(`INSERT INTO gen_motivo_anulacion ("MOAN_CODIGO","MOAN_DESC") VALUES ($1,$2)`, [next, moan_desc]);
+  return { moan_codigo: next, moan_desc };
+};
+
+const updateMotivoAnulacion = async (id, { moan_desc }) => {
+  await pool.query(`UPDATE gen_motivo_anulacion SET "MOAN_DESC" = $1 WHERE "MOAN_CODIGO" = $2`, [moan_desc, id]);
+  return { moan_codigo: id, moan_desc };
+};
+
+const deleteMotivoAnulacion = async (id) => {
+  await pool.query(`DELETE FROM gen_motivo_anulacion WHERE "MOAN_CODIGO" = $1`, [id]);
+};
+
+// ─── LOCALIDADES ────────────────────────────────────────────────────────────
+
+const getLocalidades = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  const params = search ? [`%${search}%`] : [];
+  const where  = search ? `WHERE l."LOC_DESC" ILIKE $1` : '';
+  const { rows: [{ count }] } = await pool.query(`SELECT COUNT(*) FROM gen_localidad l ${where}`, params);
+  const total = parseInt(count);
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const allowedSort = { desc: `l."LOC_DESC"`, dep: `d."DPTO_DESC"` };
+  const orderCol = allowedSort[sortField] || `l."LOC_CODIGO"`;
+  const select = `SELECT l."LOC_CODIGO" AS loc_codigo, l."LOC_DESC" AS loc_desc,
+    l."LOC_DEP_CODIGO" AS loc_dep_codigo, d."DPTO_DESC" AS dpto_desc,
+    l."LOC_DISTRITO" AS loc_distrito, di."DIST_DESC" AS dist_desc
+    FROM gen_localidad l
+    LEFT JOIN gen_departamento d ON d."DPTO_CODIGO" = l."LOC_DEP_CODIGO"
+    LEFT JOIN gen_distrito di ON di."DIST_CODIGO" = l."LOC_DISTRITO"
+    ${where} ORDER BY ${orderCol} ${dir}`;
+  if (all) {
+    const { rows } = await pool.query(select, params);
+    return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
+  }
+  const offset = (page - 1) * limit;
+  const { rows } = await pool.query(`${select} LIMIT $${params.length+1} OFFSET $${params.length+2}`, [...params, limit, offset]);
+  return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+};
+
+const createLocalidad = async ({ loc_desc, loc_dep_codigo, loc_distrito }) => {
+  const { rows: [{ next }] } = await pool.query(`SELECT COALESCE(MAX("LOC_CODIGO"), 0) + 1 AS next FROM gen_localidad`);
+  await pool.query(`INSERT INTO gen_localidad ("LOC_CODIGO","LOC_DESC","LOC_DEP_CODIGO","LOC_DISTRITO") VALUES ($1,$2,$3,$4)`,
+    [next, loc_desc, loc_dep_codigo || null, loc_distrito || null]);
+  return { loc_codigo: next, loc_desc, loc_dep_codigo, loc_distrito };
+};
+
+const updateLocalidad = async (id, { loc_desc, loc_dep_codigo, loc_distrito }) => {
+  await pool.query(`UPDATE gen_localidad SET "LOC_DESC" = $1, "LOC_DEP_CODIGO" = $2, "LOC_DISTRITO" = $3 WHERE "LOC_CODIGO" = $4`,
+    [loc_desc, loc_dep_codigo || null, loc_distrito || null, id]);
+  return { loc_codigo: id, loc_desc, loc_dep_codigo, loc_distrito };
+};
+
+const deleteLocalidad = async (id) => {
+  await pool.query(`DELETE FROM gen_localidad WHERE "LOC_CODIGO" = $1`, [id]);
+};
+
+// ─── BARRIOS ────────────────────────────────────────────────────────────────
+
+const getBarrios = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  const params = search ? [`%${search}%`] : [];
+  const where  = search ? `WHERE b."BARR_DESC" ILIKE $1` : '';
+  const { rows: [{ count }] } = await pool.query(`SELECT COUNT(*) FROM gen_barrio b ${where}`, params);
+  const total = parseInt(count);
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const allowedSort = { desc: `b."BARR_DESC"`, loc: `l."LOC_DESC"` };
+  const orderCol = allowedSort[sortField] || `b."BARR_CODIGO"`;
+  const select = `SELECT b."BARR_CODIGO" AS barr_codigo, b."BARR_DESC" AS barr_desc,
+    b."BARR_CODIGO_LOC" AS barr_codigo_loc, l."LOC_DESC" AS loc_desc,
+    b."BARR_CODIGO_DEP" AS barr_codigo_dep, d."DPTO_DESC" AS dpto_desc
+    FROM gen_barrio b
+    LEFT JOIN gen_localidad l ON l."LOC_CODIGO" = b."BARR_CODIGO_LOC"
+    LEFT JOIN gen_departamento d ON d."DPTO_CODIGO" = b."BARR_CODIGO_DEP"
+    ${where} ORDER BY ${orderCol} ${dir}`;
+  if (all) {
+    const { rows } = await pool.query(select, params);
+    return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
+  }
+  const offset = (page - 1) * limit;
+  const { rows } = await pool.query(`${select} LIMIT $${params.length+1} OFFSET $${params.length+2}`, [...params, limit, offset]);
+  return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+};
+
+const createBarrio = async ({ barr_desc, barr_codigo_loc, barr_codigo_dep }) => {
+  const { rows: [{ next }] } = await pool.query(`SELECT COALESCE(MAX("BARR_CODIGO"), 0) + 1 AS next FROM gen_barrio`);
+  await pool.query(`INSERT INTO gen_barrio ("BARR_CODIGO","BARR_DESC","BARR_CODIGO_LOC","BARR_CODIGO_DEP") VALUES ($1,$2,$3,$4)`,
+    [next, barr_desc, barr_codigo_loc || null, barr_codigo_dep || null]);
+  return { barr_codigo: next, barr_desc, barr_codigo_loc, barr_codigo_dep };
+};
+
+const updateBarrio = async (id, { barr_desc, barr_codigo_loc, barr_codigo_dep }) => {
+  await pool.query(`UPDATE gen_barrio SET "BARR_DESC" = $1, "BARR_CODIGO_LOC" = $2, "BARR_CODIGO_DEP" = $3 WHERE "BARR_CODIGO" = $4`,
+    [barr_desc, barr_codigo_loc || null, barr_codigo_dep || null, id]);
+  return { barr_codigo: id, barr_desc, barr_codigo_loc, barr_codigo_dep };
+};
+
+const deleteBarrio = async (id) => {
+  await pool.query(`DELETE FROM gen_barrio WHERE "BARR_CODIGO" = $1`, [id]);
+};
+
 module.exports = {
   getMonedas, getMoneda, createMoneda, updateMoneda, deleteMoneda,
   getPaises, getPais, createPais, updatePais, deletePais,
@@ -414,4 +602,9 @@ module.exports = {
   getProgramas, getPrograma, createPrograma, updatePrograma, deletePrograma,
   getImpuestos, getImpuesto, createImpuesto, updateImpuesto, deleteImpuesto,
   getTiposImpuesto, getTipoImpuesto, createTipoImpuesto, updateTipoImpuesto, deleteTipoImpuesto,
+  getProfesiones, createProfesion, updateProfesion, deleteProfesion,
+  getDistritos, createDistrito, updateDistrito, deleteDistrito,
+  getMotivosAnulacion, createMotivoAnulacion, updateMotivoAnulacion, deleteMotivoAnulacion,
+  getLocalidades, createLocalidad, updateLocalidad, deleteLocalidad,
+  getBarrios, createBarrio, updateBarrio, deleteBarrio,
 };

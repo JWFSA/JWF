@@ -103,6 +103,32 @@ export interface ClasificacionDescuento {
   clde_desc: string;
 }
 
+export interface TipoSalario {
+  ptipo_sal_codigo: number;
+  ptipo_sal_desc: string;
+  ptipo_sal_dias_trab: number | null;
+  ptipo_sal_tipo: string | null;
+}
+
+export interface MotivoLicencia {
+  mlic_codigo: number;
+  mlic_desc: string;
+  mlic_tipo: string | null;
+  mlic_cat_dias: number | null;
+  mlic_ips: string | null;
+  mlic_control_deficit: string | null;
+}
+
+export interface InstEducativa {
+  inst_codigo: number;
+  inst_descripcion: string;
+  inst_pp: string | null;
+  inst_p: string | null;
+  inst_s: string | null;
+  inst_t: string | null;
+  inst_i: string | null;
+}
+
 export interface Empleado {
   empl_legajo: number;
   empl_nombre: string;
