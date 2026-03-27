@@ -1,5 +1,5 @@
 import api from '@/lib/api';
-import type { Barrio, Zona, Categoria, Condicion, Vendedor, Cliente, Articulo, Pedido, ListaPrecio, Paginated } from '@/types/fac';
+import type { Barrio, Zona, Categoria, Condicion, Vendedor, Cliente, Articulo, Pedido, ListaPrecio, Factura, FacturaDet, Paginated } from '@/types/fac';
 import type { ListParams } from '@/services/gen';
 
 // Barrios
@@ -53,3 +53,10 @@ export const getPedido     = (id: number) => api.get<Pedido>(`/fac/pedidos/${id}
 export const createPedido  = (data: Partial<Pedido>) => api.post<Pedido>('/fac/pedidos', data).then((r) => r.data);
 export const updatePedido  = (id: number, data: Partial<Pedido>) => api.put<Pedido>(`/fac/pedidos/${id}`, data).then((r) => r.data);
 export const deletePedido  = (id: number) => api.delete(`/fac/pedidos/${id}`);
+
+// Facturas
+export const getFacturas   = (params?: ListParams) => api.get<Paginated<Factura>>('/fac/facturas', { params }).then((r) => r.data);
+export const getFactura    = (id: number) => api.get<Factura>(`/fac/facturas/${id}`).then((r) => r.data);
+export const createFactura = (data: Partial<Factura>) => api.post<Factura>('/fac/facturas', data).then((r) => r.data);
+export const updateFactura = (id: number, data: Partial<Factura>) => api.put<Factura>(`/fac/facturas/${id}`, data).then((r) => r.data);
+export const deleteFactura = (id: number) => api.delete(`/fac/facturas/${id}`);

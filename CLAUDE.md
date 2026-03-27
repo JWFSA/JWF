@@ -150,6 +150,7 @@ Cada vez que se cree una nueva página de listado, agregarla aquí. Usar esta li
 | `stk/remisiones` | Remisiones | `fecha` desc |
 | `stk/stock` | Stock actual | `art` asc |
 | `stk/articulos` | Artículos | `desc` asc |
+| `fac/facturas` | Facturas | `fecha` desc |
 | `fac/clientes` | Clientes | `nom` asc |
 | `fac/vendedores` | Vendedores | `nom` asc |
 | `fac/pedidos` | Pedidos | `fecha` desc |

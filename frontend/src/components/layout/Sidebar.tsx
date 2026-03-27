@@ -34,6 +34,7 @@ const menu = [
     label: 'Facturación',
     icon: ShoppingCart,
     children: [
+      { label: 'Facturas',          href: '/fac/facturas',      icon: Receipt },
       { label: 'Pedidos',          href: '/fac/pedidos',       icon: ClipboardList },
       { label: 'Clientes',         href: '/fac/clientes',      icon: UserCheck },
       { label: 'Vendedores',       href: '/fac/vendedores',    icon: Handshake },

@@ -56,4 +56,13 @@ router.post('/pedidos',       verifyToken, pedidoController.create);
 router.put('/pedidos/:id',    verifyToken, pedidoController.update);
 router.delete('/pedidos/:id', verifyToken, pedidoController.remove);
 
+const facturaController  = require('../controllers/facturaController');
+
+// Facturas
+router.get('/facturas',        verifyToken, facturaController.getAll);
+router.get('/facturas/:id',    verifyToken, facturaController.getById);
+router.post('/facturas',       verifyToken, facturaController.create);
+router.put('/facturas/:id',    verifyToken, facturaController.update);
+router.delete('/facturas/:id', verifyToken, facturaController.remove);
+
 module.exports = router;

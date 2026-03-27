@@ -118,3 +118,41 @@ export interface ListaPrecio {
   lipe_desc: string;
   lipe_estado: 'A' | 'I';
 }
+
+export interface FacturaDet {
+  det_clave_doc?: number;
+  det_nro_item?: number;
+  det_art: number | null;
+  det_art_desc: string;
+  det_cant: number;
+  det_um_fac: string;
+  det_precio_mon: number;   // precio CON IVA incluido
+  det_porc_dto: number;
+  det_neto_loc: number;     // base imponible (sin IVA)
+  det_iva_loc: number;      // monto IVA
+  det_cod_iva: number;      // 1=exento, 2=10%, 3=5%
+}
+
+export interface Factura {
+  doc_clave: number;
+  doc_nro_doc: number;
+  doc_nro_timbrado: string | null;
+  doc_serie: string | null;
+  doc_fec_doc: string;
+  doc_cli: number | null;
+  cli_nom: string | null;
+  doc_cli_nom: string | null;
+  doc_cli_ruc: string | null;
+  doc_cond_vta: number | null;
+  doc_mon: number | null;
+  mon_desc?: string;
+  mon_simbolo?: string;
+  doc_obs: string | null;
+  doc_grav_10_loc: number;
+  doc_grav_5_loc: number;
+  doc_neto_exen_loc: number;
+  doc_iva_10_loc: number;
+  doc_iva_5_loc: number;
+  doc_saldo_loc: number;
+  items?: FacturaDet[];
+}
