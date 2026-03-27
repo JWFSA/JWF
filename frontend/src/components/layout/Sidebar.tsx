@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Users, Building2, Shield, Globe, Settings, LayoutDashboard, ChevronDown, X, Package, Warehouse, Tag, Layers, BookOpen, DollarSign, MapPin, Map, Code, Ruler, Grid3x3, Building, Percent, ShoppingCart, UserCheck, MapPinned, LayoutList, Handshake, ClipboardList, ListOrdered, Landmark, CreditCard, Briefcase, Truck, FileText, Banknote, Scale, ArrowLeftRight, BarChart3, Receipt, HardHat, UserCog, Network, Columns } from 'lucide-react';
+import { Users, Building2, Shield, Globe, Settings, LayoutDashboard, ChevronDown, X, Package, Warehouse, Tag, Layers, BookOpen, DollarSign, MapPin, Map, Code, Ruler, Grid3x3, Building, Percent, ShoppingCart, UserCheck, MapPinned, LayoutList, Handshake, ClipboardList, ListOrdered, Landmark, CreditCard, Briefcase, Truck, FileText, Banknote, Scale, ArrowLeftRight, BarChart3, Receipt, HardHat, UserCog, Network, Columns, Languages, GraduationCap, Award, Brain, Signal, CheckCircle, Wrench, FolderMinus, Heart, Wallet } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import Image from 'next/image';
@@ -89,6 +89,17 @@ const menu = [
       { label: 'Tipos contrato',   href: '/per/tipos-contrato',  icon: FileText },
       { label: 'Mot. ausencia',    href: '/per/motivos-ausencia',icon: BookOpen },
       { label: 'Formas de pago',   href: '/per/formas-pago',     icon: CreditCard },
+      { label: 'Tipos liquidación',href: '/per/tipos-liquidacion',icon: Wallet },
+      { label: 'Tipos de pago',   href: '/per/tipos-pago',      icon: Banknote },
+      { label: 'Tipos familiar',  href: '/per/tipos-familiar',  icon: Heart },
+      { label: 'Idiomas',         href: '/per/idiomas',         icon: Languages },
+      { label: 'Carreras',        href: '/per/carreras',        icon: GraduationCap },
+      { label: 'Bachilleratos',   href: '/per/bachilleratos',   icon: Award },
+      { label: 'Capacitaciones',  href: '/per/capacitaciones',  icon: Brain },
+      { label: 'Niveles capac.',  href: '/per/niveles-capacitacion', icon: Signal },
+      { label: 'Est. estudio',    href: '/per/estados-estudio', icon: CheckCircle },
+      { label: 'Funciones',       href: '/per/funciones',       icon: Wrench },
+      { label: 'Clasif. descuento', href: '/per/clasificaciones-descuento', icon: FolderMinus },
     ],
   },
 ];

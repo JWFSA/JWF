@@ -47,6 +47,62 @@ export interface FormaPago {
   forma_tipo_pago: string | null;
 }
 
+export interface TipoLiquidacion {
+  tipliq_codigo: number;
+  tipliq_descripcion: string;
+}
+
+export interface TipoPago {
+  tpag_codigo: number;
+  tpag_desc: string;
+}
+
+export interface TipoFamiliar {
+  tipo_codigo: number;
+  tipo_desc: string;
+  tipo_cobra_conc: string | null;
+}
+
+export interface Idioma {
+  idi_codigo: number;
+  idi_descripcion: string;
+}
+
+export interface Carrera {
+  carr_codigo: number;
+  carr_descripcion: string;
+}
+
+export interface Bachillerato {
+  bach_codigo: number;
+  bach_descripcion: string;
+}
+
+export interface Capacitacion {
+  pcapac_codigo: number;
+  pcapac_desc: string;
+}
+
+export interface NivelCapacitacion {
+  pcapn_cod: number;
+  pcapn_desc: string;
+}
+
+export interface EstadoEstudio {
+  est_codigo: number;
+  est_descripcion: string;
+}
+
+export interface Funcion {
+  fun_codigo: number;
+  fun_desc: string;
+}
+
+export interface ClasificacionDescuento {
+  clde_codigo: number;
+  clde_desc: string;
+}
+
 export interface Empleado {
   empl_legajo: number;
   empl_nombre: string;

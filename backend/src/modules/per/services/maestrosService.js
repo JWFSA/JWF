@@ -282,6 +282,380 @@ const deleteFormaPago = async (id) => {
   await pool.query(`DELETE FROM per_forma_pago WHERE "FORMA_CODIGO" = $1`, [id]);
 };
 
+// ─── TIPOS DE LIQUIDACIÓN ────────────────────────────────────────────────────
+
+const getTiposLiquidacion = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  const params = search ? [`%${search}%`] : [];
+  const where  = search ? `WHERE "TIPLIQ_DESCRIPCION" ILIKE $1` : '';
+  const { rows: [{ count }] } = await pool.query(`SELECT COUNT(*) FROM per_tipo_liq ${where}`, params);
+  const total = parseInt(count);
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = sortField === 'desc' ? `"TIPLIQ_DESCRIPCION" ${dir}` : `"TIPLIQ_CODIGO" ${dir}`;
+  const select = `SELECT "TIPLIQ_CODIGO" AS tipliq_codigo, "TIPLIQ_DESCRIPCION" AS tipliq_descripcion FROM per_tipo_liq ${where} ORDER BY ${orderBy}`;
+  if (all) {
+    const { rows } = await pool.query(select, params);
+    return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
+  }
+  const offset = (page - 1) * limit;
+  const { rows } = await pool.query(`${select} LIMIT $${params.length+1} OFFSET $${params.length+2}`, [...params, limit, offset]);
+  return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+};
+
+const createTipoLiquidacion = async ({ tipliq_descripcion }) => {
+  const { rows: [{ next }] } = await pool.query(`SELECT COALESCE(MAX("TIPLIQ_CODIGO"), 0) + 1 AS next FROM per_tipo_liq`);
+  await pool.query(`INSERT INTO per_tipo_liq ("TIPLIQ_CODIGO","TIPLIQ_DESCRIPCION") VALUES ($1,$2)`, [next, tipliq_descripcion]);
+  return { tipliq_codigo: next, tipliq_descripcion };
+};
+
+const updateTipoLiquidacion = async (id, { tipliq_descripcion }) => {
+  await pool.query(`UPDATE per_tipo_liq SET "TIPLIQ_DESCRIPCION" = $1 WHERE "TIPLIQ_CODIGO" = $2`, [tipliq_descripcion, id]);
+  return { tipliq_codigo: id, tipliq_descripcion };
+};
+
+const deleteTipoLiquidacion = async (id) => {
+  await pool.query(`DELETE FROM per_tipo_liq WHERE "TIPLIQ_CODIGO" = $1`, [id]);
+};
+
+// ─── TIPOS DE PAGO ───────────────────────────────────────────────────────────
+
+const getTiposPago = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  const params = search ? [`%${search}%`] : [];
+  const where  = search ? `WHERE "TPAG_DESC" ILIKE $1` : '';
+  const { rows: [{ count }] } = await pool.query(`SELECT COUNT(*) FROM per_tipo_pago ${where}`, params);
+  const total = parseInt(count);
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = sortField === 'desc' ? `"TPAG_DESC" ${dir}` : `"TPAG_CODIGO" ${dir}`;
+  const select = `SELECT "TPAG_CODIGO" AS tpag_codigo, "TPAG_DESC" AS tpag_desc FROM per_tipo_pago ${where} ORDER BY ${orderBy}`;
+  if (all) {
+    const { rows } = await pool.query(select, params);
+    return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
+  }
+  const offset = (page - 1) * limit;
+  const { rows } = await pool.query(`${select} LIMIT $${params.length+1} OFFSET $${params.length+2}`, [...params, limit, offset]);
+  return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+};
+
+const createTipoPago = async ({ tpag_desc }) => {
+  const { rows: [{ next }] } = await pool.query(`SELECT COALESCE(MAX("TPAG_CODIGO"), 0) + 1 AS next FROM per_tipo_pago`);
+  await pool.query(`INSERT INTO per_tipo_pago ("TPAG_CODIGO","TPAG_DESC") VALUES ($1,$2)`, [next, tpag_desc]);
+  return { tpag_codigo: next, tpag_desc };
+};
+
+const updateTipoPago = async (id, { tpag_desc }) => {
+  await pool.query(`UPDATE per_tipo_pago SET "TPAG_DESC" = $1 WHERE "TPAG_CODIGO" = $2`, [tpag_desc, id]);
+  return { tpag_codigo: id, tpag_desc };
+};
+
+const deleteTipoPago = async (id) => {
+  await pool.query(`DELETE FROM per_tipo_pago WHERE "TPAG_CODIGO" = $1`, [id]);
+};
+
+// ─── TIPOS DE FAMILIAR ──────────────────────────────────────────────────────
+
+const getTiposFamiliar = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  const params = search ? [`%${search}%`] : [];
+  const where  = search ? `WHERE "TIPO_DESC" ILIKE $1` : '';
+  const { rows: [{ count }] } = await pool.query(`SELECT COUNT(*) FROM per_tipo_familiar ${where}`, params);
+  const total = parseInt(count);
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = sortField === 'desc' ? `"TIPO_DESC" ${dir}` : `"TIPO_CODIGO" ${dir}`;
+  const select = `SELECT "TIPO_CODIGO" AS tipo_codigo, "TIPO_DESC" AS tipo_desc, "TIPO_COBRA_CONC" AS tipo_cobra_conc FROM per_tipo_familiar ${where} ORDER BY ${orderBy}`;
+  if (all) {
+    const { rows } = await pool.query(select, params);
+    return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
+  }
+  const offset = (page - 1) * limit;
+  const { rows } = await pool.query(`${select} LIMIT $${params.length+1} OFFSET $${params.length+2}`, [...params, limit, offset]);
+  return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+};
+
+const createTipoFamiliar = async ({ tipo_desc, tipo_cobra_conc }) => {
+  const { rows: [{ next }] } = await pool.query(`SELECT COALESCE(MAX("TIPO_CODIGO"), 0) + 1 AS next FROM per_tipo_familiar`);
+  await pool.query(`INSERT INTO per_tipo_familiar ("TIPO_CODIGO","TIPO_DESC","TIPO_COBRA_CONC") VALUES ($1,$2,$3)`, [next, tipo_desc, tipo_cobra_conc || null]);
+  return { tipo_codigo: next, tipo_desc, tipo_cobra_conc: tipo_cobra_conc || null };
+};
+
+const updateTipoFamiliar = async (id, { tipo_desc, tipo_cobra_conc }) => {
+  await pool.query(`UPDATE per_tipo_familiar SET "TIPO_DESC" = $1, "TIPO_COBRA_CONC" = $2 WHERE "TIPO_CODIGO" = $3`, [tipo_desc, tipo_cobra_conc || null, id]);
+  return { tipo_codigo: id, tipo_desc, tipo_cobra_conc: tipo_cobra_conc || null };
+};
+
+const deleteTipoFamiliar = async (id) => {
+  await pool.query(`DELETE FROM per_tipo_familiar WHERE "TIPO_CODIGO" = $1`, [id]);
+};
+
+// ─── IDIOMAS ─────────────────────────────────────────────────────────────────
+
+const getIdiomas = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  const params = search ? [`%${search}%`] : [];
+  const where  = search ? `WHERE "IDI_DESCRIPCION" ILIKE $1` : '';
+  const { rows: [{ count }] } = await pool.query(`SELECT COUNT(*) FROM per_idioma ${where}`, params);
+  const total = parseInt(count);
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = sortField === 'desc' ? `"IDI_DESCRIPCION" ${dir}` : `"IDI_CODIGO" ${dir}`;
+  const select = `SELECT "IDI_CODIGO" AS idi_codigo, "IDI_DESCRIPCION" AS idi_descripcion FROM per_idioma ${where} ORDER BY ${orderBy}`;
+  if (all) {
+    const { rows } = await pool.query(select, params);
+    return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
+  }
+  const offset = (page - 1) * limit;
+  const { rows } = await pool.query(`${select} LIMIT $${params.length+1} OFFSET $${params.length+2}`, [...params, limit, offset]);
+  return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+};
+
+const createIdioma = async ({ idi_descripcion }) => {
+  const { rows: [{ next }] } = await pool.query(`SELECT COALESCE(MAX("IDI_CODIGO"), 0) + 1 AS next FROM per_idioma`);
+  await pool.query(`INSERT INTO per_idioma ("IDI_CODIGO","IDI_DESCRIPCION") VALUES ($1,$2)`, [next, idi_descripcion]);
+  return { idi_codigo: next, idi_descripcion };
+};
+
+const updateIdioma = async (id, { idi_descripcion }) => {
+  await pool.query(`UPDATE per_idioma SET "IDI_DESCRIPCION" = $1 WHERE "IDI_CODIGO" = $2`, [idi_descripcion, id]);
+  return { idi_codigo: id, idi_descripcion };
+};
+
+const deleteIdioma = async (id) => {
+  await pool.query(`DELETE FROM per_idioma WHERE "IDI_CODIGO" = $1`, [id]);
+};
+
+// ─── CARRERAS ────────────────────────────────────────────────────────────────
+
+const getCarreras = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  const params = search ? [`%${search}%`] : [];
+  const where  = search ? `WHERE "CARR_DESCRIPCION" ILIKE $1` : '';
+  const { rows: [{ count }] } = await pool.query(`SELECT COUNT(*) FROM per_carrera ${where}`, params);
+  const total = parseInt(count);
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = sortField === 'desc' ? `"CARR_DESCRIPCION" ${dir}` : `"CARR_CODIGO" ${dir}`;
+  const select = `SELECT "CARR_CODIGO" AS carr_codigo, "CARR_DESCRIPCION" AS carr_descripcion FROM per_carrera ${where} ORDER BY ${orderBy}`;
+  if (all) {
+    const { rows } = await pool.query(select, params);
+    return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
+  }
+  const offset = (page - 1) * limit;
+  const { rows } = await pool.query(`${select} LIMIT $${params.length+1} OFFSET $${params.length+2}`, [...params, limit, offset]);
+  return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+};
+
+const createCarrera = async ({ carr_descripcion }) => {
+  const { rows: [{ next }] } = await pool.query(`SELECT COALESCE(MAX("CARR_CODIGO"), 0) + 1 AS next FROM per_carrera`);
+  await pool.query(`INSERT INTO per_carrera ("CARR_CODIGO","CARR_DESCRIPCION") VALUES ($1,$2)`, [next, carr_descripcion]);
+  return { carr_codigo: next, carr_descripcion };
+};
+
+const updateCarrera = async (id, { carr_descripcion }) => {
+  await pool.query(`UPDATE per_carrera SET "CARR_DESCRIPCION" = $1 WHERE "CARR_CODIGO" = $2`, [carr_descripcion, id]);
+  return { carr_codigo: id, carr_descripcion };
+};
+
+const deleteCarrera = async (id) => {
+  await pool.query(`DELETE FROM per_carrera WHERE "CARR_CODIGO" = $1`, [id]);
+};
+
+// ─── BACHILLERATOS ───────────────────────────────────────────────────────────
+
+const getBachilleratos = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  const params = search ? [`%${search}%`] : [];
+  const where  = search ? `WHERE "BACH_DESCRIPCION" ILIKE $1` : '';
+  const { rows: [{ count }] } = await pool.query(`SELECT COUNT(*) FROM per_bachiller ${where}`, params);
+  const total = parseInt(count);
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = sortField === 'desc' ? `"BACH_DESCRIPCION" ${dir}` : `"BACH_CODIGO" ${dir}`;
+  const select = `SELECT "BACH_CODIGO" AS bach_codigo, "BACH_DESCRIPCION" AS bach_descripcion FROM per_bachiller ${where} ORDER BY ${orderBy}`;
+  if (all) {
+    const { rows } = await pool.query(select, params);
+    return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
+  }
+  const offset = (page - 1) * limit;
+  const { rows } = await pool.query(`${select} LIMIT $${params.length+1} OFFSET $${params.length+2}`, [...params, limit, offset]);
+  return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+};
+
+const createBachillerato = async ({ bach_descripcion }) => {
+  const { rows: [{ next }] } = await pool.query(`SELECT COALESCE(MAX("BACH_CODIGO"), 0) + 1 AS next FROM per_bachiller`);
+  await pool.query(`INSERT INTO per_bachiller ("BACH_CODIGO","BACH_DESCRIPCION") VALUES ($1,$2)`, [next, bach_descripcion]);
+  return { bach_codigo: next, bach_descripcion };
+};
+
+const updateBachillerato = async (id, { bach_descripcion }) => {
+  await pool.query(`UPDATE per_bachiller SET "BACH_DESCRIPCION" = $1 WHERE "BACH_CODIGO" = $2`, [bach_descripcion, id]);
+  return { bach_codigo: id, bach_descripcion };
+};
+
+const deleteBachillerato = async (id) => {
+  await pool.query(`DELETE FROM per_bachiller WHERE "BACH_CODIGO" = $1`, [id]);
+};
+
+// ─── CAPACITACIONES ──────────────────────────────────────────────────────────
+
+const getCapacitaciones = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  const params = search ? [`%${search}%`] : [];
+  const where  = search ? `WHERE "PCAPAC_DESC" ILIKE $1` : '';
+  const { rows: [{ count }] } = await pool.query(`SELECT COUNT(*) FROM per_capacitacion ${where}`, params);
+  const total = parseInt(count);
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = sortField === 'desc' ? `"PCAPAC_DESC" ${dir}` : `"PCAPAC_CODIGO" ${dir}`;
+  const select = `SELECT "PCAPAC_CODIGO" AS pcapac_codigo, "PCAPAC_DESC" AS pcapac_desc FROM per_capacitacion ${where} ORDER BY ${orderBy}`;
+  if (all) {
+    const { rows } = await pool.query(select, params);
+    return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
+  }
+  const offset = (page - 1) * limit;
+  const { rows } = await pool.query(`${select} LIMIT $${params.length+1} OFFSET $${params.length+2}`, [...params, limit, offset]);
+  return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+};
+
+const createCapacitacion = async ({ pcapac_desc }) => {
+  const { rows: [{ next }] } = await pool.query(`SELECT COALESCE(MAX("PCAPAC_CODIGO"), 0) + 1 AS next FROM per_capacitacion`);
+  await pool.query(`INSERT INTO per_capacitacion ("PCAPAC_CODIGO","PCAPAC_DESC") VALUES ($1,$2)`, [next, pcapac_desc]);
+  return { pcapac_codigo: next, pcapac_desc };
+};
+
+const updateCapacitacion = async (id, { pcapac_desc }) => {
+  await pool.query(`UPDATE per_capacitacion SET "PCAPAC_DESC" = $1 WHERE "PCAPAC_CODIGO" = $2`, [pcapac_desc, id]);
+  return { pcapac_codigo: id, pcapac_desc };
+};
+
+const deleteCapacitacion = async (id) => {
+  await pool.query(`DELETE FROM per_capacitacion WHERE "PCAPAC_CODIGO" = $1`, [id]);
+};
+
+// ─── NIVELES DE CAPACITACIÓN ─────────────────────────────────────────────────
+
+const getNivelesCapacitacion = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  const params = search ? [`%${search}%`] : [];
+  const where  = search ? `WHERE "PCAPN_DESC" ILIKE $1` : '';
+  const { rows: [{ count }] } = await pool.query(`SELECT COUNT(*) FROM per_nivel_capac ${where}`, params);
+  const total = parseInt(count);
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = sortField === 'desc' ? `"PCAPN_DESC" ${dir}` : `"PCAPN_COD" ${dir}`;
+  const select = `SELECT "PCAPN_COD" AS pcapn_cod, "PCAPN_DESC" AS pcapn_desc FROM per_nivel_capac ${where} ORDER BY ${orderBy}`;
+  if (all) {
+    const { rows } = await pool.query(select, params);
+    return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
+  }
+  const offset = (page - 1) * limit;
+  const { rows } = await pool.query(`${select} LIMIT $${params.length+1} OFFSET $${params.length+2}`, [...params, limit, offset]);
+  return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+};
+
+const createNivelCapacitacion = async ({ pcapn_desc }) => {
+  const { rows: [{ next }] } = await pool.query(`SELECT COALESCE(MAX("PCAPN_COD"), 0) + 1 AS next FROM per_nivel_capac`);
+  await pool.query(`INSERT INTO per_nivel_capac ("PCAPN_COD","PCAPN_DESC") VALUES ($1,$2)`, [next, pcapn_desc]);
+  return { pcapn_cod: next, pcapn_desc };
+};
+
+const updateNivelCapacitacion = async (id, { pcapn_desc }) => {
+  await pool.query(`UPDATE per_nivel_capac SET "PCAPN_DESC" = $1 WHERE "PCAPN_COD" = $2`, [pcapn_desc, id]);
+  return { pcapn_cod: id, pcapn_desc };
+};
+
+const deleteNivelCapacitacion = async (id) => {
+  await pool.query(`DELETE FROM per_nivel_capac WHERE "PCAPN_COD" = $1`, [id]);
+};
+
+// ─── ESTADOS DE ESTUDIO ──────────────────────────────────────────────────────
+
+const getEstadosEstudio = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  const params = search ? [`%${search}%`] : [];
+  const where  = search ? `WHERE "EST_DESCRIPCION" ILIKE $1` : '';
+  const { rows: [{ count }] } = await pool.query(`SELECT COUNT(*) FROM per_estado_estudio ${where}`, params);
+  const total = parseInt(count);
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = sortField === 'desc' ? `"EST_DESCRIPCION" ${dir}` : `"EST_CODIGO" ${dir}`;
+  const select = `SELECT "EST_CODIGO" AS est_codigo, "EST_DESCRIPCION" AS est_descripcion FROM per_estado_estudio ${where} ORDER BY ${orderBy}`;
+  if (all) {
+    const { rows } = await pool.query(select, params);
+    return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
+  }
+  const offset = (page - 1) * limit;
+  const { rows } = await pool.query(`${select} LIMIT $${params.length+1} OFFSET $${params.length+2}`, [...params, limit, offset]);
+  return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+};
+
+const createEstadoEstudio = async ({ est_descripcion }) => {
+  const { rows: [{ next }] } = await pool.query(`SELECT COALESCE(MAX("EST_CODIGO"), 0) + 1 AS next FROM per_estado_estudio`);
+  await pool.query(`INSERT INTO per_estado_estudio ("EST_CODIGO","EST_DESCRIPCION") VALUES ($1,$2)`, [next, est_descripcion]);
+  return { est_codigo: next, est_descripcion };
+};
+
+const updateEstadoEstudio = async (id, { est_descripcion }) => {
+  await pool.query(`UPDATE per_estado_estudio SET "EST_DESCRIPCION" = $1 WHERE "EST_CODIGO" = $2`, [est_descripcion, id]);
+  return { est_codigo: id, est_descripcion };
+};
+
+const deleteEstadoEstudio = async (id) => {
+  await pool.query(`DELETE FROM per_estado_estudio WHERE "EST_CODIGO" = $1`, [id]);
+};
+
+// ─── FUNCIONES ───────────────────────────────────────────────────────────────
+
+const getFunciones = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  const params = search ? [`%${search}%`] : [];
+  const where  = search ? `WHERE "FUN_DESC" ILIKE $1` : '';
+  const { rows: [{ count }] } = await pool.query(`SELECT COUNT(*) FROM per_funcion ${where}`, params);
+  const total = parseInt(count);
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = sortField === 'desc' ? `"FUN_DESC" ${dir}` : `"FUN_CODIGO" ${dir}`;
+  const select = `SELECT "FUN_CODIGO" AS fun_codigo, "FUN_DESC" AS fun_desc FROM per_funcion ${where} ORDER BY ${orderBy}`;
+  if (all) {
+    const { rows } = await pool.query(select, params);
+    return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
+  }
+  const offset = (page - 1) * limit;
+  const { rows } = await pool.query(`${select} LIMIT $${params.length+1} OFFSET $${params.length+2}`, [...params, limit, offset]);
+  return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+};
+
+const createFuncion = async ({ fun_desc }) => {
+  const { rows: [{ next }] } = await pool.query(`SELECT COALESCE(MAX("FUN_CODIGO"), 0) + 1 AS next FROM per_funcion`);
+  await pool.query(`INSERT INTO per_funcion ("FUN_CODIGO","FUN_DESC") VALUES ($1,$2)`, [next, fun_desc]);
+  return { fun_codigo: next, fun_desc };
+};
+
+const updateFuncion = async (id, { fun_desc }) => {
+  await pool.query(`UPDATE per_funcion SET "FUN_DESC" = $1 WHERE "FUN_CODIGO" = $2`, [fun_desc, id]);
+  return { fun_codigo: id, fun_desc };
+};
+
+const deleteFuncion = async (id) => {
+  await pool.query(`DELETE FROM per_funcion WHERE "FUN_CODIGO" = $1`, [id]);
+};
+
+// ─── CLASIFICACIONES DE DESCUENTO ────────────────────────────────────────────
+
+const getClasificacionesDescuento = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  const params = search ? [`%${search}%`] : [];
+  const where  = search ? `WHERE "CLDE_DESC" ILIKE $1` : '';
+  const { rows: [{ count }] } = await pool.query(`SELECT COUNT(*) FROM per_clasificacion_descuento ${where}`, params);
+  const total = parseInt(count);
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = sortField === 'desc' ? `"CLDE_DESC" ${dir}` : `"CLDE_CODIGO" ${dir}`;
+  const select = `SELECT "CLDE_CODIGO" AS clde_codigo, "CLDE_DESC" AS clde_desc FROM per_clasificacion_descuento ${where} ORDER BY ${orderBy}`;
+  if (all) {
+    const { rows } = await pool.query(select, params);
+    return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
+  }
+  const offset = (page - 1) * limit;
+  const { rows } = await pool.query(`${select} LIMIT $${params.length+1} OFFSET $${params.length+2}`, [...params, limit, offset]);
+  return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+};
+
+const createClasificacionDescuento = async ({ clde_desc }) => {
+  const { rows: [{ next }] } = await pool.query(`SELECT COALESCE(MAX("CLDE_CODIGO"), 0) + 1 AS next FROM per_clasificacion_descuento`);
+  await pool.query(`INSERT INTO per_clasificacion_descuento ("CLDE_CODIGO","CLDE_DESC") VALUES ($1,$2)`, [next, clde_desc]);
+  return { clde_codigo: next, clde_desc };
+};
+
+const updateClasificacionDescuento = async (id, { clde_desc }) => {
+  await pool.query(`UPDATE per_clasificacion_descuento SET "CLDE_DESC" = $1 WHERE "CLDE_CODIGO" = $2`, [clde_desc, id]);
+  return { clde_codigo: id, clde_desc };
+};
+
+const deleteClasificacionDescuento = async (id) => {
+  await pool.query(`DELETE FROM per_clasificacion_descuento WHERE "CLDE_CODIGO" = $1`, [id]);
+};
+
 module.exports = {
   getCargos, createCargo, updateCargo, deleteCargo,
   getCategorias, createCategoria, updateCategoria, deleteCategoria,
@@ -291,4 +665,15 @@ module.exports = {
   getTiposContrato, createTipoContrato, updateTipoContrato, deleteTipoContrato,
   getMotivosAusencia, createMotivoAusencia, updateMotivoAusencia, deleteMotivoAusencia,
   getFormasPago, createFormaPago, updateFormaPago, deleteFormaPago,
+  getTiposLiquidacion, createTipoLiquidacion, updateTipoLiquidacion, deleteTipoLiquidacion,
+  getTiposPago, createTipoPago, updateTipoPago, deleteTipoPago,
+  getTiposFamiliar, createTipoFamiliar, updateTipoFamiliar, deleteTipoFamiliar,
+  getIdiomas, createIdioma, updateIdioma, deleteIdioma,
+  getCarreras, createCarrera, updateCarrera, deleteCarrera,
+  getBachilleratos, createBachillerato, updateBachillerato, deleteBachillerato,
+  getCapacitaciones, createCapacitacion, updateCapacitacion, deleteCapacitacion,
+  getNivelesCapacitacion, createNivelCapacitacion, updateNivelCapacitacion, deleteNivelCapacitacion,
+  getEstadosEstudio, createEstadoEstudio, updateEstadoEstudio, deleteEstadoEstudio,
+  getFunciones, createFuncion, updateFuncion, deleteFuncion,
+  getClasificacionesDescuento, createClasificacionDescuento, updateClasificacionDescuento, deleteClasificacionDescuento,
 };

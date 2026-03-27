@@ -1,5 +1,5 @@
 import api from '@/lib/api';
-import type { Cargo, Categoria, Area, Seccion, Turno, TipoContrato, MotivoAusencia, FormaPago, Empleado, Paginated } from '@/types/per';
+import type { Cargo, Categoria, Area, Seccion, Turno, TipoContrato, MotivoAusencia, FormaPago, TipoLiquidacion, TipoPago, TipoFamiliar, Idioma, Carrera, Bachillerato, Capacitacion, NivelCapacitacion, EstadoEstudio, Funcion, ClasificacionDescuento, Empleado, Paginated } from '@/types/per';
 import type { ListParams } from '@/services/gen';
 
 // Cargos
@@ -49,6 +49,72 @@ export const getFormasPago    = (params?: ListParams) => api.get<Paginated<Forma
 export const createFormaPago  = (data: Partial<FormaPago>) => api.post<FormaPago>('/per/maestros/formas-pago', data).then((r) => r.data);
 export const updateFormaPago  = (id: number, data: Partial<FormaPago>) => api.put<FormaPago>(`/per/maestros/formas-pago/${id}`, data).then((r) => r.data);
 export const deleteFormaPago  = (id: number) => api.delete(`/per/maestros/formas-pago/${id}`);
+
+// Tipos de liquidación
+export const getTiposLiquidacion    = (params?: ListParams) => api.get<Paginated<TipoLiquidacion>>('/per/maestros/tipos-liquidacion', { params }).then((r) => r.data);
+export const createTipoLiquidacion  = (data: Partial<TipoLiquidacion>) => api.post<TipoLiquidacion>('/per/maestros/tipos-liquidacion', data).then((r) => r.data);
+export const updateTipoLiquidacion  = (id: number, data: Partial<TipoLiquidacion>) => api.put<TipoLiquidacion>(`/per/maestros/tipos-liquidacion/${id}`, data).then((r) => r.data);
+export const deleteTipoLiquidacion  = (id: number) => api.delete(`/per/maestros/tipos-liquidacion/${id}`);
+
+// Tipos de pago
+export const getTiposPago    = (params?: ListParams) => api.get<Paginated<TipoPago>>('/per/maestros/tipos-pago', { params }).then((r) => r.data);
+export const createTipoPago  = (data: Partial<TipoPago>) => api.post<TipoPago>('/per/maestros/tipos-pago', data).then((r) => r.data);
+export const updateTipoPago  = (id: number, data: Partial<TipoPago>) => api.put<TipoPago>(`/per/maestros/tipos-pago/${id}`, data).then((r) => r.data);
+export const deleteTipoPago  = (id: number) => api.delete(`/per/maestros/tipos-pago/${id}`);
+
+// Tipos de familiar
+export const getTiposFamiliar    = (params?: ListParams) => api.get<Paginated<TipoFamiliar>>('/per/maestros/tipos-familiar', { params }).then((r) => r.data);
+export const createTipoFamiliar  = (data: Partial<TipoFamiliar>) => api.post<TipoFamiliar>('/per/maestros/tipos-familiar', data).then((r) => r.data);
+export const updateTipoFamiliar  = (id: number, data: Partial<TipoFamiliar>) => api.put<TipoFamiliar>(`/per/maestros/tipos-familiar/${id}`, data).then((r) => r.data);
+export const deleteTipoFamiliar  = (id: number) => api.delete(`/per/maestros/tipos-familiar/${id}`);
+
+// Idiomas
+export const getIdiomas    = (params?: ListParams) => api.get<Paginated<Idioma>>('/per/maestros/idiomas', { params }).then((r) => r.data);
+export const createIdioma  = (data: Partial<Idioma>) => api.post<Idioma>('/per/maestros/idiomas', data).then((r) => r.data);
+export const updateIdioma  = (id: number, data: Partial<Idioma>) => api.put<Idioma>(`/per/maestros/idiomas/${id}`, data).then((r) => r.data);
+export const deleteIdioma  = (id: number) => api.delete(`/per/maestros/idiomas/${id}`);
+
+// Carreras
+export const getCarreras    = (params?: ListParams) => api.get<Paginated<Carrera>>('/per/maestros/carreras', { params }).then((r) => r.data);
+export const createCarrera  = (data: Partial<Carrera>) => api.post<Carrera>('/per/maestros/carreras', data).then((r) => r.data);
+export const updateCarrera  = (id: number, data: Partial<Carrera>) => api.put<Carrera>(`/per/maestros/carreras/${id}`, data).then((r) => r.data);
+export const deleteCarrera  = (id: number) => api.delete(`/per/maestros/carreras/${id}`);
+
+// Bachilleratos
+export const getBachilleratos    = (params?: ListParams) => api.get<Paginated<Bachillerato>>('/per/maestros/bachilleratos', { params }).then((r) => r.data);
+export const createBachillerato  = (data: Partial<Bachillerato>) => api.post<Bachillerato>('/per/maestros/bachilleratos', data).then((r) => r.data);
+export const updateBachillerato  = (id: number, data: Partial<Bachillerato>) => api.put<Bachillerato>(`/per/maestros/bachilleratos/${id}`, data).then((r) => r.data);
+export const deleteBachillerato  = (id: number) => api.delete(`/per/maestros/bachilleratos/${id}`);
+
+// Capacitaciones
+export const getCapacitaciones    = (params?: ListParams) => api.get<Paginated<Capacitacion>>('/per/maestros/capacitaciones', { params }).then((r) => r.data);
+export const createCapacitacion  = (data: Partial<Capacitacion>) => api.post<Capacitacion>('/per/maestros/capacitaciones', data).then((r) => r.data);
+export const updateCapacitacion  = (id: number, data: Partial<Capacitacion>) => api.put<Capacitacion>(`/per/maestros/capacitaciones/${id}`, data).then((r) => r.data);
+export const deleteCapacitacion  = (id: number) => api.delete(`/per/maestros/capacitaciones/${id}`);
+
+// Niveles de capacitación
+export const getNivelesCapacitacion    = (params?: ListParams) => api.get<Paginated<NivelCapacitacion>>('/per/maestros/niveles-capacitacion', { params }).then((r) => r.data);
+export const createNivelCapacitacion  = (data: Partial<NivelCapacitacion>) => api.post<NivelCapacitacion>('/per/maestros/niveles-capacitacion', data).then((r) => r.data);
+export const updateNivelCapacitacion  = (id: number, data: Partial<NivelCapacitacion>) => api.put<NivelCapacitacion>(`/per/maestros/niveles-capacitacion/${id}`, data).then((r) => r.data);
+export const deleteNivelCapacitacion  = (id: number) => api.delete(`/per/maestros/niveles-capacitacion/${id}`);
+
+// Estados de estudio
+export const getEstadosEstudio    = (params?: ListParams) => api.get<Paginated<EstadoEstudio>>('/per/maestros/estados-estudio', { params }).then((r) => r.data);
+export const createEstadoEstudio  = (data: Partial<EstadoEstudio>) => api.post<EstadoEstudio>('/per/maestros/estados-estudio', data).then((r) => r.data);
+export const updateEstadoEstudio  = (id: number, data: Partial<EstadoEstudio>) => api.put<EstadoEstudio>(`/per/maestros/estados-estudio/${id}`, data).then((r) => r.data);
+export const deleteEstadoEstudio  = (id: number) => api.delete(`/per/maestros/estados-estudio/${id}`);
+
+// Funciones
+export const getFunciones    = (params?: ListParams) => api.get<Paginated<Funcion>>('/per/maestros/funciones', { params }).then((r) => r.data);
+export const createFuncion  = (data: Partial<Funcion>) => api.post<Funcion>('/per/maestros/funciones', data).then((r) => r.data);
+export const updateFuncion  = (id: number, data: Partial<Funcion>) => api.put<Funcion>(`/per/maestros/funciones/${id}`, data).then((r) => r.data);
+export const deleteFuncion  = (id: number) => api.delete(`/per/maestros/funciones/${id}`);
+
+// Clasificaciones de descuento
+export const getClasificacionesDescuento    = (params?: ListParams) => api.get<Paginated<ClasificacionDescuento>>('/per/maestros/clasificaciones-descuento', { params }).then((r) => r.data);
+export const createClasificacionDescuento  = (data: Partial<ClasificacionDescuento>) => api.post<ClasificacionDescuento>('/per/maestros/clasificaciones-descuento', data).then((r) => r.data);
+export const updateClasificacionDescuento  = (id: number, data: Partial<ClasificacionDescuento>) => api.put<ClasificacionDescuento>(`/per/maestros/clasificaciones-descuento/${id}`, data).then((r) => r.data);
+export const deleteClasificacionDescuento  = (id: number) => api.delete(`/per/maestros/clasificaciones-descuento/${id}`);
 
 // Empleados
 export const getEmpleados = (params?: ListParams) =>

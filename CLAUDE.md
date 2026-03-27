@@ -177,6 +177,17 @@ Cada vez que se cree una nueva página de listado, agregarla aquí. Usar esta li
 | `per/tipos-contrato` | Tipos de contrato | `desc` asc |
 | `per/motivos-ausencia` | Motivos de ausencia | `desc` asc |
 | `per/formas-pago` | Formas de pago (PER) | `desc` asc |
+| `per/tipos-liquidacion` | Tipos de liquidación | `desc` asc |
+| `per/tipos-pago` | Tipos de pago (PER) | `desc` asc |
+| `per/tipos-familiar` | Tipos de familiar | `desc` asc |
+| `per/idiomas` | Idiomas | `desc` asc |
+| `per/carreras` | Carreras | `desc` asc |
+| `per/bachilleratos` | Bachilleratos | `desc` asc |
+| `per/capacitaciones` | Capacitaciones | `desc` asc |
+| `per/niveles-capacitacion` | Niveles de capacitación | `desc` asc |
+| `per/estados-estudio` | Estados de estudio | `desc` asc |
+| `per/funciones` | Funciones | `desc` asc |
+| `per/clasificaciones-descuento` | Clasificaciones de descuento | `desc` asc |
 
 ---
 

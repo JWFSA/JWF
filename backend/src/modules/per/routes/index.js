@@ -51,6 +51,72 @@ router.post('/maestros/formas-pago',        verifyToken, m.formasPago.create);
 router.put('/maestros/formas-pago/:id',     verifyToken, m.formasPago.update);
 router.delete('/maestros/formas-pago/:id',  verifyToken, m.formasPago.remove);
 
+// Tipos de liquidación
+router.get('/maestros/tipos-liquidacion',         verifyToken, m.tiposLiquidacion.getAll);
+router.post('/maestros/tipos-liquidacion',        verifyToken, m.tiposLiquidacion.create);
+router.put('/maestros/tipos-liquidacion/:id',     verifyToken, m.tiposLiquidacion.update);
+router.delete('/maestros/tipos-liquidacion/:id',  verifyToken, m.tiposLiquidacion.remove);
+
+// Tipos de pago
+router.get('/maestros/tipos-pago',         verifyToken, m.tiposPago.getAll);
+router.post('/maestros/tipos-pago',        verifyToken, m.tiposPago.create);
+router.put('/maestros/tipos-pago/:id',     verifyToken, m.tiposPago.update);
+router.delete('/maestros/tipos-pago/:id',  verifyToken, m.tiposPago.remove);
+
+// Tipos de familiar
+router.get('/maestros/tipos-familiar',         verifyToken, m.tiposFamiliar.getAll);
+router.post('/maestros/tipos-familiar',        verifyToken, m.tiposFamiliar.create);
+router.put('/maestros/tipos-familiar/:id',     verifyToken, m.tiposFamiliar.update);
+router.delete('/maestros/tipos-familiar/:id',  verifyToken, m.tiposFamiliar.remove);
+
+// Idiomas
+router.get('/maestros/idiomas',         verifyToken, m.idiomas.getAll);
+router.post('/maestros/idiomas',        verifyToken, m.idiomas.create);
+router.put('/maestros/idiomas/:id',     verifyToken, m.idiomas.update);
+router.delete('/maestros/idiomas/:id',  verifyToken, m.idiomas.remove);
+
+// Carreras
+router.get('/maestros/carreras',         verifyToken, m.carreras.getAll);
+router.post('/maestros/carreras',        verifyToken, m.carreras.create);
+router.put('/maestros/carreras/:id',     verifyToken, m.carreras.update);
+router.delete('/maestros/carreras/:id',  verifyToken, m.carreras.remove);
+
+// Bachilleratos
+router.get('/maestros/bachilleratos',         verifyToken, m.bachilleratos.getAll);
+router.post('/maestros/bachilleratos',        verifyToken, m.bachilleratos.create);
+router.put('/maestros/bachilleratos/:id',     verifyToken, m.bachilleratos.update);
+router.delete('/maestros/bachilleratos/:id',  verifyToken, m.bachilleratos.remove);
+
+// Capacitaciones
+router.get('/maestros/capacitaciones',         verifyToken, m.capacitaciones.getAll);
+router.post('/maestros/capacitaciones',        verifyToken, m.capacitaciones.create);
+router.put('/maestros/capacitaciones/:id',     verifyToken, m.capacitaciones.update);
+router.delete('/maestros/capacitaciones/:id',  verifyToken, m.capacitaciones.remove);
+
+// Niveles de capacitación
+router.get('/maestros/niveles-capacitacion',         verifyToken, m.nivelesCapacitacion.getAll);
+router.post('/maestros/niveles-capacitacion',        verifyToken, m.nivelesCapacitacion.create);
+router.put('/maestros/niveles-capacitacion/:id',     verifyToken, m.nivelesCapacitacion.update);
+router.delete('/maestros/niveles-capacitacion/:id',  verifyToken, m.nivelesCapacitacion.remove);
+
+// Estados de estudio
+router.get('/maestros/estados-estudio',         verifyToken, m.estadosEstudio.getAll);
+router.post('/maestros/estados-estudio',        verifyToken, m.estadosEstudio.create);
+router.put('/maestros/estados-estudio/:id',     verifyToken, m.estadosEstudio.update);
+router.delete('/maestros/estados-estudio/:id',  verifyToken, m.estadosEstudio.remove);
+
+// Funciones
+router.get('/maestros/funciones',         verifyToken, m.funciones.getAll);
+router.post('/maestros/funciones',        verifyToken, m.funciones.create);
+router.put('/maestros/funciones/:id',     verifyToken, m.funciones.update);
+router.delete('/maestros/funciones/:id',  verifyToken, m.funciones.remove);
+
+// Clasificaciones de descuento
+router.get('/maestros/clasificaciones-descuento',         verifyToken, m.clasificacionesDescuento.getAll);
+router.post('/maestros/clasificaciones-descuento',        verifyToken, m.clasificacionesDescuento.create);
+router.put('/maestros/clasificaciones-descuento/:id',     verifyToken, m.clasificacionesDescuento.update);
+router.delete('/maestros/clasificaciones-descuento/:id',  verifyToken, m.clasificacionesDescuento.remove);
+
 // Empleados
 router.get('/empleados',      verifyToken, ec.getAll);
 router.get('/empleados/:id',  verifyToken, ec.getById);
