@@ -174,6 +174,9 @@ Cada vez que se cree una nueva página de listado, agregarla aquí. Usar esta li
 | `per/areas` | Áreas | `desc` asc |
 | `per/secciones` | Secciones | `desc` asc |
 | `per/turnos` | Turnos | `desc` asc |
+| `per/tipos-contrato` | Tipos de contrato | `desc` asc |
+| `per/motivos-ausencia` | Motivos de ausencia | `desc` asc |
+| `per/formas-pago` | Formas de pago (PER) | `desc` asc |
 
 ---
 

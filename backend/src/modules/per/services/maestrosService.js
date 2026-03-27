@@ -180,10 +180,115 @@ const deleteTurno = async (id) => {
   await pool.query(`DELETE FROM per_turno WHERE "TUR_CODIGO" = $1`, [id]);
 };
 
+// ─── TIPOS DE CONTRATO ────────────────────────────────────────────────────────
+
+const getTiposContrato = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  const params = search ? [`%${search}%`] : [];
+  const where  = search ? `WHERE "TIPCON_DESCRIPCION" ILIKE $1` : '';
+  const { rows: [{ count }] } = await pool.query(`SELECT COUNT(*) FROM per_tipo_contrato ${where}`, params);
+  const total = parseInt(count);
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = sortField === 'desc' ? `"TIPCON_DESCRIPCION" ${dir}` : `"TIPCON_CODIGO" ${dir}`;
+  const select = `SELECT "TIPCON_CODIGO" AS tipcon_codigo, "TIPCON_DESCRIPCION" AS tipcon_descripcion, "TIPCON_IND_PRUEBA" AS tipcon_ind_prueba FROM per_tipo_contrato ${where} ORDER BY ${orderBy}`;
+  if (all) {
+    const { rows } = await pool.query(select, params);
+    return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
+  }
+  const offset = (page - 1) * limit;
+  const { rows } = await pool.query(`${select} LIMIT $${params.length+1} OFFSET $${params.length+2}`, [...params, limit, offset]);
+  return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+};
+
+const createTipoContrato = async ({ tipcon_descripcion, tipcon_ind_prueba }) => {
+  const { rows: [{ next }] } = await pool.query(`SELECT COALESCE(MAX("TIPCON_CODIGO"), 0) + 1 AS next FROM per_tipo_contrato`);
+  await pool.query(`INSERT INTO per_tipo_contrato ("TIPCON_CODIGO","TIPCON_DESCRIPCION","TIPCON_IND_PRUEBA") VALUES ($1,$2,$3)`, [next, tipcon_descripcion, tipcon_ind_prueba ?? 0]);
+  return { tipcon_codigo: next, tipcon_descripcion, tipcon_ind_prueba: tipcon_ind_prueba ?? 0 };
+};
+
+const updateTipoContrato = async (id, { tipcon_descripcion, tipcon_ind_prueba }) => {
+  await pool.query(`UPDATE per_tipo_contrato SET "TIPCON_DESCRIPCION" = $1, "TIPCON_IND_PRUEBA" = $2 WHERE "TIPCON_CODIGO" = $3`, [tipcon_descripcion, tipcon_ind_prueba ?? 0, id]);
+  return { tipcon_codigo: id, tipcon_descripcion, tipcon_ind_prueba: tipcon_ind_prueba ?? 0 };
+};
+
+const deleteTipoContrato = async (id) => {
+  await pool.query(`DELETE FROM per_tipo_contrato WHERE "TIPCON_CODIGO" = $1`, [id]);
+};
+
+// ─── MOTIVOS DE AUSENCIA ──────────────────────────────────────────────────────
+
+const getMotivosAusencia = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  const params = search ? [`%${search}%`] : [];
+  const where  = search ? `WHERE "MAUS_DESC" ILIKE $1` : '';
+  const { rows: [{ count }] } = await pool.query(`SELECT COUNT(*) FROM per_motivo_ausencia ${where}`, params);
+  const total = parseInt(count);
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = sortField === 'desc' ? `"MAUS_DESC" ${dir}` : `"MAUS_CLAVE" ${dir}`;
+  const select = `SELECT "MAUS_CLAVE" AS maus_clave, "MAUS_DESC" AS maus_desc FROM per_motivo_ausencia ${where} ORDER BY ${orderBy}`;
+  if (all) {
+    const { rows } = await pool.query(select, params);
+    return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
+  }
+  const offset = (page - 1) * limit;
+  const { rows } = await pool.query(`${select} LIMIT $${params.length+1} OFFSET $${params.length+2}`, [...params, limit, offset]);
+  return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+};
+
+const createMotivoAusencia = async ({ maus_desc }) => {
+  const { rows: [{ next }] } = await pool.query(`SELECT COALESCE(MAX("MAUS_CLAVE"), 0) + 1 AS next FROM per_motivo_ausencia`);
+  await pool.query(`INSERT INTO per_motivo_ausencia ("MAUS_CLAVE","MAUS_DESC") VALUES ($1,$2)`, [next, maus_desc]);
+  return { maus_clave: next, maus_desc };
+};
+
+const updateMotivoAusencia = async (id, { maus_desc }) => {
+  await pool.query(`UPDATE per_motivo_ausencia SET "MAUS_DESC" = $1 WHERE "MAUS_CLAVE" = $2`, [maus_desc, id]);
+  return { maus_clave: id, maus_desc };
+};
+
+const deleteMotivoAusencia = async (id) => {
+  await pool.query(`DELETE FROM per_motivo_ausencia WHERE "MAUS_CLAVE" = $1`, [id]);
+};
+
+// ─── FORMAS DE PAGO ───────────────────────────────────────────────────────────
+
+const getFormasPago = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  const params = search ? [`%${search}%`] : [];
+  const where  = search ? `WHERE "FORMA_DESC" ILIKE $1` : '';
+  const { rows: [{ count }] } = await pool.query(`SELECT COUNT(*) FROM per_forma_pago ${where}`, params);
+  const total = parseInt(count);
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = sortField === 'desc' ? `"FORMA_DESC" ${dir}` : `"FORMA_CODIGO" ${dir}`;
+  const select = `SELECT "FORMA_CODIGO" AS forma_codigo, "FORMA_DESC" AS forma_desc, "FORMA_TIPO_PAGO" AS forma_tipo_pago FROM per_forma_pago ${where} ORDER BY ${orderBy}`;
+  if (all) {
+    const { rows } = await pool.query(select, params);
+    return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
+  }
+  const offset = (page - 1) * limit;
+  const { rows } = await pool.query(`${select} LIMIT $${params.length+1} OFFSET $${params.length+2}`, [...params, limit, offset]);
+  return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+};
+
+const createFormaPago = async ({ forma_desc, forma_tipo_pago }) => {
+  const { rows: [{ next }] } = await pool.query(`SELECT COALESCE(MAX("FORMA_CODIGO"), 0) + 1 AS next FROM per_forma_pago`);
+  await pool.query(`INSERT INTO per_forma_pago ("FORMA_CODIGO","FORMA_DESC","FORMA_TIPO_PAGO") VALUES ($1,$2,$3)`, [next, forma_desc, forma_tipo_pago || null]);
+  return { forma_codigo: next, forma_desc, forma_tipo_pago: forma_tipo_pago || null };
+};
+
+const updateFormaPago = async (id, { forma_desc, forma_tipo_pago }) => {
+  await pool.query(`UPDATE per_forma_pago SET "FORMA_DESC" = $1, "FORMA_TIPO_PAGO" = $2 WHERE "FORMA_CODIGO" = $3`, [forma_desc, forma_tipo_pago || null, id]);
+  return { forma_codigo: id, forma_desc, forma_tipo_pago: forma_tipo_pago || null };
+};
+
+const deleteFormaPago = async (id) => {
+  await pool.query(`DELETE FROM per_forma_pago WHERE "FORMA_CODIGO" = $1`, [id]);
+};
+
 module.exports = {
   getCargos, createCargo, updateCargo, deleteCargo,
   getCategorias, createCategoria, updateCategoria, deleteCategoria,
   getAreas, createArea, updateArea, deleteArea,
   getSecciones, createSeccion, updateSeccion, deleteSeccion,
   getTurnos, createTurno, updateTurno, deleteTurno,
+  getTiposContrato, createTipoContrato, updateTipoContrato, deleteTipoContrato,
+  getMotivosAusencia, createMotivoAusencia, updateMotivoAusencia, deleteMotivoAusencia,
+  getFormasPago, createFormaPago, updateFormaPago, deleteFormaPago,
 };

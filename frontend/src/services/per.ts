@@ -1,5 +1,5 @@
 import api from '@/lib/api';
-import type { Cargo, Categoria, Area, Seccion, Turno, Empleado, Paginated } from '@/types/per';
+import type { Cargo, Categoria, Area, Seccion, Turno, TipoContrato, MotivoAusencia, FormaPago, Empleado, Paginated } from '@/types/per';
 import type { ListParams } from '@/services/gen';
 
 // Cargos
@@ -31,6 +31,24 @@ export const getTurnos    = (params?: ListParams) => api.get<Paginated<Turno>>('
 export const createTurno  = (data: Partial<Turno>) => api.post<Turno>('/per/maestros/turnos', data).then((r) => r.data);
 export const updateTurno  = (id: number, data: Partial<Turno>) => api.put<Turno>(`/per/maestros/turnos/${id}`, data).then((r) => r.data);
 export const deleteTurno  = (id: number) => api.delete(`/per/maestros/turnos/${id}`);
+
+// Tipos de contrato
+export const getTiposContrato    = (params?: ListParams) => api.get<Paginated<TipoContrato>>('/per/maestros/tipos-contrato', { params }).then((r) => r.data);
+export const createTipoContrato  = (data: Partial<TipoContrato>) => api.post<TipoContrato>('/per/maestros/tipos-contrato', data).then((r) => r.data);
+export const updateTipoContrato  = (id: number, data: Partial<TipoContrato>) => api.put<TipoContrato>(`/per/maestros/tipos-contrato/${id}`, data).then((r) => r.data);
+export const deleteTipoContrato  = (id: number) => api.delete(`/per/maestros/tipos-contrato/${id}`);
+
+// Motivos de ausencia
+export const getMotivosAusencia    = (params?: ListParams) => api.get<Paginated<MotivoAusencia>>('/per/maestros/motivos-ausencia', { params }).then((r) => r.data);
+export const createMotivoAusencia  = (data: Partial<MotivoAusencia>) => api.post<MotivoAusencia>('/per/maestros/motivos-ausencia', data).then((r) => r.data);
+export const updateMotivoAusencia  = (id: number, data: Partial<MotivoAusencia>) => api.put<MotivoAusencia>(`/per/maestros/motivos-ausencia/${id}`, data).then((r) => r.data);
+export const deleteMotivoAusencia  = (id: number) => api.delete(`/per/maestros/motivos-ausencia/${id}`);
+
+// Formas de pago
+export const getFormasPago    = (params?: ListParams) => api.get<Paginated<FormaPago>>('/per/maestros/formas-pago', { params }).then((r) => r.data);
+export const createFormaPago  = (data: Partial<FormaPago>) => api.post<FormaPago>('/per/maestros/formas-pago', data).then((r) => r.data);
+export const updateFormaPago  = (id: number, data: Partial<FormaPago>) => api.put<FormaPago>(`/per/maestros/formas-pago/${id}`, data).then((r) => r.data);
+export const deleteFormaPago  = (id: number) => api.delete(`/per/maestros/formas-pago/${id}`);
 
 // Empleados
 export const getEmpleados = (params?: ListParams) =>

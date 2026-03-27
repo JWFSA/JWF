@@ -24,9 +24,12 @@ const handler = (getAll, create, update, remove) => ({
 });
 
 module.exports = {
-  cargos:     handler(s.getCargos,     s.createCargo,     s.updateCargo,     s.deleteCargo),
-  categorias: handler(s.getCategorias, s.createCategoria, s.updateCategoria, s.deleteCategoria),
-  areas:      handler(s.getAreas,      s.createArea,      s.updateArea,      s.deleteArea),
-  secciones:  handler(s.getSecciones,  s.createSeccion,   s.updateSeccion,   s.deleteSeccion),
-  turnos:     handler(s.getTurnos,     s.createTurno,     s.updateTurno,     s.deleteTurno),
+  cargos:          handler(s.getCargos,          s.createCargo,          s.updateCargo,          s.deleteCargo),
+  categorias:      handler(s.getCategorias,      s.createCategoria,      s.updateCategoria,      s.deleteCategoria),
+  areas:           handler(s.getAreas,           s.createArea,           s.updateArea,           s.deleteArea),
+  secciones:       handler(s.getSecciones,       s.createSeccion,        s.updateSeccion,        s.deleteSeccion),
+  turnos:          handler(s.getTurnos,          s.createTurno,          s.updateTurno,          s.deleteTurno),
+  tiposContrato:   handler(s.getTiposContrato,   s.createTipoContrato,   s.updateTipoContrato,   s.deleteTipoContrato),
+  motivosAusencia: handler(s.getMotivosAusencia, s.createMotivoAusencia, s.updateMotivoAusencia, s.deleteMotivoAusencia),
+  formasPago:      handler(s.getFormasPago,      s.createFormaPago,      s.updateFormaPago,      s.deleteFormaPago),
 };

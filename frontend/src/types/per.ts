@@ -30,6 +30,23 @@ export interface Turno {
   tur_estado?: string | null;
 }
 
+export interface TipoContrato {
+  tipcon_codigo: number;
+  tipcon_descripcion: string;
+  tipcon_ind_prueba: number;
+}
+
+export interface MotivoAusencia {
+  maus_clave: number;
+  maus_desc: string;
+}
+
+export interface FormaPago {
+  forma_codigo: number;
+  forma_desc: string;
+  forma_tipo_pago: string | null;
+}
+
 export interface Empleado {
   empl_legajo: number;
   empl_nombre: string;
