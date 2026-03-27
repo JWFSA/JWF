@@ -1,0 +1,65 @@
+import { Paginated } from './gen';
+
+export type { Paginated };
+
+export interface Cargo {
+  car_codigo: number;
+  car_desc: string;
+}
+
+export interface Categoria {
+  pcat_codigo: number;
+  pcat_desc: string;
+}
+
+export interface Area {
+  per_area_cod: number;
+  per_area_desc: string;
+}
+
+export interface Seccion {
+  per_secc_cod: number;
+  per_secc_desc: string;
+  per_secc_area?: number | null;
+  per_secc_area_desc?: string | null;
+}
+
+export interface Turno {
+  tur_codigo: number;
+  tur_desc: string;
+  tur_estado?: string | null;
+}
+
+export interface Empleado {
+  empl_legajo: number;
+  empl_nombre: string;
+  empl_ape: string | null;
+  empl_doc_ident: number | null;
+  empl_ruc: string | null;
+  empl_sexo: string | null;
+  empl_est_civil: string | null;
+  empl_fec_nac: string | null;
+  empl_nacionalidad: string | null;
+  empl_situacion: string | null;
+  empl_cargo: number | null;
+  car_desc?: string;
+  empl_categ: number | null;
+  pcat_desc?: string;
+  empl_area: number | null;
+  area_desc?: string;
+  empl_seccion: number | null;
+  secc_desc?: string;
+  empl_turno: number | null;
+  tur_desc?: string;
+  empl_fec_ingreso: string | null;
+  empl_fec_salida: string | null;
+  empl_motivo_salida: string | null;
+  empl_salario_base: number | null;
+  empl_nro_seg_social: string | null;
+  empl_dir: string | null;
+  empl_tel: string | null;
+  empl_tel_celular: string | null;
+  empl_mail_particular: string | null;
+  empl_mail_laboral: string | null;
+  empl_observa: string | null;
+}

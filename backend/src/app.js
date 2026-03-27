@@ -11,6 +11,7 @@ const genRoutes = require('./modules/gen/routes');
 const stkRoutes = require('./modules/stk/routes');
 const facRoutes = require('./modules/fac/routes');
 const finRoutes = require('./modules/fin/routes');
+const perRoutes = require('./modules/per/routes');
 
 const app = express();
 
@@ -22,6 +23,7 @@ app.use('/api/gen', genRoutes);
 app.use('/api/stk', stkRoutes);
 app.use('/api/fac', facRoutes);
 app.use('/api/fin', finRoutes);
+app.use('/api/per', perRoutes);
 
 app.get('/api/health', async (req, res) => {
   try {

@@ -115,7 +115,7 @@ NEXT_PUBLIC_API_URL=http://localhost:3001/api
 | FAC    | Facturación  | 🔄 Avanzado   |
 | FIN    | Finanzas     | 🔄 Avanzado   |
 | STK    | Stock        | 🔄 Avanzado   |
-| PER    | Personal     | ⏳ Pendiente  |
+| PER    | Personal     | 🔄 Avanzado   |
 
 ### Convención de nombres por módulo
 - Tablas DB: `{MOD}_TABLA` (ej. `GEN_OPERADOR`, `FAC_FACTURA`)
@@ -167,6 +167,12 @@ Cada vez que se cree una nueva página de listado, agregarla aquí. Usar esta li
 | `fin/personeria` | Personerías | `desc` asc |
 | `fin/clases-doc` | Clases de documento | `desc` asc |
 | `fin/cuentas-bancarias` | Cuentas bancarias | `desc` asc |
+| `per/empleados` | Empleados | `legajo` asc |
+| `per/cargos` | Cargos | `desc` asc |
+| `per/categorias` | Categorías de personal | `desc` asc |
+| `per/areas` | Áreas | `desc` asc |
+| `per/secciones` | Secciones | `desc` asc |
+| `per/turnos` | Turnos | `desc` asc |
 
 ---
 

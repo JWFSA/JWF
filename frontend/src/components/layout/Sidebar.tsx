@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Users, Building2, Shield, Globe, Settings, LayoutDashboard, ChevronDown, X, Package, Warehouse, Tag, Layers, BookOpen, DollarSign, MapPin, Map, Code, Ruler, Grid3x3, Building, Percent, ShoppingCart, UserCheck, MapPinned, LayoutList, Handshake, ClipboardList, ListOrdered, Landmark, CreditCard, Briefcase, Truck, FileText, Banknote, Scale, ArrowLeftRight, BarChart3, Receipt } from 'lucide-react';
+import { Users, Building2, Shield, Globe, Settings, LayoutDashboard, ChevronDown, X, Package, Warehouse, Tag, Layers, BookOpen, DollarSign, MapPin, Map, Code, Ruler, Grid3x3, Building, Percent, ShoppingCart, UserCheck, MapPinned, LayoutList, Handshake, ClipboardList, ListOrdered, Landmark, CreditCard, Briefcase, Truck, FileText, Banknote, Scale, ArrowLeftRight, BarChart3, Receipt, HardHat, UserCog, Network, Columns } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import Image from 'next/image';
@@ -73,6 +73,18 @@ const menu = [
       { label: 'Marcas',           href: '/stk/marcas',          icon: Tag },
       { label: 'Rubros',           href: '/stk/rubros',          icon: BookOpen },
       { label: 'Unidades de medida', href: '/stk/unidades-medida', icon: Ruler },
+    ],
+  },
+  {
+    label: 'Personal',
+    icon: HardHat,
+    children: [
+      { label: 'Empleados',  href: '/per/empleados',  icon: Users },
+      { label: 'Cargos',     href: '/per/cargos',     icon: UserCog },
+      { label: 'Categorías', href: '/per/categorias', icon: LayoutList },
+      { label: 'Áreas',      href: '/per/areas',      icon: Network },
+      { label: 'Secciones',  href: '/per/secciones',  icon: Columns },
+      { label: 'Turnos',     href: '/per/turnos',     icon: ClipboardList },
     ],
   },
 ];
