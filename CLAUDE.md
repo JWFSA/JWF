@@ -179,6 +179,9 @@ Cada vez que se cree una nueva página de listado, agregarla aquí. Usar esta li
 | `fac/categorias` | Categorías | `desc` asc |
 | `fac/condiciones` | Condiciones de pago | — (sin sort) |
 | `fac/barrios` | Barrios | `desc` asc |
+| `fac/campanhas` | Campañas | `nombre` asc |
+| `fac/comisiones` | Comisiones | — (desc por clave) |
+| `fac/solicitudes-descuento` | Solicitudes de descuento | `fecha` desc |
 | `fin/ordenes-pago` | Órdenes de pago | `fecha` desc |
 | `fin/proveedores` | Proveedores | `nom` asc |
 | `fin/tipos-proveedor` | Tipos de proveedor | `desc` asc |

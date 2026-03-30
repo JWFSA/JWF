@@ -1,5 +1,5 @@
 import api from '@/lib/api';
-import type { Barrio, Zona, Categoria, Condicion, Vendedor, Cliente, Articulo, Pedido, ListaPrecio, ListaPrecioDetalle, Factura, FacturaDet, Paginated } from '@/types/fac';
+import type { Barrio, Zona, Categoria, Condicion, Vendedor, Cliente, Articulo, Pedido, ListaPrecio, ListaPrecioDetalle, Factura, FacturaDet, Campanha, ComisionFac, SolicitudDescuento, Paginated } from '@/types/fac';
 import type { ListParams } from '@/services/gen';
 
 // Barrios
@@ -64,3 +64,16 @@ export const getFactura    = (id: number) => api.get<Factura>(`/fac/facturas/${i
 export const createFactura = (data: Partial<Factura>) => api.post<Factura>('/fac/facturas', data).then((r) => r.data);
 export const updateFactura = (id: number, data: Partial<Factura>) => api.put<Factura>(`/fac/facturas/${id}`, data).then((r) => r.data);
 export const deleteFactura = (id: number) => api.delete(`/fac/facturas/${id}`);
+
+// Campañas
+export const getCampanhas     = (params?: ListParams) => api.get<Paginated<Campanha>>('/fac/campanhas', { params }).then((r) => r.data);
+export const createCampanha   = (data: Partial<Campanha>) => api.post<Campanha>('/fac/campanhas', data).then((r) => r.data);
+export const updateCampanha   = (cli: number, nro: number, data: Partial<Campanha>) => api.put(`/fac/campanhas/${cli}/${nro}`, data).then((r) => r.data);
+export const deleteCampanha   = (cli: number, nro: number) => api.delete(`/fac/campanhas/${cli}/${nro}`);
+
+// Comisiones (solo lectura)
+export const getComisiones    = (params?: ListParams) => api.get<Paginated<ComisionFac>>('/fac/comisiones', { params }).then((r) => r.data);
+
+// Solicitudes de descuento (solo lectura)
+export const getSolicitudesDescuento = (params?: ListParams) => api.get<Paginated<SolicitudDescuento>>('/fac/solicitudes-descuento', { params }).then((r) => r.data);
+export const getSolicitudDescuento   = (id: number) => api.get<SolicitudDescuento>(`/fac/solicitudes-descuento/${id}`).then((r) => r.data);

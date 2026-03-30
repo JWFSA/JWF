@@ -1,8 +1,11 @@
 const router = require('express').Router();
 const { verifyToken } = require('../../../middlewares/auth');
-const maestrosController = require('../controllers/maestrosController');
-const clienteController  = require('../controllers/clienteController');
-const pedidoController   = require('../controllers/pedidoController');
+const maestrosController            = require('../controllers/maestrosController');
+const clienteController             = require('../controllers/clienteController');
+const pedidoController              = require('../controllers/pedidoController');
+const campanhaController            = require('../controllers/campanhaController');
+const comisionController            = require('../controllers/comisionController');
+const solicitudDescuentoController  = require('../controllers/solicitudDescuentoController');
 
 // Zonas
 router.get('/maestros/zonas',         verifyToken, maestrosController.getZonas);
@@ -68,5 +71,18 @@ router.get('/facturas/:id',    verifyToken, facturaController.getById);
 router.post('/facturas',       verifyToken, facturaController.create);
 router.put('/facturas/:id',    verifyToken, facturaController.update);
 router.delete('/facturas/:id', verifyToken, facturaController.remove);
+
+// Campañas
+router.get('/campanhas',                    verifyToken, campanhaController.getAll);
+router.post('/campanhas',                   verifyToken, campanhaController.create);
+router.put('/campanhas/:cli/:nro',          verifyToken, campanhaController.update);
+router.delete('/campanhas/:cli/:nro',       verifyToken, campanhaController.remove);
+
+// Comisiones (solo lectura)
+router.get('/comisiones',                   verifyToken, comisionController.getAll);
+
+// Solicitudes de descuento (solo lectura)
+router.get('/solicitudes-descuento',        verifyToken, solicitudDescuentoController.getAll);
+router.get('/solicitudes-descuento/:id',    verifyToken, solicitudDescuentoController.getById);
 
 module.exports = router;

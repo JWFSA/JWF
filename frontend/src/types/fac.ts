@@ -166,3 +166,56 @@ export interface Factura {
   doc_saldo_loc: number;
   items?: FacturaDet[];
 }
+
+export interface Campanha {
+  camp_cli: number;
+  cli_nom?: string;
+  camp_nro: number;
+  camp_nombre: string;
+  camp_ind_vigente: string | null;
+}
+
+export interface ComisionFac {
+  com_clave: number;
+  com_nro: number;
+  com_fec_emis: string | null;
+  com_art: number | null;
+  com_art_desc: string | null;
+  com_art_alfa: string | null;
+  com_clas: number | null;
+  com_clas_desc: string | null;
+  com_dificultad: string | null;
+  com_pauta_full: number | null;
+  com_porc_base_dir: number | null;
+  com_porc_base_age: number | null;
+  com_porc_sup_dir: number | null;
+  com_porc_sup_age: number | null;
+  com_estado: string | null;
+}
+
+export interface SolicitudDescuento {
+  sod_clave: number;
+  sod_nro: number;
+  sod_clave_ped: number | null;
+  sod_fecha_sol: string;
+  sod_fec_grab?: string;
+  sod_login_sol: string | null;
+  cant_items?: number;
+  detalle?: SolicitudDescuentoDet[];
+}
+
+export interface SolicitudDescuentoDet {
+  sode_clave: number;
+  sode_item: number;
+  sode_art: number | null;
+  art_desc?: string;
+  sode_dcto_sol: number | null;
+  sode_dcto_aprob: number | null;
+  sode_estado: string | null;
+  sode_fec_est: string | null;
+  sode_user_est: string | null;
+  sode_imp_sol: number | null;
+  sode_imp_aprob: number | null;
+  sode_imp_neto_ant: number | null;
+  sode_imp_neto_final: number | null;
+}
