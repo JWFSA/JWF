@@ -582,6 +582,19 @@ Ubicados en `components/ui/`. Usar siempre estos en vez de reimplementar:
 
 ---
 
+## Git — Estrategia de ramas
+
+| Branch       | Uso                                                        |
+|--------------|------------------------------------------------------------|
+| `main`       | Producción. Solo se actualiza via PR desde `develop`       |
+| `develop`    | Desarrollo activo. Aquí se hace push de todo el trabajo    |
+
+- **Nunca** hacer push directo a `main`. Siempre trabajar en `develop`
+- Para pasar a producción: crear PR `develop` → `main`
+- Branch default para desarrollo: `develop`
+
+---
+
 ## Convención de Commits — Español
 
 Todos los commits deben seguir el formato de **Conventional Commits** en **español**:
