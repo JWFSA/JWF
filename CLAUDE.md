@@ -127,7 +127,7 @@ NEXT_PUBLIC_API_URL=http://localhost:3001/api
 | GEN    | General      | ✅ Completo   |
 | FAC    | Facturación  | ✅ Completo   |
 | FIN    | Finanzas     | ✅ Completo   |
-| STK    | Stock        | 🔄 Avanzado   |
+| STK    | Stock        | ✅ Completo   |
 | PER    | Personal     | ✅ Completo   |
 | COM    | Compras      | ✅ Completo   |
 | CNT    | Contabilidad | ✅ Completo   |
@@ -170,6 +170,8 @@ Cada vez que se cree una nueva página de listado, agregarla aquí. Usar esta li
 | `stk/remisiones` | Remisiones | `fecha` desc |
 | `stk/stock` | Stock actual | `art` asc |
 | `stk/articulos` | Artículos | `desc` asc |
+| `stk/clasificaciones` | Clasificaciones | `desc` asc |
+| `stk/choferes` | Choferes | `nombre` asc |
 | `fac/facturas` | Facturas | `fecha` desc |
 | `fac/clientes` | Clientes | `nom` asc |
 | `fac/vendedores` | Vendedores | `nom` asc |
@@ -419,6 +421,8 @@ Cada vez que se cree una nueva página de listado, agregarla aquí. Usar esta li
 | GET    | `/maestros/marcas`            | CRUD marcas                    | Sí   |
 | GET    | `/maestros/rubros`            | CRUD rubros                    | Sí   |
 | GET    | `/maestros/unidades-medida`   | CRUD unidades de medida        | Sí   |
+| GET    | `/maestros/clasificaciones`   | CRUD clasificaciones           | Sí   |
+| GET    | `/maestros/choferes`          | CRUD choferes                  | Sí   |
 
 ## Módulo PER — Endpoints API
 

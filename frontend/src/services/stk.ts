@@ -1,5 +1,5 @@
 import api from '@/lib/api';
-import type { Articulo, Deposito, Linea, Marca, Rubro, UnidadMedida, Grupo, Operacion, Movimiento, StockActual, Remision, Paginated } from '@/types/stk';
+import type { Articulo, Deposito, Linea, Marca, Rubro, UnidadMedida, Grupo, Operacion, Movimiento, StockActual, Remision, Clasificacion, Chofer, Paginated } from '@/types/stk';
 import type { ListParams } from '@/services/gen';
 
 // Líneas
@@ -92,3 +92,15 @@ export const updateRemision = (nro: number, data: Partial<Remision>) =>
 
 export const deleteRemision = (nro: number) =>
   api.delete(`/stk/remisiones/${nro}`);
+
+// Clasificaciones
+export const getClasificaciones     = (params?: ListParams) => api.get<Paginated<Clasificacion>>('/stk/maestros/clasificaciones', { params }).then((r) => r.data);
+export const createClasificacion    = (data: Partial<Clasificacion>) => api.post<Clasificacion>('/stk/maestros/clasificaciones', data).then((r) => r.data);
+export const updateClasificacion    = (id: number, data: Partial<Clasificacion>) => api.put(`/stk/maestros/clasificaciones/${id}`, data).then((r) => r.data);
+export const deleteClasificacion    = (id: number) => api.delete(`/stk/maestros/clasificaciones/${id}`);
+
+// Choferes
+export const getChoferes     = (params?: ListParams) => api.get<Paginated<Chofer>>('/stk/maestros/choferes', { params }).then((r) => r.data);
+export const createChofer    = (data: Partial<Chofer>) => api.post<Chofer>('/stk/maestros/choferes', data).then((r) => r.data);
+export const updateChofer    = (id: number, data: Partial<Chofer>) => api.put(`/stk/maestros/choferes/${id}`, data).then((r) => r.data);
+export const deleteChofer    = (id: number) => api.delete(`/stk/maestros/choferes/${id}`);

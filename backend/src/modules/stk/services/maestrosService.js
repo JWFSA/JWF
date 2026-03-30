@@ -256,6 +256,94 @@ const getOperaciones = async () => {
   return rows;
 };
 
+// ─── CLASIFICACIONES ────────────────────────────────────────────────────────
+
+const getClasificaciones = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  page  = Math.max(1, page);
+  limit = Math.max(1, Math.min(1000, limit));
+  const params = search ? [`%${search}%`] : [];
+  const where  = search ? `WHERE "CLAS_DESC" ILIKE $1` : '';
+  const countRes = await pool.query(`SELECT COUNT(*) FROM stk_clasificacion ${where}`, params);
+  const total = parseInt(countRes.rows[0].count);
+  const allowedSort = { cod: '"CLAS_CODIGO"', desc: '"CLAS_DESC"' };
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = Object.hasOwn(allowedSort, sortField) ? `${allowedSort[sortField]} ${dir}` : '"CLAS_DESC" ASC';
+  const select = `SELECT "CLAS_CODIGO" AS clas_codigo, "CLAS_DESC" AS clas_desc, "CLAS_PADRE" AS clas_padre FROM stk_clasificacion ${where} ORDER BY ${orderBy}`;
+  if (all) {
+    const { rows } = await pool.query(select, params);
+    return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
+  }
+  const offset = (page - 1) * limit;
+  const { rows } = await pool.query(`${select} LIMIT $${params.length + 1} OFFSET $${params.length + 2}`, [...params, limit, offset]);
+  return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+};
+
+const createClasificacion = async (data) => {
+  const { rows } = await pool.query('SELECT COALESCE(MAX("CLAS_CODIGO"), 0) + 1 AS next FROM stk_clasificacion');
+  const codigo = rows[0].next;
+  await pool.query(`INSERT INTO stk_clasificacion ("CLAS_CODIGO","CLAS_DESC","CLAS_PADRE") VALUES ($1,$2,$3)`,
+    [codigo, data.clas_desc, data.clas_padre || null]);
+  return { clas_codigo: codigo, clas_desc: data.clas_desc, clas_padre: data.clas_padre || null };
+};
+
+const updateClasificacion = async (codigo, data) => {
+  const fields = []; const params = [];
+  if (data.clas_desc !== undefined) { params.push(data.clas_desc); fields.push(`"CLAS_DESC" = $${params.length}`); }
+  if (data.clas_padre !== undefined) { params.push(data.clas_padre); fields.push(`"CLAS_PADRE" = $${params.length}`); }
+  if (fields.length) { params.push(codigo); await pool.query(`UPDATE stk_clasificacion SET ${fields.join(', ')} WHERE "CLAS_CODIGO" = $${params.length}`, params); }
+};
+
+const deleteClasificacion = async (codigo) => {
+  await pool.query('DELETE FROM stk_clasificacion WHERE "CLAS_CODIGO" = $1', [codigo]);
+};
+
+// ─── CHOFERES ───────────────────────────────────────────────────────────────
+
+const getChoferes = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  page  = Math.max(1, page);
+  limit = Math.max(1, Math.min(1000, limit));
+  const params = search ? [`%${search}%`] : [];
+  const where  = search ? `WHERE ("CHOF_NOMBRE" ILIKE $1 OR CAST("CHOF_CEDULA" AS TEXT) ILIKE $1)` : '';
+  const countRes = await pool.query(`SELECT COUNT(*) FROM stk_chofer ${where}`, params);
+  const total = parseInt(countRes.rows[0].count);
+  const allowedSort = { cod: '"CHOF_CODIGO"', nombre: '"CHOF_NOMBRE"' };
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = Object.hasOwn(allowedSort, sortField) ? `${allowedSort[sortField]} ${dir}` : '"CHOF_NOMBRE" ASC';
+  const select = `SELECT "CHOF_CODIGO" AS chof_codigo, "CHOF_NOMBRE" AS chof_nombre, "CHOF_CEDULA" AS chof_cedula,
+    "CHOF_DIRECCION" AS chof_direccion, "CHOF_VEH_MARCA" AS chof_veh_marca, "CHOF_VEH_CHAPA" AS chof_veh_chapa
+    FROM stk_chofer ${where} ORDER BY ${orderBy}`;
+  if (all) {
+    const { rows } = await pool.query(select, params);
+    return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
+  }
+  const offset = (page - 1) * limit;
+  const { rows } = await pool.query(`${select} LIMIT $${params.length + 1} OFFSET $${params.length + 2}`, [...params, limit, offset]);
+  return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+};
+
+const createChofer = async (data) => {
+  const { rows } = await pool.query('SELECT COALESCE(MAX("CHOF_CODIGO"), 0) + 1 AS next FROM stk_chofer');
+  const codigo = rows[0].next;
+  await pool.query(
+    `INSERT INTO stk_chofer ("CHOF_CODIGO","CHOF_NOMBRE","CHOF_CEDULA","CHOF_DIRECCION","CHOF_VEH_MARCA","CHOF_VEH_CHAPA") VALUES ($1,$2,$3,$4,$5,$6)`,
+    [codigo, data.chof_nombre, data.chof_cedula || null, data.chof_direccion || null, data.chof_veh_marca || null, data.chof_veh_chapa || null]
+  );
+  return { chof_codigo: codigo, chof_nombre: data.chof_nombre };
+};
+
+const updateChofer = async (codigo, data) => {
+  const fields = []; const params = [];
+  const map = { chof_nombre: '"CHOF_NOMBRE"', chof_cedula: '"CHOF_CEDULA"', chof_direccion: '"CHOF_DIRECCION"', chof_veh_marca: '"CHOF_VEH_MARCA"', chof_veh_chapa: '"CHOF_VEH_CHAPA"' };
+  for (const [k, col] of Object.entries(map)) {
+    if (data[k] !== undefined) { params.push(data[k]); fields.push(`${col} = $${params.length}`); }
+  }
+  if (fields.length) { params.push(codigo); await pool.query(`UPDATE stk_chofer SET ${fields.join(', ')} WHERE "CHOF_CODIGO" = $${params.length}`, params); }
+};
+
+const deleteChofer = async (codigo) => {
+  await pool.query('DELETE FROM stk_chofer WHERE "CHOF_CODIGO" = $1', [codigo]);
+};
+
 module.exports = {
   getLineas, getLinea, createLinea, updateLinea, deleteLinea,
   getMarcas, getMarca, createMarca, updateMarca, deleteMarca,
@@ -263,4 +351,6 @@ module.exports = {
   getUnidadesMedida, createUnidadMedida, deleteUnidadMedida,
   getGrupos, getGrupo, createGrupo, updateGrupo, deleteGrupo,
   getOperaciones,
+  getClasificaciones, createClasificacion, updateClasificacion, deleteClasificacion,
+  getChoferes, createChofer, updateChofer, deleteChofer,
 };

@@ -29,6 +29,19 @@ const createGrupo        = async (req, res, next) => { try { if (!req.body.grup_
 const updateGrupo        = async (req, res, next) => { try { res.json(await s.updateGrupo(req.params.linea, req.params.codigo, req.body)); } catch (e) { next(e); } };
 const deleteGrupo        = async (req, res, next) => { try { await s.deleteGrupo(req.params.linea, req.params.codigo); res.status(204).end(); } catch (e) { next(e); } };
 
+// Clasificaciones
+const pq = (req) => ({ all: req.query.all === 'true', page: Math.max(1, parseInt(req.query.page) || 1), limit: Math.max(1, Math.min(1000, parseInt(req.query.limit) || 20)), search: req.query.search || '', sortField: req.query.sortField || '', sortDir: req.query.sortDir === 'desc' ? 'desc' : 'asc' });
+const getClasificaciones     = async (req, res, next) => { try { res.json(await s.getClasificaciones(pq(req))); } catch (e) { next(e); } };
+const createClasificacion    = async (req, res, next) => { try { if (!req.body.clas_desc) return res.status(400).json({ message: 'La descripción es requerida' }); res.status(201).json(await s.createClasificacion(req.body)); } catch (e) { next(e); } };
+const updateClasificacion    = async (req, res, next) => { try { const id = Number(req.params.id); if (!Number.isFinite(id)) return res.status(400).json({ message: 'ID inválido' }); await s.updateClasificacion(id, req.body); res.json({ ok: true }); } catch (e) { next(e); } };
+const deleteClasificacion    = async (req, res, next) => { try { const id = Number(req.params.id); if (!Number.isFinite(id)) return res.status(400).json({ message: 'ID inválido' }); await s.deleteClasificacion(id); res.status(204).end(); } catch (e) { next(e); } };
+
+// Choferes
+const getChoferes     = async (req, res, next) => { try { res.json(await s.getChoferes(pq(req))); } catch (e) { next(e); } };
+const createChofer    = async (req, res, next) => { try { if (!req.body.chof_nombre) return res.status(400).json({ message: 'El nombre es requerido' }); res.status(201).json(await s.createChofer(req.body)); } catch (e) { next(e); } };
+const updateChofer    = async (req, res, next) => { try { const id = Number(req.params.id); if (!Number.isFinite(id)) return res.status(400).json({ message: 'ID inválido' }); await s.updateChofer(id, req.body); res.json({ ok: true }); } catch (e) { next(e); } };
+const deleteChofer    = async (req, res, next) => { try { const id = Number(req.params.id); if (!Number.isFinite(id)) return res.status(400).json({ message: 'ID inválido' }); await s.deleteChofer(id); res.status(204).end(); } catch (e) { next(e); } };
+
 module.exports = {
   getLineas, createLinea, updateLinea, deleteLinea,
   getMarcas, createMarca, updateMarca, deleteMarca,
@@ -36,4 +49,6 @@ module.exports = {
   getUnidadesMedida, createUnidadMedida, deleteUnidadMedida,
   getGrupos, createGrupo, updateGrupo, deleteGrupo,
   getOperaciones: async (_req, res, next) => { try { res.json(await s.getOperaciones()); } catch (e) { next(e); } },
+  getClasificaciones, createClasificacion, updateClasificacion, deleteClasificacion,
+  getChoferes, createChofer, updateChofer, deleteChofer,
 };

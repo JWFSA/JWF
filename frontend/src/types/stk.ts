@@ -125,3 +125,18 @@ export interface Movimiento {
   docu_obs?: string | null;
   items?: MovimientoDetalle[];
 }
+
+export interface Clasificacion {
+  clas_codigo: number;
+  clas_desc: string;
+  clas_padre: number | null;
+}
+
+export interface Chofer {
+  chof_codigo: number;
+  chof_nombre: string;
+  chof_cedula: number | null;
+  chof_direccion: string | null;
+  chof_veh_marca: string | null;
+  chof_veh_chapa: string | null;
+}

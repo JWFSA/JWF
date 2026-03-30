@@ -69,4 +69,16 @@ router.post('/remisiones',      verifyToken, remisionController.create);
 router.put('/remisiones/:nro',  verifyToken, remisionController.update);
 router.delete('/remisiones/:nro', verifyToken, remisionController.remove);
 
+// Clasificaciones
+router.get('/maestros/clasificaciones',         verifyToken, maestrosController.getClasificaciones);
+router.post('/maestros/clasificaciones',        verifyToken, maestrosController.createClasificacion);
+router.put('/maestros/clasificaciones/:id',     verifyToken, maestrosController.updateClasificacion);
+router.delete('/maestros/clasificaciones/:id',  verifyToken, maestrosController.deleteClasificacion);
+
+// Choferes
+router.get('/maestros/choferes',         verifyToken, maestrosController.getChoferes);
+router.post('/maestros/choferes',        verifyToken, maestrosController.createChofer);
+router.put('/maestros/choferes/:id',     verifyToken, maestrosController.updateChofer);
+router.delete('/maestros/choferes/:id',  verifyToken, maestrosController.deleteChofer);
+
 module.exports = router;

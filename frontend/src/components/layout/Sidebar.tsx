@@ -87,6 +87,8 @@ const menu = [
       { label: 'Grupos',           href: '/stk/grupos',          icon: Grid3x3 },
       { label: 'Marcas',           href: '/stk/marcas',          icon: Tag },
       { label: 'Rubros',           href: '/stk/rubros',          icon: BookOpen },
+      { label: 'Clasificaciones', href: '/stk/clasificaciones', icon: LayoutList },
+      { label: 'Choferes',        href: '/stk/choferes',        icon: Truck },
       { label: 'Unidades de medida', href: '/stk/unidades-medida', icon: Ruler },
     ],
   },
