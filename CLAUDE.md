@@ -116,6 +116,7 @@ NEXT_PUBLIC_API_URL=http://localhost:3001/api
 | FIN    | Finanzas     | 🔄 Avanzado   |
 | STK    | Stock        | 🔄 Avanzado   |
 | PER    | Personal     | 🔄 Avanzado   |
+| COM    | Compras      | 🔄 En progreso |
 
 ### Convención de nombres por módulo
 - Tablas DB: `{MOD}_TABLA` (ej. `GEN_OPERADOR`, `FAC_FACTURA`)
@@ -199,6 +200,42 @@ Cada vez que se cree una nueva página de listado, agregarla aquí. Usar esta li
 | `per/contratos` | Contratos | `fecha` desc |
 | `per/familiares` | Familiares | `nombre` asc |
 | `per/conceptos` | Conceptos de liquidación | `desc` asc |
+| `com/ordenes-compra` | Órdenes de compra | `fecha` desc |
+| `com/contratos` | Contratos de proveedor | `fecha` desc |
+
+---
+
+## Módulo COM — Tablas DB
+
+| Tabla                   | Descripción                  | PK                           |
+|-------------------------|------------------------------|------------------------------|
+| `COM_ORDEN_COMPRA`      | Órdenes de compra            | `ORCOM_NRO`                  |
+| `COM_ORDEN_COMPRA_DET`  | Detalle de orden de compra   | `ORCOMDET_NRO+ORCOMDET_ITEM` |
+| `COM_CONTRATO_PROV`     | Contratos con proveedores    | `CONT_CLAVE`                 |
+| `COM_CONTRATO_PROV_DET` | Detalle de contrato          | `COND_CLAVE_CONT+COND_NRO_ITEM` |
+| `COM_CONTRATO_PROV_CUO` | Cuotas de contrato           | `CONC_CLAVE_CONT+CONC_NRO_CUO` |
+| `COM_CONFIGURACION`     | Configuración del módulo     | `CONF_EMPR`                  |
+| `COM_ORDEN_FAC`         | Órdenes de facturación       | `ORCOM_NRO`                  |
+| `COM_ORDEN_FAC_DET`     | Detalle orden facturación    | `ORCOMDET_NRO+ORCOMDET_ITEM` |
+| `COM_DOCUMENTO_DET`     | Detalle de documentos compra | —                            |
+| `COM_DET_FACT_CONTR_ALQ`| Detalle factura contrato alq | —                            |
+
+## Módulo COM — Endpoints API
+
+**Base:** `/api/com`
+
+| Método | Ruta                          | Descripción                    | Auth |
+|--------|-------------------------------|--------------------------------|------|
+| GET    | `/ordenes-compra`             | Listar órdenes de compra       | Sí   |
+| GET    | `/ordenes-compra/:id`         | Detalle + líneas               | Sí   |
+| POST   | `/ordenes-compra`             | Crear orden con detalle        | Sí   |
+| PUT    | `/ordenes-compra/:id`         | Actualizar orden + detalle     | Sí   |
+| DELETE | `/ordenes-compra/:id`         | Eliminar orden + detalle       | Sí   |
+| GET    | `/contratos`                  | Listar contratos proveedor     | Sí   |
+| GET    | `/contratos/:id`              | Detalle + líneas contrato      | Sí   |
+| POST   | `/contratos`                  | Crear contrato con detalle     | Sí   |
+| PUT    | `/contratos/:id`              | Actualizar contrato + detalle  | Sí   |
+| DELETE | `/contratos/:id`              | Eliminar contrato + detalle    | Sí   |
 
 ---
 

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Users, Building2, Shield, Globe, Settings, LayoutDashboard, ChevronDown, X, Package, Warehouse, Tag, Layers, BookOpen, DollarSign, MapPin, Map, Code, Ruler, Grid3x3, Building, Percent, ShoppingCart, UserCheck, MapPinned, LayoutList, Handshake, ClipboardList, ListOrdered, Landmark, CreditCard, Briefcase, Truck, FileText, Banknote, Scale, ArrowLeftRight, BarChart3, Receipt, HardHat, UserCog, Network, Columns, Languages, GraduationCap, Award, Brain, Signal, CheckCircle, Wrench, FolderMinus, Heart, Wallet, Stethoscope, MapPinHouse, Ban, Home, CircleDollarSign, ShieldAlert, School, ScrollText, UsersRound, Calculator } from 'lucide-react';
+import { Users, Building2, Shield, Globe, Settings, LayoutDashboard, ChevronDown, X, Package, Warehouse, Tag, Layers, BookOpen, DollarSign, MapPin, Map, Code, Ruler, Grid3x3, Building, Percent, ShoppingCart, UserCheck, MapPinned, LayoutList, Handshake, ClipboardList, ListOrdered, Landmark, CreditCard, Briefcase, Truck, FileText, Banknote, Scale, ArrowLeftRight, BarChart3, Receipt, HardHat, UserCog, Network, Columns, Languages, GraduationCap, Award, Brain, Signal, CheckCircle, Wrench, FolderMinus, Heart, Wallet, Stethoscope, MapPinHouse, Ban, Home, CircleDollarSign, ShieldAlert, School, ScrollText, UsersRound, Calculator, ShoppingBag } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import Image from 'next/image';
@@ -79,6 +79,14 @@ const menu = [
       { label: 'Marcas',           href: '/stk/marcas',          icon: Tag },
       { label: 'Rubros',           href: '/stk/rubros',          icon: BookOpen },
       { label: 'Unidades de medida', href: '/stk/unidades-medida', icon: Ruler },
+    ],
+  },
+  {
+    label: 'Compras',
+    icon: ShoppingBag,
+    children: [
+      { label: 'Órdenes compra', href: '/com/ordenes-compra', icon: ClipboardList },
+      { label: 'Contratos prov.', href: '/com/contratos',      icon: ScrollText },
     ],
   },
   {
