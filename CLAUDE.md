@@ -752,6 +752,20 @@ Ubicados en `components/ui/`. Usar siempre estos en vez de reimplementar:
 
 ---
 
+## Mantenimiento de CLAUDE.md (OBLIGATORIO)
+
+Este archivo **siempre** debe mantenerse actualizado después de cualquier cambio. Al finalizar una tarea, verificar y actualizar:
+
+- **Tabla de módulos** — cambiar estado si corresponde (🔄 → ✅)
+- **Tabla de páginas de listado** — agregar toda página nueva con su `sortField` default
+- **Secciones de endpoints** — agregar nuevos endpoints creados
+- **Secciones de tablas DB** — agregar tablas nuevas usadas
+- **Convenciones de código** — actualizar si se establece un nuevo patrón
+
+Nunca dejar cambios sin reflejar en este archivo. Es la fuente de verdad del proyecto.
+
+---
+
 ## Convención de Commits — Español
 
 Todos los commits deben seguir el formato de **Conventional Commits** en **español**:
