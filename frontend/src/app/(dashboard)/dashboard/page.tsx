@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import {
   Users, Package, FileText, ShoppingCart, Building2,
   CreditCard, AlertTriangle, TrendingUp, Clock,
+  HardHat, ShoppingBag, Landmark, PenLine,
 } from 'lucide-react';
 import { getDashboard } from '@/services/gen';
 
@@ -19,6 +20,12 @@ const ESTADO_PEDIDO: Record<string, { label: string; cls: string }> = {
   A: { label: 'Aprobado',  cls: 'bg-blue-100 text-blue-700' },
   F: { label: 'Facturado', cls: 'bg-green-100 text-green-700' },
   C: { label: 'Cancelado', cls: 'bg-red-100 text-red-700' },
+};
+
+const ESTADO_OC: Record<string, { label: string; cls: string }> = {
+  PE: { label: 'Pendiente',  cls: 'bg-yellow-100 text-yellow-700' },
+  AU: { label: 'Autorizada', cls: 'bg-green-100 text-green-700' },
+  AN: { label: 'Anulada',    cls: 'bg-red-100 text-red-700' },
 };
 
 function StatCard({
@@ -96,53 +103,33 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* KPI cards */}
+      {/* KPI cards — fila 1: conteos principales */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard label="Clientes" value={isLoading ? '…' : fmt(kpis?.clientes ?? 0)} icon={Users} color="bg-blue-500" href="/fac/clientes" />
+        <StatCard label="Proveedores" value={isLoading ? '…' : fmt(kpis?.proveedores ?? 0)} icon={Building2} color="bg-purple-500" href="/fin/proveedores" />
+        <StatCard label="Artículos" value={isLoading ? '…' : fmt(kpis?.articulos ?? 0)} icon={Package} color="bg-orange-500" href="/stk/articulos" />
+        <StatCard label="Empleados activos" value={isLoading ? '…' : fmt(kpis?.empleados ?? 0)} icon={HardHat} color="bg-teal-500" href="/per/empleados" />
+      </div>
+
+      {/* KPI cards — fila 2: operaciones */}
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-        <StatCard
-          label="Clientes"
-          value={isLoading ? '…' : fmt(kpis?.clientes ?? 0)}
-          icon={Users}
-          color="bg-blue-500"
-          href="/fac/clientes"
-        />
-        <StatCard
-          label="Artículos"
-          value={isLoading ? '…' : fmt(kpis?.articulos ?? 0)}
-          icon={Package}
-          color="bg-orange-500"
-          href="/stk/articulos"
-        />
-        <StatCard
-          label="Proveedores"
-          value={isLoading ? '…' : fmt(kpis?.proveedores ?? 0)}
-          icon={Building2}
-          color="bg-purple-500"
-          href="/fin/proveedores"
-        />
-        <StatCard
-          label="Facturas del mes"
-          value={isLoading ? '…' : fmt(kpis?.facturasMes?.cantidad ?? 0)}
+        <StatCard label="Facturas del mes" value={isLoading ? '…' : fmt(kpis?.facturasMes?.cantidad ?? 0)}
           sub={isLoading ? undefined : `Total: ${fmt(kpis?.facturasMes?.total ?? 0)}`}
-          icon={FileText}
-          color="bg-green-500"
-          href="/fac/facturas"
-        />
-        <StatCard
-          label="Pedidos pendientes"
-          value={isLoading ? '…' : fmt(kpis?.pedidosPendientes?.cantidad ?? 0)}
+          icon={FileText} color="bg-green-500" href="/fac/facturas" />
+        <StatCard label="Pedidos pend." value={isLoading ? '…' : fmt(kpis?.pedidosPendientes?.cantidad ?? 0)}
           sub={isLoading ? undefined : `Total: ${fmt(kpis?.pedidosPendientes?.total ?? 0)}`}
-          icon={ShoppingCart}
-          color="bg-yellow-500"
-          href="/fac/pedidos"
-        />
-        <StatCard
-          label="Órdenes de pago"
-          value={isLoading ? '…' : fmt(kpis?.ordenesPendientes?.cantidad ?? 0)}
+          icon={ShoppingCart} color="bg-yellow-500" href="/fac/pedidos" />
+        <StatCard label="Órdenes pago" value={isLoading ? '…' : fmt(kpis?.ordenesPendientes?.cantidad ?? 0)}
           sub={isLoading ? undefined : `Total: ${fmt(kpis?.ordenesPendientes?.total ?? 0)}`}
-          icon={CreditCard}
-          color="bg-rose-500"
-          href="/fin/ordenes-pago"
-        />
+          icon={CreditCard} color="bg-rose-500" href="/fin/ordenes-pago" />
+        <StatCard label="OC pendientes" value={isLoading ? '…' : fmt(kpis?.ordenesCompraPend?.cantidad ?? 0)}
+          sub={isLoading ? undefined : `Total: ${fmt(kpis?.ordenesCompraPend?.total ?? 0)}`}
+          icon={ShoppingBag} color="bg-indigo-500" href="/com/ordenes-compra" />
+        <StatCard label="Docs. por pagar" value={isLoading ? '…' : fmt(kpis?.docsPorPagar?.cantidad ?? 0)}
+          sub={isLoading ? undefined : `Saldo: ${fmt(kpis?.docsPorPagar?.total ?? 0)}`}
+          icon={Landmark} color="bg-red-500" href="/fin/documentos" />
+        <StatCard label="Asientos del mes" value={isLoading ? '…' : fmt(kpis?.asientosMes ?? 0)}
+          icon={PenLine} color="bg-gray-500" href="/cnt/asientos" />
       </div>
 
       {/* Recent activity tables */}
@@ -164,20 +151,14 @@ export default function DashboardPage() {
                   ? Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} cols={4} />)
                   : (data?.ultimasFacturas ?? []).map((f: any) => (
                     <tr key={f.clave} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-4 py-3 font-mono text-gray-600 whitespace-nowrap">
-                        <a href="/fac/facturas" className="hover:text-blue-600">#{f.nro}</a>
-                      </td>
+                      <td className="px-4 py-3 font-mono text-gray-600 whitespace-nowrap"><a href="/fac/facturas" className="hover:text-blue-600">#{f.nro}</a></td>
                       <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{fmtDate(f.fecha)}</td>
                       <td className="px-4 py-3 text-gray-700 truncate max-w-[160px]">{f.cliente || '—'}</td>
-                      <td className="px-4 py-3 text-right text-gray-800 font-medium whitespace-nowrap">
-                        {f.simbolo} {fmt(f.total)}
-                      </td>
+                      <td className="px-4 py-3 text-right text-gray-800 font-medium whitespace-nowrap">{f.simbolo} {fmt(f.total)}</td>
                     </tr>
                   ))}
                 {!isLoading && (data?.ultimasFacturas ?? []).length === 0 && (
-                  <tr>
-                    <td colSpan={4} className="px-4 py-6 text-center text-gray-400 text-xs">Sin facturas registradas</td>
-                  </tr>
+                  <tr><td colSpan={4} className="px-4 py-6 text-center text-gray-400 text-xs">Sin facturas registradas</td></tr>
                 )}
               </tbody>
             </table>
@@ -206,26 +187,16 @@ export default function DashboardPage() {
                     const est = ESTADO_PEDIDO[p.estado] ?? { label: p.estado, cls: 'bg-gray-100 text-gray-600' };
                     return (
                       <tr key={p.clave} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-4 py-3 font-mono text-gray-600 whitespace-nowrap">
-                          <a href="/fac/pedidos" className="hover:text-blue-600">#{p.nro}</a>
-                        </td>
+                        <td className="px-4 py-3 font-mono text-gray-600 whitespace-nowrap"><a href="/fac/pedidos" className="hover:text-blue-600">#{p.nro}</a></td>
                         <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{fmtDate(p.fecha)}</td>
                         <td className="px-4 py-3 text-gray-700 truncate max-w-[120px]">{p.cliente || '—'}</td>
-                        <td className="px-4 py-3">
-                          <span className={`inline-block text-xs font-medium px-2 py-0.5 rounded-full ${est.cls}`}>
-                            {est.label}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-right text-gray-800 font-medium whitespace-nowrap">
-                          {fmt(p.total)}
-                        </td>
+                        <td className="px-4 py-3"><span className={`inline-block text-xs font-medium px-2 py-0.5 rounded-full ${est.cls}`}>{est.label}</span></td>
+                        <td className="px-4 py-3 text-right text-gray-800 font-medium whitespace-nowrap">{fmt(p.total)}</td>
                       </tr>
                     );
                   })}
                 {!isLoading && (data?.ultimosPedidos ?? []).length === 0 && (
-                  <tr>
-                    <td colSpan={5} className="px-4 py-6 text-center text-gray-400 text-xs">Sin pedidos registrados</td>
-                  </tr>
+                  <tr><td colSpan={5} className="px-4 py-6 text-center text-gray-400 text-xs">Sin pedidos registrados</td></tr>
                 )}
               </tbody>
             </table>
@@ -234,26 +205,62 @@ export default function DashboardPage() {
             <a href="/fac/pedidos" className="text-xs text-blue-500 hover:underline">Ver todos →</a>
           </div>
         </Section>
-      </div>
 
-      {/* Low stock alert — only shown when there are items */}
-      {!isLoading && (data?.stockBajo ?? []).length > 0 && (
-        <Section title="Artículos con stock bajo (≤ 5 unidades)" icon={AlertTriangle}>
-          <div className="divide-y divide-gray-50">
-            {(data?.stockBajo ?? []).map((s: any, i: number) => (
-              <div key={i} className="flex items-center justify-between px-5 py-3">
-                <span className="text-sm text-gray-700 truncate">{s.articulo}</span>
-                <span className={`text-sm font-bold ml-4 ${s.stock === 0 ? 'text-red-600' : 'text-yellow-600'}`}>
-                  {s.stock} u.
-                </span>
-              </div>
-            ))}
+        <Section title="Últimas órdenes de compra" icon={ShoppingBag}>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-xs text-gray-400 bg-gray-50">
+                  <th className="px-4 py-2 font-medium">Nro</th>
+                  <th className="px-4 py-2 font-medium">Fecha</th>
+                  <th className="px-4 py-2 font-medium">Proveedor</th>
+                  <th className="px-4 py-2 font-medium">Estado</th>
+                  <th className="px-4 py-2 font-medium text-right">Total</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {isLoading
+                  ? Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} cols={5} />)
+                  : (data?.ultimasCompras ?? []).map((o: any) => {
+                    const est = ESTADO_OC[o.estado] ?? { label: o.estado, cls: 'bg-gray-100 text-gray-600' };
+                    return (
+                      <tr key={o.nro} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-4 py-3 font-mono text-gray-600 whitespace-nowrap"><a href="/com/ordenes-compra" className="hover:text-blue-600">#{o.nro}</a></td>
+                        <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{fmtDate(o.fecha)}</td>
+                        <td className="px-4 py-3 text-gray-700 truncate max-w-[160px]">{o.proveedor || '—'}</td>
+                        <td className="px-4 py-3"><span className={`inline-block text-xs font-medium px-2 py-0.5 rounded-full ${est.cls}`}>{est.label}</span></td>
+                        <td className="px-4 py-3 text-right text-gray-800 font-medium whitespace-nowrap">{fmt(o.total)}</td>
+                      </tr>
+                    );
+                  })}
+                {!isLoading && (data?.ultimasCompras ?? []).length === 0 && (
+                  <tr><td colSpan={5} className="px-4 py-6 text-center text-gray-400 text-xs">Sin órdenes de compra</td></tr>
+                )}
+              </tbody>
+            </table>
           </div>
-          <div className="px-5 py-2 border-t border-gray-50">
-            <a href="/stk/stock" className="text-xs text-blue-500 hover:underline">Ver stock completo →</a>
+          <div className="px-4 py-2 border-t border-gray-50">
+            <a href="/com/ordenes-compra" className="text-xs text-blue-500 hover:underline">Ver todas →</a>
           </div>
         </Section>
-      )}
+
+        {/* Low stock alert */}
+        {!isLoading && (data?.stockBajo ?? []).length > 0 && (
+          <Section title="Artículos con stock bajo (≤ 5 unidades)" icon={AlertTriangle}>
+            <div className="divide-y divide-gray-50">
+              {(data?.stockBajo ?? []).map((s: any, i: number) => (
+                <div key={i} className="flex items-center justify-between px-5 py-3">
+                  <span className="text-sm text-gray-700 truncate">{s.articulo}</span>
+                  <span className={`text-sm font-bold ml-4 ${s.stock === 0 ? 'text-red-600' : 'text-yellow-600'}`}>{s.stock} u.</span>
+                </div>
+              ))}
+            </div>
+            <div className="px-5 py-2 border-t border-gray-50">
+              <a href="/stk/stock" className="text-xs text-blue-500 hover:underline">Ver stock completo →</a>
+            </div>
+          </Section>
+        )}
+      </div>
     </div>
   );
 }
