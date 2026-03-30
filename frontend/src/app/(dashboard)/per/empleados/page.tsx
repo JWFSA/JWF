@@ -10,6 +10,7 @@ import DataTable from '@/components/ui/DataTable';
 import PrimaryAddButton from '@/components/ui/PrimaryAddButton';
 import SearchField from '@/components/ui/SearchField';
 import TablePagination from '@/components/ui/TablePagination';
+import ExportButton from '@/components/ui/ExportButton';
 
 const SITUACIONES: Record<string, string> = { A: 'Activo', I: 'Inactivo' };
 
@@ -65,7 +66,19 @@ export default function EmpleadosPage() {
           <h1 className="text-xl font-semibold text-gray-800">Empleados</h1>
           <p className="text-sm text-gray-500 mt-0.5">Nómina del personal</p>
         </div>
-        <PrimaryAddButton label="Nuevo empleado" shortLabel="Nuevo" onClick={() => router.push('/per/empleados/nuevo')} />
+        <div className="flex items-center gap-2">
+          <ExportButton filename="empleados" fetchData={() => getEmpleados({ all: true })} columns={[
+            { header: 'Legajo', value: (r) => r.empl_legajo },
+            { header: 'Nombre', value: (r) => r.empl_nombre },
+            { header: 'Apellido', value: (r) => r.empl_ape },
+            { header: 'Documento', value: (r) => r.empl_doc_ident },
+            { header: 'Cargo', value: (r) => r.cargo_desc },
+            { header: 'Área', value: (r) => r.area_desc },
+            { header: 'Ingreso', value: (r) => r.empl_fec_ingreso },
+            { header: 'Salario base', value: (r) => r.empl_salario_base },
+          ]} />
+          <PrimaryAddButton label="Nuevo empleado" shortLabel="Nuevo" onClick={() => router.push('/per/empleados/nuevo')} />
+        </div>
       </div>
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
         <div className="p-4 border-b border-gray-100">

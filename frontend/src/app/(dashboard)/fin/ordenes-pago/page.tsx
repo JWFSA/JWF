@@ -10,6 +10,7 @@ import DataTable from '@/components/ui/DataTable';
 import PrimaryAddButton from '@/components/ui/PrimaryAddButton';
 import SearchField from '@/components/ui/SearchField';
 import TablePagination from '@/components/ui/TablePagination';
+import ExportButton from '@/components/ui/ExportButton';
 
 const ESTADOS: Record<string, string> = { P: 'Pendiente', A: 'Aprobada', C: 'Completada', X: 'Anulada' };
 const fmt = (n: number | null | undefined) =>
@@ -60,7 +61,17 @@ export default function OrdenesPagoPage() {
           <h1 className="text-xl font-semibold text-gray-800">Órdenes de pago</h1>
           <p className="text-sm text-gray-500 mt-0.5">Pagos a proveedores y beneficiarios</p>
         </div>
-        <PrimaryAddButton label="Nueva orden" shortLabel="Nueva" onClick={() => router.push('/fin/ordenes-pago/nuevo')} />
+        <div className="flex items-center gap-2">
+          <ExportButton filename="ordenes-pago" fetchData={() => getOrdenesPago({ all: true })} columns={[
+            { header: 'Nro.', value: (r) => r.ordp_codigo },
+            { header: 'Fecha', value: (r) => r.ordp_fec_orden },
+            { header: 'Beneficiario', value: (r) => r.ordp_beneficiario ?? r.prov_nom },
+            { header: 'Moneda', value: (r) => r.mon_desc },
+            { header: 'Total', value: (r) => r.ordp_tot_pago },
+            { header: 'Estado', value: (r) => r.ordp_estado },
+          ]} />
+          <PrimaryAddButton label="Nueva orden" shortLabel="Nueva" onClick={() => router.push('/fin/ordenes-pago/nuevo')} />
+        </div>
       </div>
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
         <div className="p-4 border-b border-gray-100">

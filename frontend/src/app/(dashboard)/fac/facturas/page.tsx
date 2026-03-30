@@ -10,6 +10,7 @@ import DataTable from '@/components/ui/DataTable';
 import PrimaryAddButton from '@/components/ui/PrimaryAddButton';
 import SearchField from '@/components/ui/SearchField';
 import TablePagination from '@/components/ui/TablePagination';
+import ExportButton from '@/components/ui/ExportButton';
 
 const fmt = (n: number | null | undefined) =>
   n != null ? Number(n).toLocaleString('es-PY') : '—';
@@ -61,7 +62,21 @@ export default function FacturasPage() {
           <h1 className="text-xl font-semibold text-gray-800">Facturas</h1>
           <p className="text-sm text-gray-500 mt-0.5">Facturas de venta emitidas</p>
         </div>
-        <PrimaryAddButton label="Nueva factura" shortLabel="Nueva" onClick={() => router.push('/fac/facturas/nuevo')} />
+        <div className="flex items-center gap-2">
+          <ExportButton filename="facturas" fetchData={() => getFacturas({ all: true })} columns={[
+            { header: 'Nro.', value: (r) => r.fac_nro },
+            { header: 'Fecha', value: (r) => r.fac_fecha },
+            { header: 'Cliente', value: (r) => r.cli_nom },
+            { header: 'Moneda', value: (r) => r.mon_desc },
+            { header: 'Gravada 10%', value: (r) => r.doc_grav_10_loc },
+            { header: 'Gravada 5%', value: (r) => r.doc_grav_5_loc },
+            { header: 'Exenta', value: (r) => r.doc_neto_exen_loc },
+            { header: 'IVA 10%', value: (r) => r.doc_iva_10_loc },
+            { header: 'IVA 5%', value: (r) => r.doc_iva_5_loc },
+            { header: 'Saldo', value: (r) => r.doc_saldo_loc },
+          ]} />
+          <PrimaryAddButton label="Nueva factura" shortLabel="Nueva" onClick={() => router.push('/fac/facturas/nuevo')} />
+        </div>
       </div>
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
         <div className="p-4 border-b border-gray-100">

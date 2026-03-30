@@ -10,6 +10,7 @@ import DataTable from '@/components/ui/DataTable';
 import PrimaryAddButton from '@/components/ui/PrimaryAddButton';
 import SearchField from '@/components/ui/SearchField';
 import TablePagination from '@/components/ui/TablePagination';
+import ExportButton from '@/components/ui/ExportButton';
 
 const ENT_SAL: Record<string, string> = { E: 'Entrada', S: 'Salida' };
 
@@ -58,7 +59,17 @@ export default function MovimientosPage() {
           <h1 className="text-xl font-semibold text-gray-800">Movimientos de stock</h1>
           <p className="text-sm text-gray-500 mt-0.5">Entradas y salidas de inventario</p>
         </div>
-        <PrimaryAddButton label="Nuevo movimiento" shortLabel="Nuevo" onClick={() => router.push('/stk/movimientos/nuevo')} />
+        <div className="flex items-center gap-2">
+          <ExportButton filename="movimientos-stock" fetchData={() => getMovimientos({ all: true })} columns={[
+            { header: 'Nro.', value: (r) => r.docu_nro_doc },
+            { header: 'Fecha', value: (r) => r.docu_fec_emis },
+            { header: 'Operación', value: (r) => r.oper_desc },
+            { header: 'Depósito origen', value: (r) => r.dep_orig_desc },
+            { header: 'Depósito destino', value: (r) => r.dep_dest_desc },
+            { header: 'Observación', value: (r) => r.docu_obs },
+          ]} />
+          <PrimaryAddButton label="Nuevo movimiento" shortLabel="Nuevo" onClick={() => router.push('/stk/movimientos/nuevo')} />
+        </div>
       </div>
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
         <div className="p-4 border-b border-gray-100">

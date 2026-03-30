@@ -9,6 +9,7 @@ import DataTable from '@/components/ui/DataTable';
 import PrimaryAddButton from '@/components/ui/PrimaryAddButton';
 import SearchField from '@/components/ui/SearchField';
 import TablePagination from '@/components/ui/TablePagination';
+import ExportButton from '@/components/ui/ExportButton';
 
 const COLUMNS = [
   { key: 'cod',    header: 'Cód.',        sortKey: 'cod',    headerClassName: 'w-20', cell: (p: Proveedor) => p.prov_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
@@ -61,7 +62,17 @@ export default function ProveedoresPage() {
           <h1 className="text-xl font-semibold text-gray-800">Proveedores</h1>
           <p className="text-sm text-gray-500 mt-0.5">Cartera de proveedores</p>
         </div>
-        <PrimaryAddButton label="Nuevo proveedor" shortLabel="Nuevo" href="/fin/proveedores/nuevo" />
+        <div className="flex items-center gap-2">
+          <ExportButton filename="proveedores" fetchData={() => getProveedores({ all: true })} columns={[
+            { header: 'Código', value: (r) => r.prov_codigo },
+            { header: 'Razón social', value: (r) => r.prov_razon_social },
+            { header: 'RUC', value: (r) => r.prov_ruc },
+            { header: 'Teléfono', value: (r) => r.prov_tel },
+            { header: 'Email', value: (r) => r.prov_email },
+            { header: 'Estado', value: (r) => r.prov_est_prov },
+          ]} />
+          <PrimaryAddButton label="Nuevo proveedor" shortLabel="Nuevo" href="/fin/proveedores/nuevo" />
+        </div>
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm">

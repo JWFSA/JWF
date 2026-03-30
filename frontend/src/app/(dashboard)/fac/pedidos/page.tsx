@@ -10,6 +10,7 @@ import DataTable from '@/components/ui/DataTable';
 import PrimaryAddButton from '@/components/ui/PrimaryAddButton';
 import SearchField from '@/components/ui/SearchField';
 import TablePagination from '@/components/ui/TablePagination';
+import ExportButton from '@/components/ui/ExportButton';
 
 const ESTADO: Record<string, { label: string; cls: string }> = {
   P: { label: 'Pendiente', cls: 'bg-yellow-100 text-yellow-700' },
@@ -74,7 +75,16 @@ export default function PedidosPage() {
           <h1 className="text-xl font-semibold text-gray-800">Pedidos</h1>
           <p className="text-sm text-gray-500 mt-0.5">Órdenes de venta</p>
         </div>
-        <PrimaryAddButton label="Nuevo pedido" shortLabel="Nuevo" href="/fac/pedidos/nuevo" />
+        <div className="flex items-center gap-2">
+          <ExportButton filename="pedidos" fetchData={() => getPedidos({ all: true })} columns={[
+            { header: 'Nro.', value: (r) => r.ped_nro },
+            { header: 'Fecha', value: (r) => r.ped_fecha },
+            { header: 'Cliente', value: (r) => r.cli_nom },
+            { header: 'Estado', value: (r) => r.ped_estado },
+            { header: 'Total', value: (r) => r.ped_imp_total_mon },
+          ]} />
+          <PrimaryAddButton label="Nuevo pedido" shortLabel="Nuevo" href="/fac/pedidos/nuevo" />
+        </div>
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm">

@@ -8,6 +8,7 @@ import type { Cheque } from '@/types/fin';
 import DataTable from '@/components/ui/DataTable';
 import SearchField from '@/components/ui/SearchField';
 import TablePagination from '@/components/ui/TablePagination';
+import ExportButton from '@/components/ui/ExportButton';
 
 const SITUACION: Record<string, string> = { C: 'En cartera', D: 'Depositado', R: 'Rechazado', E: 'Entregado', N: 'Anulado' };
 const fmt = (n: number | null | undefined) =>
@@ -48,6 +49,16 @@ export default function ChequesPage() {
           <h1 className="text-xl font-semibold text-gray-800">Cheques recibidos</h1>
           <p className="text-sm text-gray-500 mt-0.5">Gestión de cheques recibidos de clientes</p>
         </div>
+        <ExportButton filename="cheques-recibidos" fetchData={() => getCheques({ all: true })} columns={[
+          { header: 'Nro.', value: (r) => r.cheq_nro },
+          { header: 'Emisión', value: (r) => r.cheq_fec_emis },
+          { header: 'Vencimiento', value: (r) => r.cheq_fec_depositar },
+          { header: 'Cliente', value: (r) => r.cheq_cli_nom },
+          { header: 'Titular', value: (r) => r.cheq_titular },
+          { header: 'Banco', value: (r) => r.bco_desc },
+          { header: 'Importe', value: (r) => r.cheq_importe },
+          { header: 'Situación', value: (r) => r.cheq_situacion },
+        ]} />
       </div>
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
         <div className="p-4 border-b border-gray-100">

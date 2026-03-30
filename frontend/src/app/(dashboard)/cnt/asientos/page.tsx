@@ -10,6 +10,7 @@ import DataTable from '@/components/ui/DataTable';
 import PrimaryAddButton from '@/components/ui/PrimaryAddButton';
 import SearchField from '@/components/ui/SearchField';
 import TablePagination from '@/components/ui/TablePagination';
+import ExportButton from '@/components/ui/ExportButton';
 
 const COLUMNS = [
   { key: 'nro',       header: 'Nro.',       sortKey: 'nro',       headerClassName: 'w-20',                   cell: (r: Asiento) => r.asi_nro,                 cellClassName: 'font-mono text-xs text-gray-500' },
@@ -52,7 +53,16 @@ export default function AsientosPage() {
           <h1 className="text-xl font-semibold text-gray-800">Asientos contables</h1>
           <p className="text-sm text-gray-500 mt-0.5">Registros contables del libro diario</p>
         </div>
-        <PrimaryAddButton label="Nuevo asiento" shortLabel="Nuevo" onClick={() => router.push('/cnt/asientos/nuevo')} />
+        <div className="flex items-center gap-2">
+          <ExportButton filename="asientos-contables" fetchData={() => getAsientos({ all: true })} columns={[
+            { header: 'Nro.', value: (r) => r.asi_nro },
+            { header: 'Fecha', value: (r) => r.asi_fec },
+            { header: 'Observación', value: (r) => r.asi_obs },
+            { header: 'Ejercicio', value: (r) => r.asi_ejercicio },
+            { header: 'Usuario', value: (r) => r.asi_login },
+          ]} />
+          <PrimaryAddButton label="Nuevo asiento" shortLabel="Nuevo" onClick={() => router.push('/cnt/asientos/nuevo')} />
+        </div>
       </div>
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
         <div className="p-4 border-b border-gray-100">

@@ -9,6 +9,7 @@ import type { DocumentoFin } from '@/types/fin';
 import DataTable from '@/components/ui/DataTable';
 import SearchField from '@/components/ui/SearchField';
 import TablePagination from '@/components/ui/TablePagination';
+import ExportButton from '@/components/ui/ExportButton';
 
 const fmt = (n: number | null | undefined) =>
   n == null ? '—' : new Intl.NumberFormat('es-PY').format(Number(n));
@@ -49,6 +50,19 @@ export default function DocumentosFinPage() {
           <h1 className="text-xl font-semibold text-gray-800">Documentos financieros</h1>
           <p className="text-sm text-gray-500 mt-0.5">Facturas, notas de crédito, recibos y otros documentos</p>
         </div>
+        <ExportButton filename="documentos-financieros" fetchData={() => getDocumentosFin({ all: true })} columns={[
+          { header: 'Nro. documento', value: (r) => r.doc_nro_doc },
+          { header: 'Tipo', value: (r) => r.tmov_desc },
+          { header: 'Fecha', value: (r) => r.doc_fec_doc },
+          { header: 'Proveedor/Cliente', value: (r) => r.prov_nom ?? r.doc_cli_nom },
+          { header: 'Moneda', value: (r) => r.mon_desc },
+          { header: 'Exenta', value: (r) => r.doc_neto_exen_mon },
+          { header: 'Gravada', value: (r) => r.doc_neto_grav_mon },
+          { header: 'IVA', value: (r) => r.doc_iva_mon },
+          { header: 'Saldo', value: (r) => r.doc_saldo_mon },
+          { header: 'D/C', value: (r) => r.doc_tipo_saldo },
+          { header: 'Observación', value: (r) => r.doc_obs },
+        ]} />
       </div>
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
         <div className="p-4 border-b border-gray-100">

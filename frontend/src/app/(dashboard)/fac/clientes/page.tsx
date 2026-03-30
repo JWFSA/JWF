@@ -9,6 +9,7 @@ import DataTable from '@/components/ui/DataTable';
 import PrimaryAddButton from '@/components/ui/PrimaryAddButton';
 import SearchField from '@/components/ui/SearchField';
 import TablePagination from '@/components/ui/TablePagination';
+import ExportButton from '@/components/ui/ExportButton';
 
 const COLUMNS = [
   { key: 'codigo', header: 'Cód.',    sortKey: 'cod',    headerClassName: 'w-20', cell: (c: Cliente) => c.cli_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
@@ -61,7 +62,17 @@ export default function ClientesPage() {
           <h1 className="text-xl font-semibold text-gray-800">Clientes</h1>
           <p className="text-sm text-gray-500 mt-0.5">Cartera de clientes</p>
         </div>
-        <PrimaryAddButton label="Nuevo cliente" shortLabel="Nuevo" href="/fac/clientes/nuevo" />
+        <div className="flex items-center gap-2">
+          <ExportButton filename="clientes" fetchData={() => getClientes({ all: true })} columns={[
+            { header: 'Código', value: (r) => r.cli_codigo },
+            { header: 'Nombre', value: (r) => r.cli_nom },
+            { header: 'RUC', value: (r) => r.cli_ruc },
+            { header: 'Teléfono', value: (r) => r.cli_tel },
+            { header: 'Email', value: (r) => r.cli_email },
+            { header: 'Estado', value: (r) => r.cli_est_cli },
+          ]} />
+          <PrimaryAddButton label="Nuevo cliente" shortLabel="Nuevo" href="/fac/clientes/nuevo" />
+        </div>
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm">

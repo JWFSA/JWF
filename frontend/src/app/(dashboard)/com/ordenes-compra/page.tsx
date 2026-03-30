@@ -10,6 +10,7 @@ import DataTable from '@/components/ui/DataTable';
 import PrimaryAddButton from '@/components/ui/PrimaryAddButton';
 import SearchField from '@/components/ui/SearchField';
 import TablePagination from '@/components/ui/TablePagination';
+import ExportButton from '@/components/ui/ExportButton';
 
 const ESTADOS: Record<string, string> = { PE: 'Pendiente', AU: 'Autorizada', AN: 'Anulada' };
 const fmt = (n: number | null | undefined) =>
@@ -61,7 +62,18 @@ export default function OrdenesCompraPage() {
           <h1 className="text-xl font-semibold text-gray-800">Órdenes de compra</h1>
           <p className="text-sm text-gray-500 mt-0.5">Gestión de órdenes de compra a proveedores</p>
         </div>
-        <PrimaryAddButton label="Nueva orden" shortLabel="Nueva" onClick={() => router.push('/com/ordenes-compra/nuevo')} />
+        <div className="flex items-center gap-2">
+          <ExportButton filename="ordenes-compra" fetchData={() => getOrdenesCompra({ all: true })} columns={[
+            { header: 'Nro.', value: (r) => r.orcom_nro },
+            { header: 'Fecha', value: (r) => r.orcom_fec_emis },
+            { header: 'Proveedor', value: (r) => r.prov_nom },
+            { header: 'Moneda', value: (r) => r.mon_desc },
+            { header: 'Total', value: (r) => r.orcom_total },
+            { header: 'Estado', value: (r) => r.orcom_estado },
+            { header: 'Forma pago', value: (r) => r.orcom_forma_pago },
+          ]} />
+          <PrimaryAddButton label="Nueva orden" shortLabel="Nueva" onClick={() => router.push('/com/ordenes-compra/nuevo')} />
+        </div>
       </div>
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
         <div className="p-4 border-b border-gray-100">
