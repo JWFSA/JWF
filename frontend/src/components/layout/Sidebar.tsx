@@ -59,9 +59,12 @@ const menu = [
     children: [
       { label: 'Documentos',          href: '/fin/documentos',         icon: FileText },
       { label: 'Órdenes de pago',    href: '/fin/ordenes-pago',       icon: Receipt },
-      { label: 'Cheques',           href: '/fin/cheques',            icon: Banknote },
+      { label: 'Cheques recibidos', href: '/fin/cheques',            icon: Banknote },
+      { label: 'Cheques emitidos',  href: '/fin/cheques-emitidos',   icon: Banknote },
       { label: 'Proveedores',        href: '/fin/proveedores',        icon: Truck },
       { label: 'Cuentas bancarias', href: '/fin/cuentas-bancarias',  icon: CreditCard },
+      { label: 'Cobradores',        href: '/fin/cobradores',         icon: UserCheck },
+      { label: 'Períodos',          href: '/fin/periodos',           icon: Calendar },
       { label: 'Conceptos',         href: '/fin/conceptos',          icon: BookOpen },
       { label: 'Bancos',            href: '/fin/bancos',             icon: Landmark },
       { label: 'Formas de pago',    href: '/fin/formas-pago',        icon: DollarSign },

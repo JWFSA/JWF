@@ -6,6 +6,7 @@ const cuentaBancariaController = require('../controllers/cuentaBancariaControlle
 const ordenPagoController      = require('../controllers/ordenPagoController');
 const documentoController      = require('../controllers/documentoController');
 const chequeController         = require('../controllers/chequeController');
+const chequeEmitController     = require('../controllers/chequeEmitController');
 
 // Bancos
 router.get('/maestros/bancos',         verifyToken, maestrosController.getBancos);
@@ -78,5 +79,20 @@ router.get('/documentos/:id',    verifyToken, documentoController.getById);
 // Cheques recibidos (solo lectura)
 router.get('/cheques',        verifyToken, chequeController.getAll);
 router.get('/cheques/:id',    verifyToken, chequeController.getById);
+
+// Cheques emitidos (solo lectura)
+router.get('/cheques-emitidos', verifyToken, chequeEmitController.getAll);
+
+// Períodos financieros
+router.get('/maestros/periodos',         verifyToken, maestrosController.getPeriodos);
+router.post('/maestros/periodos',        verifyToken, maestrosController.createPeriodo);
+router.put('/maestros/periodos/:id',     verifyToken, maestrosController.updatePeriodo);
+router.delete('/maestros/periodos/:id',  verifyToken, maestrosController.deletePeriodo);
+
+// Cobradores
+router.get('/maestros/cobradores',         verifyToken, maestrosController.getCobradores);
+router.post('/maestros/cobradores',        verifyToken, maestrosController.createCobrador);
+router.put('/maestros/cobradores/:id',     verifyToken, maestrosController.updateCobrador);
+router.delete('/maestros/cobradores/:id',  verifyToken, maestrosController.deleteCobrador);
 
 module.exports = router;

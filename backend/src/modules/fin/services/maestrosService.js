@@ -389,6 +389,89 @@ const deleteConcepto = async (clave) => {
   await pool.query('DELETE FROM fin_concepto WHERE "FCON_CLAVE" = $1', [clave]);
 };
 
+// ─── PERÍODOS FINANCIEROS ────────────────────────────────────────────────────
+
+const getPeriodos = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  page  = Math.max(1, page);
+  limit = Math.max(1, Math.min(1000, limit));
+  const params = search ? [`%${search}%`] : [];
+  const where  = search ? `WHERE CAST("PERI_CODIGO" AS TEXT) ILIKE $1` : '';
+  const countRes = await pool.query(`SELECT COUNT(*) FROM fin_periodo ${where}`, params);
+  const total = parseInt(countRes.rows[0].count);
+  const allowedSort = { codigo: '"PERI_CODIGO"', fec_ini: '"PERI_FEC_INI"', fec_fin: '"PERI_FEC_FIN"' };
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = Object.hasOwn(allowedSort, sortField) ? `${allowedSort[sortField]} ${dir}` : '"PERI_CODIGO" DESC';
+  const select = `SELECT "PERI_CODIGO" AS peri_codigo, "PERI_FEC_INI" AS peri_fec_ini, "PERI_FEC_FIN" AS peri_fec_fin
+    FROM fin_periodo ${where} ORDER BY ${orderBy}`;
+  if (all) {
+    const { rows } = await pool.query(select, params);
+    return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
+  }
+  const offset = (page - 1) * limit;
+  const { rows } = await pool.query(`${select} LIMIT $${params.length + 1} OFFSET $${params.length + 2}`, [...params, limit, offset]);
+  return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+};
+
+const createPeriodo = async (data) => {
+  const { rows } = await pool.query('SELECT COALESCE(MAX("PERI_CODIGO"), 0) + 1 AS next FROM fin_periodo');
+  const codigo = rows[0].next;
+  await pool.query(`INSERT INTO fin_periodo ("PERI_CODIGO","PERI_FEC_INI","PERI_FEC_FIN") VALUES ($1,$2,$3)`,
+    [codigo, data.peri_fec_ini, data.peri_fec_fin]);
+  return { peri_codigo: codigo, peri_fec_ini: data.peri_fec_ini, peri_fec_fin: data.peri_fec_fin };
+};
+
+const updatePeriodo = async (codigo, data) => {
+  const fields = []; const params = [];
+  const map = { peri_fec_ini: '"PERI_FEC_INI"', peri_fec_fin: '"PERI_FEC_FIN"' };
+  for (const [k, col] of Object.entries(map)) {
+    if (data[k] !== undefined) { params.push(data[k]); fields.push(`${col} = $${params.length}`); }
+  }
+  if (fields.length) { params.push(codigo); await pool.query(`UPDATE fin_periodo SET ${fields.join(', ')} WHERE "PERI_CODIGO" = $${params.length}`, params); }
+};
+
+const deletePeriodo = async (codigo) => {
+  await pool.query('DELETE FROM fin_periodo WHERE "PERI_CODIGO" = $1', [codigo]);
+};
+
+// ─── COBRADORES ─────────────────────────────────────────────────────────────
+
+const getCobradores = async ({ page = 1, limit = 20, search = '', all = false } = {}) => {
+  page  = Math.max(1, page);
+  limit = Math.max(1, Math.min(1000, limit));
+  const params = search ? [`%${search}%`] : [];
+  const where  = search ? `AND (CAST(c."COB_CODIGO" AS TEXT) ILIKE $1 OR e."EMPL_NOMBRE" ILIKE $1 OR e."EMPL_APE" ILIKE $1)` : '';
+  const countRes = await pool.query(
+    `SELECT COUNT(*) FROM fin_cobrador c LEFT JOIN per_empleado e ON e."EMPL_LEGAJO" = c."COB_CODIGO" WHERE c."COB_EMPR" = 1 ${where}`, params);
+  const total = parseInt(countRes.rows[0].count);
+  const select = `SELECT c."COB_CODIGO" AS cob_codigo, c."COB_PORC_COMISION" AS cob_porc_comision,
+    e."EMPL_NOMBRE" AS empl_nombre, e."EMPL_APE" AS empl_ape
+    FROM fin_cobrador c LEFT JOIN per_empleado e ON e."EMPL_LEGAJO" = c."COB_CODIGO"
+    WHERE c."COB_EMPR" = 1 ${where} ORDER BY c."COB_CODIGO" ASC`;
+  if (all) {
+    const { rows } = await pool.query(select, params);
+    return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
+  }
+  const offset = (page - 1) * limit;
+  const { rows } = await pool.query(`${select} LIMIT $${params.length + 1} OFFSET $${params.length + 2}`, [...params, limit, offset]);
+  return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+};
+
+const createCobrador = async (data) => {
+  await pool.query(`INSERT INTO fin_cobrador ("COB_EMPR","COB_CODIGO","COB_PORC_COMISION") VALUES (1,$1,$2)`,
+    [data.cob_codigo, data.cob_porc_comision || 0]);
+  return { cob_codigo: data.cob_codigo, cob_porc_comision: data.cob_porc_comision || 0 };
+};
+
+const updateCobrador = async (codigo, data) => {
+  if (data.cob_porc_comision !== undefined) {
+    await pool.query(`UPDATE fin_cobrador SET "COB_PORC_COMISION" = $1 WHERE "COB_EMPR" = 1 AND "COB_CODIGO" = $2`, [data.cob_porc_comision, codigo]);
+  }
+};
+
+const deleteCobrador = async (codigo) => {
+  await pool.query('DELETE FROM fin_cobrador WHERE "COB_EMPR" = 1 AND "COB_CODIGO" = $1', [codigo]);
+};
+
 module.exports = {
   getBancos, getBanco, createBanco, updateBanco, deleteBanco,
   getFormasPago, getFormaPago, createFormaPago, updateFormaPago, deleteFormaPago,
@@ -397,4 +480,6 @@ module.exports = {
   getPersonerias, getPersoneria, createPersoneria, updatePersoneria, deletePersoneria,
   getClasesDoc, getClaseDoc, createClaseDoc, updateClaseDoc, deleteClaseDoc,
   getConceptos, getConcepto, createConcepto, updateConcepto, deleteConcepto,
+  getPeriodos, createPeriodo, updatePeriodo, deletePeriodo,
+  getCobradores, createCobrador, updateCobrador, deleteCobrador,
 };

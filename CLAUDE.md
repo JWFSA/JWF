@@ -194,6 +194,9 @@ Cada vez que se cree una nueva página de listado, agregarla aquí. Usar esta li
 | `fin/conceptos` | Conceptos financieros | `codigo` asc |
 | `fin/documentos` | Documentos financieros | `fecha` desc |
 | `fin/cheques` | Cheques recibidos | `fecha` desc |
+| `fin/cheques-emitidos` | Cheques emitidos | `vto` desc |
+| `fin/periodos` | Períodos financieros | `codigo` desc |
+| `fin/cobradores` | Cobradores | — (sin sort) |
 | `per/empleados` | Empleados | `nombre` asc |
 | `per/cargos` | Cargos | `desc` asc |
 | `per/categorias` | Categorías de personal | `desc` asc |

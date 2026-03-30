@@ -44,6 +44,18 @@ const createConcepto  = async (req, res, next) => { try { if (!req.body.fcon_des
 const updateConcepto  = async (req, res, next) => { try { const id = Number(req.params.id); if (!Number.isFinite(id)) return res.status(400).json({ message: 'ID inválido' }); res.json(await s.updateConcepto(id, req.body)); } catch (e) { next(e); } };
 const deleteConcepto  = async (req, res, next) => { try { const id = Number(req.params.id); if (!Number.isFinite(id)) return res.status(400).json({ message: 'ID inválido' }); await s.deleteConcepto(id); res.status(204).end(); } catch (e) { next(e); } };
 
+// Períodos financieros
+const getPeriodos    = async (req, res, next) => { try { res.json(await s.getPeriodos(parseQuery(req))); } catch (e) { next(e); } };
+const createPeriodo  = async (req, res, next) => { try { if (!req.body.peri_fec_ini || !req.body.peri_fec_fin) return res.status(400).json({ message: 'Las fechas son requeridas' }); res.status(201).json(await s.createPeriodo(req.body)); } catch (e) { next(e); } };
+const updatePeriodo  = async (req, res, next) => { try { const id = Number(req.params.id); if (!Number.isFinite(id)) return res.status(400).json({ message: 'ID inválido' }); await s.updatePeriodo(id, req.body); res.json({ ok: true }); } catch (e) { next(e); } };
+const deletePeriodo  = async (req, res, next) => { try { const id = Number(req.params.id); if (!Number.isFinite(id)) return res.status(400).json({ message: 'ID inválido' }); await s.deletePeriodo(id); res.status(204).end(); } catch (e) { next(e); } };
+
+// Cobradores
+const getCobradores    = async (req, res, next) => { try { res.json(await s.getCobradores(parseQuery(req))); } catch (e) { next(e); } };
+const createCobrador   = async (req, res, next) => { try { if (!req.body.cob_codigo) return res.status(400).json({ message: 'El código es requerido' }); res.status(201).json(await s.createCobrador(req.body)); } catch (e) { next(e); } };
+const updateCobrador   = async (req, res, next) => { try { const id = Number(req.params.id); if (!Number.isFinite(id)) return res.status(400).json({ message: 'ID inválido' }); await s.updateCobrador(id, req.body); res.json({ ok: true }); } catch (e) { next(e); } };
+const deleteCobrador   = async (req, res, next) => { try { const id = Number(req.params.id); if (!Number.isFinite(id)) return res.status(400).json({ message: 'ID inválido' }); await s.deleteCobrador(id); res.status(204).end(); } catch (e) { next(e); } };
+
 module.exports = {
   getBancos, createBanco, updateBanco, deleteBanco,
   getFormasPago, createFormaPago, updateFormaPago, deleteFormaPago,
@@ -52,4 +64,6 @@ module.exports = {
   getPersonerias, createPersoneria, updatePersoneria, deletePersoneria,
   getClasesDoc, createClaseDoc, updateClaseDoc, deleteClaseDoc,
   getConceptos, getConcepto, createConcepto, updateConcepto, deleteConcepto,
+  getPeriodos, createPeriodo, updatePeriodo, deletePeriodo,
+  getCobradores, createCobrador, updateCobrador, deleteCobrador,
 };

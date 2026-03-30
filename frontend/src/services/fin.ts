@@ -1,5 +1,5 @@
 import api from '@/lib/api';
-import type { Banco, FormaPago, Ramo, TipoProveedor, Proveedor, Personeria, ClaseDoc, CuentaBancaria, OrdenPago, ConceptoFin, DocumentoFin, Cheque, Paginated } from '@/types/fin';
+import type { Banco, FormaPago, Ramo, TipoProveedor, Proveedor, Personeria, ClaseDoc, CuentaBancaria, OrdenPago, ConceptoFin, DocumentoFin, Cheque, ChequeEmit, PeriodoFin, Cobrador, Paginated } from '@/types/fin';
 import type { ListParams } from '@/services/gen';
 
 // Bancos
@@ -73,3 +73,18 @@ export const getDocumentoFin  = (id: number) => api.get<DocumentoFin>(`/fin/docu
 // Cheques recibidos (solo lectura)
 export const getCheques       = (params?: ListParams) => api.get<Paginated<Cheque>>('/fin/cheques', { params }).then((r) => r.data);
 export const getCheque        = (id: number) => api.get<Cheque>(`/fin/cheques/${id}`).then((r) => r.data);
+
+// Cheques emitidos (solo lectura)
+export const getChequesEmit   = (params?: ListParams) => api.get<Paginated<ChequeEmit>>('/fin/cheques-emitidos', { params }).then((r) => r.data);
+
+// Períodos financieros
+export const getPeriodos      = (params?: ListParams) => api.get<Paginated<PeriodoFin>>('/fin/maestros/periodos', { params }).then((r) => r.data);
+export const createPeriodo    = (data: Partial<PeriodoFin>) => api.post<PeriodoFin>('/fin/maestros/periodos', data).then((r) => r.data);
+export const updatePeriodo    = (id: number, data: Partial<PeriodoFin>) => api.put(`/fin/maestros/periodos/${id}`, data).then((r) => r.data);
+export const deletePeriodo    = (id: number) => api.delete(`/fin/maestros/periodos/${id}`);
+
+// Cobradores
+export const getCobradores    = (params?: ListParams) => api.get<Paginated<Cobrador>>('/fin/maestros/cobradores', { params }).then((r) => r.data);
+export const createCobrador   = (data: Partial<Cobrador>) => api.post<Cobrador>('/fin/maestros/cobradores', data).then((r) => r.data);
+export const updateCobrador   = (id: number, data: Partial<Cobrador>) => api.put(`/fin/maestros/cobradores/${id}`, data).then((r) => r.data);
+export const deleteCobrador   = (id: number) => api.delete(`/fin/maestros/cobradores/${id}`);

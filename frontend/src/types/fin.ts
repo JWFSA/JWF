@@ -192,3 +192,27 @@ export interface Cheque {
   cheq_fec_grab?: string | null;
   cheq_login?: string | null;
 }
+
+export interface ChequeEmit {
+  ch_emit_clave: number;
+  ch_emit_serie: string | null;
+  ch_emit_nro: number | null;
+  ch_emit_fec_vto: string;
+  ch_emit_importe: number | null;
+  ch_emit_beneficiario: string | null;
+  ch_emit_clave_fin: number | null;
+  ch_emit_clave_fin_can: number | null;
+}
+
+export interface PeriodoFin {
+  peri_codigo: number;
+  peri_fec_ini: string;
+  peri_fec_fin: string;
+}
+
+export interface Cobrador {
+  cob_codigo: number;
+  cob_porc_comision: number | null;
+  empl_nombre?: string;
+  empl_ape?: string;
+}
