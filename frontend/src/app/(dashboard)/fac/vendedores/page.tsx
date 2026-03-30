@@ -66,7 +66,7 @@ export default function VendedoresPage() {
 
   const handleSubmit = () => {
     if (!form.vend_oper) { setError('El operador es requerido'); return; }
-    const payload = { ...form, vend_zona: form.vend_zona || null, vend_empr: form.vend_empr || null };
+    const payload = { ...form, vend_zona: form.vend_zona || null, vend_empr: form.vend_empr || null } as any;
     modal === 'nuevo' ? createMut.mutate(payload) : updateMut.mutate({ id: (modal as Vendedor).vend_legajo, data: payload });
   };
 

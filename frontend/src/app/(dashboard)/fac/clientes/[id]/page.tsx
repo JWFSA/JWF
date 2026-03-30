@@ -57,11 +57,11 @@ export default function EditarClientePage() {
     setError('');
     updateMut.mutate({
       ...form,
-      cli_zona:  form.cli_zona  || null,
-      cli_categ: form.cli_categ || null,
-      cli_pais:  form.cli_pais  || null,
-      cli_mon:   form.cli_mon   || null,
-    });
+      cli_zona:  form.cli_zona  || undefined,
+      cli_categ: form.cli_categ || undefined,
+      cli_pais:  form.cli_pais  || undefined,
+      cli_mon:   form.cli_mon   || undefined,
+    } as any);
   };
 
   if (isLoading || !form) {

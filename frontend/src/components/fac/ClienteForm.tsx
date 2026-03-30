@@ -47,13 +47,13 @@ export default function ClienteForm({ form, onChange, error, isPending, onSubmit
 
   const { data: zonasData } = useQuery({ queryKey: ['zonas', { all: true }], queryFn: () => getZonas({ all: true }) });
   const { data: catsData }  = useQuery({ queryKey: ['categorias', { all: true }], queryFn: () => getCategorias({ all: true }) });
-  const { data: paisesData } = useQuery({ queryKey: ['paises', { all: true }], queryFn: () => getPaises({ all: true }) });
+  const { data: paisesData } = useQuery({ queryKey: ['paises'], queryFn: getPaises });
   const { data: monedasData } = useQuery({ queryKey: ['monedas'], queryFn: getMonedas });
 
   const zonas    = zonasData?.data ?? [];
   const cats     = catsData?.data ?? [];
-  const paises   = paisesData?.data ?? [];
-  const monedas  = Array.isArray(monedasData) ? monedasData : (monedasData as any)?.data ?? [];
+  const paises   = Array.isArray(paisesData) ? paisesData : [];
+  const monedas  = Array.isArray(monedasData) ? monedasData : [];
 
   const input = 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500';
   const sel   = `${input}`;

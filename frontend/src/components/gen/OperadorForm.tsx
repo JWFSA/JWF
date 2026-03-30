@@ -8,7 +8,7 @@ import type { Operador, Rol } from '@/types/gen';
 
 interface Props {
   initial?: Operador;
-  onSubmit: (data: Record<string, unknown>) => Promise<void>;
+  onSubmit: (data: Record<string, unknown>) => Promise<unknown>;
   isLoading?: boolean;
 }
 
