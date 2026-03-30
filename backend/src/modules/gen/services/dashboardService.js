@@ -20,7 +20,7 @@ const getStats = async () => {
     pool.query(`SELECT COUNT(*) AS total FROM fin_cliente`),
     pool.query(`SELECT COUNT(*) AS total FROM stk_articulo`),
     pool.query(`SELECT COUNT(*) AS total FROM fin_proveedor`),
-    pool.query(`SELECT COUNT(*) AS total FROM per_empleado WHERE "EMPL_ESTADO" = 'A'`),
+    pool.query(`SELECT COUNT(*) AS total FROM per_empleado`),
     pool.query(`
       SELECT COUNT(*) AS cantidad, COALESCE(SUM(d."DOC_SALDO_LOC"), 0) AS total
       FROM fin_documento d
