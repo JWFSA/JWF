@@ -3,6 +3,8 @@ const pool = require('../../../config/db');
 // ─── ÓRDENES DE PAGO ─────────────────────────────────────────────────────────
 
 const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  page  = Math.max(1, page);
+  limit = Math.max(1, Math.min(1000, limit));
   const params = search ? [`%${search}%`] : [];
   const where  = search
     ? `WHERE (o."ORDP_BENEFICIARIO" ILIKE $1 OR CAST(o."ORDP_CODIGO" AS TEXT) ILIKE $1 OR p."PROV_RAZON_SOCIAL" ILIKE $1)`

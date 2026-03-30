@@ -96,6 +96,8 @@ const deletePais = async (codigo) => {
 // ─── CIUDADES ────────────────────────────────────────────────────────────────
 
 const getCiudades = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  page  = Math.max(1, page);
+  limit = Math.max(1, Math.min(1000, limit));
   const params = search ? [`%${search}%`] : [];
   const where  = search ? `WHERE "CIUDAD_DESC" ILIKE $1` : '';
   const countRes = await pool.query(`SELECT COUNT(*) FROM gen_ciudad ${where}`, params);
@@ -138,6 +140,8 @@ const deleteCiudad = async (codigo) => {
 // ─── IMPUESTOS ───────────────────────────────────────────────────────────────
 
 const getImpuestos = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  page  = Math.max(1, page);
+  limit = Math.max(1, Math.min(1000, limit));
   const params = search ? [`%${search}%`] : [];
   const where  = search ? `WHERE "IMPU_DESC" ILIKE $1` : '';
   const countRes = await pool.query(`SELECT COUNT(*) FROM gen_impuesto ${where}`, params);
@@ -407,6 +411,8 @@ const deletePrograma = async (clave) => {
 // ─── PROFESIONES ────────────────────────────────────────────────────────────
 
 const getProfesiones = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  page  = Math.max(1, page);
+  limit = Math.max(1, Math.min(1000, limit));
   const params = search ? [`%${search}%`] : [];
   const where  = search ? `WHERE "PROF_DESC" ILIKE $1` : '';
   const { rows: [{ count }] } = await pool.query(`SELECT COUNT(*) FROM gen_profesion ${where}`, params);
@@ -441,6 +447,8 @@ const deleteProfesion = async (id) => {
 // ─── DISTRITOS ──────────────────────────────────────────────────────────────
 
 const getDistritos = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  page  = Math.max(1, page);
+  limit = Math.max(1, Math.min(1000, limit));
   const params = search ? [`%${search}%`] : [];
   const where  = search ? `WHERE "DIST_DESC" ILIKE $1` : '';
   const { rows: [{ count }] } = await pool.query(`SELECT COUNT(*) FROM gen_distrito ${where}`, params);
@@ -475,6 +483,8 @@ const deleteDistrito = async (id) => {
 // ─── MOTIVOS DE ANULACIÓN ───────────────────────────────────────────────────
 
 const getMotivosAnulacion = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  page  = Math.max(1, page);
+  limit = Math.max(1, Math.min(1000, limit));
   const params = search ? [`%${search}%`] : [];
   const where  = search ? `WHERE "MOAN_DESC" ILIKE $1` : '';
   const { rows: [{ count }] } = await pool.query(`SELECT COUNT(*) FROM gen_motivo_anulacion ${where}`, params);
@@ -509,6 +519,8 @@ const deleteMotivoAnulacion = async (id) => {
 // ─── LOCALIDADES ────────────────────────────────────────────────────────────
 
 const getLocalidades = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  page  = Math.max(1, page);
+  limit = Math.max(1, Math.min(1000, limit));
   const params = search ? [`%${search}%`] : [];
   const where  = search ? `WHERE l."LOC_DESC" ILIKE $1` : '';
   const { rows: [{ count }] } = await pool.query(`SELECT COUNT(*) FROM gen_localidad l ${where}`, params);
@@ -552,6 +564,8 @@ const deleteLocalidad = async (id) => {
 // ─── BARRIOS ────────────────────────────────────────────────────────────────
 
 const getBarrios = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  page  = Math.max(1, page);
+  limit = Math.max(1, Math.min(1000, limit));
   const params = search ? [`%${search}%`] : [];
   const where  = search ? `WHERE b."BARR_DESC" ILIKE $1` : '';
   const { rows: [{ count }] } = await pool.query(`SELECT COUNT(*) FROM gen_barrio b ${where}`, params);

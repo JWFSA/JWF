@@ -3,6 +3,8 @@ const pool = require('../../../config/db');
 // ─── STOCK ACTUAL (stk_articulo_deposito) ────────────────────────────────────
 
 const getAll = async ({ page = 1, limit = 20, search = '', all = false, dep = null, sortField = '', sortDir = 'asc' } = {}) => {
+  page  = Math.max(1, page);
+  limit = Math.max(1, Math.min(1000, limit));
   const params = [];
   const conditions = [];
 

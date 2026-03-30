@@ -3,6 +3,8 @@ const pool = require('../../../config/db');
 // ─── PEDIDOS ─────────────────────────────────────────────────────────────────
 
 const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  page  = Math.max(1, page);
+  limit = Math.max(1, Math.min(1000, limit));
   const params = search ? [`%${search}%`] : [];
   const where  = search
     ? `WHERE (c."CLI_NOM" ILIKE $1 OR CAST(p."PED_NRO" AS TEXT) ILIKE $1 OR p."PED_PRODUCTO" ILIKE $1)`
@@ -209,6 +211,8 @@ const remove = async (id) => {
 // ─── ARTÍCULOS (búsqueda para items de pedido) ───────────────────────────────
 
 const getArticulos = async ({ page = 1, limit = 20, search = '', all = false } = {}) => {
+  page  = Math.max(1, page);
+  limit = Math.max(1, Math.min(1000, limit));
   const params = search ? [`%${search}%`] : [];
   const where  = search
     ? `WHERE ("ART_DESC" ILIKE $1 OR "ART_CODIGO_FABRICA" ILIKE $1)`

@@ -37,7 +37,7 @@ const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortFiel
            a."AUS_IMPORTE_AUSENCIA" AS aus_importe_ausencia
     FROM per_ausencias a
     LEFT JOIN per_empleado e ON e."EMPL_LEGAJO" = a."AUS_LEGAJO"
-    LEFT JOIN per_motivo_ausencia m ON m."MAUS_CODIGO" = a."AUS_MOTIVO"
+    LEFT JOIN per_motivo_ausencia m ON m."MAUS_CLAVE" = a."AUS_MOTIVO"
     WHERE 1=1 ${where}
     ORDER BY ${orderBy}`;
   if (all) {

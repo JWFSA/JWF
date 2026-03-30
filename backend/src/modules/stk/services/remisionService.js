@@ -1,6 +1,8 @@
 const pool = require('../../../config/db');
 
 const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  page  = Math.max(1, page);
+  limit = Math.max(1, Math.min(1000, limit));
   const params = search ? [`%${search}%`] : [];
   const where  = search
     ? `WHERE (r."REM_OBS" ILIKE $1 OR r."REM_CLI_NOM" ILIKE $1 OR c."CLI_NOM" ILIKE $1 OR CAST(r."REM_NRO" AS TEXT) ILIKE $1)`

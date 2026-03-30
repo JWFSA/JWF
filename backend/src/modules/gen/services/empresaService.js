@@ -1,6 +1,8 @@
 const pool = require('../../../config/db');
 
 const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  page  = Math.max(1, page);
+  limit = Math.max(1, Math.min(1000, limit));
   const where = search
     ? `WHERE ("EMPR_RAZON_SOCIAL" ILIKE $1 OR "EMPR_RUC" ILIKE $1)`
     : '';

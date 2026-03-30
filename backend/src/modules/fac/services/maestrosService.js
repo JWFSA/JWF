@@ -3,6 +3,8 @@ const pool = require('../../../config/db');
 // ─── ZONAS ───────────────────────────────────────────────────────────────────
 
 const getZonas = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  page  = Math.max(1, page);
+  limit = Math.max(1, Math.min(1000, limit));
   const params = search ? [`%${search}%`] : [];
   const where  = search ? `WHERE "ZONA_DESC" ILIKE $1` : '';
   const countRes = await pool.query(`SELECT COUNT(*) FROM fac_zona ${where}`, params);
@@ -45,6 +47,8 @@ const deleteZona = async (codigo) => {
 // ─── CATEGORÍAS ──────────────────────────────────────────────────────────────
 
 const getCategorias = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  page  = Math.max(1, page);
+  limit = Math.max(1, Math.min(1000, limit));
   const params = search ? [`%${search}%`] : [];
   const where  = search ? `WHERE "FCAT_DESC" ILIKE $1` : '';
   const countRes = await pool.query(`SELECT COUNT(*) FROM fac_categoria ${where}`, params);
@@ -120,6 +124,8 @@ const deleteCondicion = async (desc) => {
 // ─── VENDEDORES ──────────────────────────────────────────────────────────────
 
 const getVendedores = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  page  = Math.max(1, page);
+  limit = Math.max(1, Math.min(1000, limit));
   const params = search ? [`%${search}%`] : [];
   const where  = search ? `WHERE (o."OPER_NOMBRE" ILIKE $1 OR o."OPER_APELLIDO" ILIKE $1)` : '';
   const countRes = await pool.query(`SELECT COUNT(*) FROM fac_vendedor v JOIN gen_operador o ON o."OPER_CODIGO" = v."VEND_OPER" ${where}`, params);
@@ -192,6 +198,8 @@ const deleteVendedor = async (legajo) => {
 // ─── LISTAS DE PRECIO ────────────────────────────────────────────────────────
 
 const getListasPrecio = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  page  = Math.max(1, page);
+  limit = Math.max(1, Math.min(1000, limit));
   const params = search ? [`%${search}%`] : [];
   const where  = search ? `WHERE "LIPE_DESC" ILIKE $1` : '';
   const countRes = await pool.query(`SELECT COUNT(*) FROM fac_lista_precio ${where}`, params);
@@ -261,6 +269,8 @@ const deleteListaPrecio = async (nro) => {
 // ─── LISTA DE PRECIO — DETALLE ───────────────────────────────────────────────
 
 const getListaPrecioItems = async (listaId, { page = 1, limit = 20, search = '', all = false } = {}) => {
+  page  = Math.max(1, page);
+  limit = Math.max(1, Math.min(1000, limit));
   const where = search
     ? `WHERE d."LIPR_NRO_LISTA_PRECIO" = $1 AND d."LIPR_EMPR" = 1 AND a."ART_DESC" ILIKE $2`
     : `WHERE d."LIPR_NRO_LISTA_PRECIO" = $1 AND d."LIPR_EMPR" = 1`;
@@ -321,6 +331,8 @@ const deleteListaPrecioItem = async (listaId, artCodigo) => {
 // ─── BARRIOS ─────────────────────────────────────────────────────────────────
 
 const getBarrios = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  page  = Math.max(1, page);
+  limit = Math.max(1, Math.min(1000, limit));
   const params = search ? [`%${search}%`] : [];
   const where  = search ? `WHERE "BA_DESC" ILIKE $1` : '';
   const countRes = await pool.query(`SELECT COUNT(*) FROM fac_barrio ${where}`, params);

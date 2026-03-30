@@ -28,6 +28,8 @@ const BASE_SELECT = `
 `;
 
 const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  page  = Math.max(1, page);
+  limit = Math.max(1, Math.min(1000, limit));
   const searchWhere = search
     ? `AND (COALESCE(c."CLI_NOM", d."DOC_CLI_NOM") ILIKE $1 OR CAST(d."DOC_NRO_DOC" AS TEXT) ILIKE $1 OR d."DOC_NRO_TIMBRADO" ILIKE $1)`
     : '';
