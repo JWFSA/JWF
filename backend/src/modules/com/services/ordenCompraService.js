@@ -2,18 +2,22 @@ const pool = require('../../../config/db');
 
 // ─── ÓRDENES DE COMPRA ──────────────────────────────────────────────────────
 
-const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc',
+  fechaDesde = '', fechaHasta = '', estado = '' } = {}) => {
   page  = Math.max(1, page);
   limit = Math.max(1, Math.min(1000, limit));
 
-  const params = search ? [`%${search}%`] : [];
-  const where  = search
-    ? `WHERE (CAST(o."ORCOM_NRO" AS TEXT) ILIKE $1 OR p."PROV_RAZON_SOCIAL" ILIKE $1 OR o."ORCOM_OBS" ILIKE $1 OR o."ORCOM_CLIENTE" ILIKE $1)`
-    : '';
+  const params = [];
+  let filters = 'WHERE 1=1';
+  if (search) { params.push(`%${search}%`); filters += ` AND (CAST(o."ORCOM_NRO" AS TEXT) ILIKE $${params.length} OR p."PROV_RAZON_SOCIAL" ILIKE $${params.length} OR o."ORCOM_OBS" ILIKE $${params.length} OR o."ORCOM_CLIENTE" ILIKE $${params.length})`; }
+  if (fechaDesde) { params.push(fechaDesde); filters += ` AND o."ORCOM_FEC_EMIS" >= $${params.length}`; }
+  if (fechaHasta) { params.push(fechaHasta); filters += ` AND o."ORCOM_FEC_EMIS" <= $${params.length}`; }
+  if (estado) { params.push(estado); filters += ` AND o."ORCOM_ESTADO" = $${params.length}`; }
+
   const countRes = await pool.query(
     `SELECT COUNT(*) FROM com_orden_compra o
      LEFT JOIN fin_proveedor p ON p."PROV_CODIGO" = o."ORCOM_PROV"
-     ${where}`,
+     ${filters}`,
     params
   );
   const total = parseInt(countRes.rows[0].count);
@@ -46,7 +50,7 @@ const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortFiel
     FROM com_orden_compra o
     LEFT JOIN fin_proveedor p ON p."PROV_CODIGO" = o."ORCOM_PROV"
     LEFT JOIN gen_moneda    m ON m."MON_CODIGO"  = o."ORCOM_MON"
-    ${where} ORDER BY ${orderBy}`;
+    ${filters} ORDER BY ${orderBy}`;
   if (all) {
     const { rows } = await pool.query(select, params);
     return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };

@@ -2,18 +2,24 @@ const pool = require('../../../config/db');
 
 // ─── DOCUMENTOS FINANCIEROS ─────────────────────────────────────────────────
 
-const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc',
+  fechaDesde = '', fechaHasta = '', tipoMov = '', tipoSaldo = '', soloConSaldo = false } = {}) => {
   page  = Math.max(1, page);
   limit = Math.max(1, Math.min(1000, limit));
 
-  const params = search ? [`%${search}%`] : [];
-  const where  = search
-    ? `AND (d."DOC_CLI_NOM" ILIKE $1 OR CAST(d."DOC_NRO_DOC" AS TEXT) ILIKE $1 OR d."DOC_OBS" ILIKE $1 OR p."PROV_RAZON_SOCIAL" ILIKE $1)`
-    : '';
+  const params = [];
+  let filters = '';
+  if (search) { params.push(`%${search}%`); filters += ` AND (d."DOC_CLI_NOM" ILIKE $${params.length} OR CAST(d."DOC_NRO_DOC" AS TEXT) ILIKE $${params.length} OR d."DOC_OBS" ILIKE $${params.length} OR p."PROV_RAZON_SOCIAL" ILIKE $${params.length})`; }
+  if (fechaDesde) { params.push(fechaDesde); filters += ` AND d."DOC_FEC_DOC" >= $${params.length}`; }
+  if (fechaHasta) { params.push(fechaHasta); filters += ` AND d."DOC_FEC_DOC" <= $${params.length}`; }
+  if (tipoMov) { params.push(Number(tipoMov)); filters += ` AND d."DOC_TIPO_MOV" = $${params.length}`; }
+  if (tipoSaldo) { params.push(tipoSaldo); filters += ` AND d."DOC_TIPO_SALDO" = $${params.length}`; }
+  if (soloConSaldo) { filters += ` AND d."DOC_SALDO_MON" > 0`; }
+
   const countRes = await pool.query(
     `SELECT COUNT(*) FROM fin_documento d
      LEFT JOIN fin_proveedor p ON p."PROV_CODIGO" = d."DOC_PROV"
-     WHERE d."DOC_EMPR" = 1 ${where}`,
+     WHERE d."DOC_EMPR" = 1 ${filters}`,
     params
   );
   const total = parseInt(countRes.rows[0].count);
@@ -50,7 +56,7 @@ const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortFiel
     LEFT JOIN fin_proveedor p ON p."PROV_CODIGO" = d."DOC_PROV"
     LEFT JOIN gen_moneda    m ON m."MON_CODIGO"  = d."DOC_MON"
     LEFT JOIN gen_tipo_mov  t ON t."TMOV_CODIGO" = d."DOC_TIPO_MOV"
-    WHERE d."DOC_EMPR" = 1 ${where}
+    WHERE d."DOC_EMPR" = 1 ${filters}
     ORDER BY ${orderBy}`;
   if (all) {
     const { rows } = await pool.query(select, params);

@@ -1,12 +1,17 @@
 const s = require('../services/documentoService');
 
 const parseListParams = (query) => ({
-  all:       query.all === 'true',
-  page:      Math.max(1, parseInt(query.page) || 1),
-  limit:     Math.max(1, Math.min(1000, parseInt(query.limit) || 20)),
-  search:    query.search    || '',
-  sortField: query.sortField || '',
-  sortDir:   query.sortDir === 'desc' ? 'desc' : 'asc',
+  all:          query.all === 'true',
+  page:         Math.max(1, parseInt(query.page) || 1),
+  limit:        Math.max(1, Math.min(1000, parseInt(query.limit) || 20)),
+  search:       query.search       || '',
+  sortField:    query.sortField    || '',
+  sortDir:      query.sortDir === 'desc' ? 'desc' : 'asc',
+  fechaDesde:   query.fechaDesde   || '',
+  fechaHasta:   query.fechaHasta   || '',
+  tipoMov:      query.tipoMov      || '',
+  tipoSaldo:    query.tipoSaldo    || '',
+  soloConSaldo: query.soloConSaldo === 'true',
 });
 
 const getAll  = async (req, res, next) => {

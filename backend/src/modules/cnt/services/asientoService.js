@@ -1,15 +1,19 @@
 const pool = require('../../../config/db');
 
-const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc',
+  fechaDesde = '', fechaHasta = '', ejercicio = '' } = {}) => {
   page  = Math.max(1, page);
   limit = Math.max(1, Math.min(1000, limit));
 
-  const params = search ? [`%${search}%`] : [];
-  const where  = search
-    ? `AND (a."ASI_OBS" ILIKE $1 OR CAST(a."ASI_NRO" AS TEXT) ILIKE $1)`
-    : '';
+  const params = [];
+  let filters = '';
+  if (search) { params.push(`%${search}%`); filters += ` AND (a."ASI_OBS" ILIKE $${params.length} OR CAST(a."ASI_NRO" AS TEXT) ILIKE $${params.length})`; }
+  if (fechaDesde) { params.push(fechaDesde); filters += ` AND a."ASI_FEC" >= $${params.length}`; }
+  if (fechaHasta) { params.push(fechaHasta); filters += ` AND a."ASI_FEC" <= $${params.length}`; }
+  if (ejercicio) { params.push(Number(ejercicio)); filters += ` AND a."ASI_EJERCICIO" = $${params.length}`; }
+
   const countRes = await pool.query(
-    `SELECT COUNT(*) FROM cnt_asiento a WHERE a."ASI_EMPR" = 1 ${where}`,
+    `SELECT COUNT(*) FROM cnt_asiento a WHERE a."ASI_EMPR" = 1 ${filters}`,
     params
   );
   const total = parseInt(countRes.rows[0].count);
@@ -30,7 +34,7 @@ const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortFiel
            a."ASI_LOGIN"      AS asi_login,
            a."ASI_FEC_GRAB"   AS asi_fec_grab
     FROM cnt_asiento a
-    WHERE a."ASI_EMPR" = 1 ${where}
+    WHERE a."ASI_EMPR" = 1 ${filters}
     ORDER BY ${orderBy}`;
   if (all) {
     const { rows } = await pool.query(select, params);
