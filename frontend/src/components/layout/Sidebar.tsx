@@ -112,6 +112,10 @@ const menu = [
     icon: HardHat,
     children: [
       { label: 'Empleados',        href: '/per/empleados',       icon: Users },
+      { label: 'Liquidaciones',   href: '/per/liquidaciones',   icon: Receipt },
+      { label: 'Horarios',        href: '/per/horarios',        icon: Calendar },
+      { label: 'Conc. empleado',  href: '/per/empl-conceptos',  icon: Calculator },
+      { label: 'Ausencias',       href: '/per/ausencias',       icon: Ban },
       { label: 'Cargos',           href: '/per/cargos',          icon: UserCog },
       { label: 'Categorías',       href: '/per/categorias',      icon: LayoutList },
       { label: 'Áreas',            href: '/per/areas',           icon: Network },

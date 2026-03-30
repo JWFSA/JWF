@@ -224,3 +224,71 @@ export interface Empleado {
   empl_mail_laboral: string | null;
   empl_observa: string | null;
 }
+
+export interface Liquidacion {
+  pdoc_clave: number;
+  pdoc_empleado: number;
+  empl_nombre?: string;
+  empl_ape?: string;
+  pdoc_fec: string;
+  pdoc_periodo: number | null;
+  pdoc_quincena: number | null;
+  pdoc_nro_doc: number | null;
+  pdoc_fec_ini: string | null;
+  pdoc_fec_fin: string | null;
+  pdoc_procesado: string | null;
+  pdoc_obs: string | null;
+  pdoc_login?: string | null;
+  pdoc_fec_grab?: string | null;
+  detalle?: LiquidacionDet[];
+}
+
+export interface LiquidacionDet {
+  pddet_clave_doc: number;
+  pddet_item: number;
+  pddet_clave_concepto: number | null;
+  concepto_desc?: string;
+  pddet_imp: number | null;
+  pddet_cantidad: number | null;
+  pddet_porcentaje: number | null;
+  pddet_salario_base: number | null;
+  pddet_cant_hs_extras: number | null;
+  pddet_porc_hs_extras: number | null;
+}
+
+export interface EmplHorario {
+  emplh_legajo: number;
+  empl_nombre?: string;
+  empl_ape?: string;
+  emplh_item: number;
+  emplh_dia: string | null;
+  emplh_hora_ini: string | null;
+  emplh_hora_fin: string | null;
+}
+
+export interface EmplConcepto {
+  percon_empleado: number;
+  empl_nombre?: string;
+  empl_ape?: string;
+  percon_concepto: number;
+  concepto_desc?: string;
+  percon_imp: number | null;
+  percon_fec_pago: string | null;
+  percon_fec_vto: string | null;
+  percon_genera: string | null;
+  percon_cuota: number | null;
+}
+
+export interface Ausencia {
+  aus_legajo: number;
+  empl_nombre?: string;
+  empl_ape?: string;
+  aus_fecha: string;
+  aus_evento: string | null;
+  aus_motivo: number | null;
+  motivo_desc?: string;
+  aus_justificada: string | null;
+  aus_obs: string | null;
+  aus_ind_descuento: string | null;
+  aus_importe_ausencia: number | null;
+}

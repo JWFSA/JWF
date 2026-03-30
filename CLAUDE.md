@@ -220,6 +220,10 @@ Cada vez que se cree una nueva página de listado, agregarla aquí. Usar esta li
 | `per/contratos` | Contratos | `fecha` desc |
 | `per/familiares` | Familiares | `nombre` asc |
 | `per/conceptos` | Conceptos de liquidación | `desc` asc |
+| `per/liquidaciones` | Liquidaciones de sueldo | `fecha` desc |
+| `per/horarios` | Horarios de empleados | `empleado` asc |
+| `per/empl-conceptos` | Conceptos fijos por empleado | `empleado` asc |
+| `per/ausencias` | Ausencias | `fecha` desc |
 | `com/ordenes-compra` | Órdenes de compra | `fecha` desc |
 | `com/contratos` | Contratos de proveedor | `fecha` desc |
 | `cnt/asientos` | Asientos contables | `fecha` desc |

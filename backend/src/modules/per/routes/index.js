@@ -1,10 +1,14 @@
 const router = require('express').Router();
 const { verifyToken } = require('../../../middlewares/auth');
-const m  = require('../controllers/maestrosController');
-const ec = require('../controllers/empleadoController');
-const cc = require('../controllers/contratoController');
-const fc = require('../controllers/familiaController');
+const m    = require('../controllers/maestrosController');
+const ec   = require('../controllers/empleadoController');
+const cc   = require('../controllers/contratoController');
+const fc   = require('../controllers/familiaController');
 const conc = require('../controllers/conceptoController');
+const liq  = require('../controllers/liquidacionController');
+const hor  = require('../controllers/horarioController');
+const emc  = require('../controllers/emplConceptoController');
+const aus  = require('../controllers/ausenciaController');
 
 // Cargos
 router.get('/maestros/cargos',         verifyToken, m.cargos.getAll);
@@ -165,5 +169,18 @@ router.get('/conceptos',         verifyToken, conc.getAll);
 router.post('/conceptos',        verifyToken, conc.create);
 router.put('/conceptos/:id',     verifyToken, conc.update);
 router.delete('/conceptos/:id',  verifyToken, conc.remove);
+
+// Liquidaciones (solo lectura)
+router.get('/liquidaciones',        verifyToken, liq.getAll);
+router.get('/liquidaciones/:id',    verifyToken, liq.getById);
+
+// Horarios de empleados (solo lectura)
+router.get('/horarios',             verifyToken, hor.getAll);
+
+// Conceptos fijos por empleado (solo lectura)
+router.get('/empl-conceptos',       verifyToken, emc.getAll);
+
+// Ausencias (solo lectura)
+router.get('/ausencias',            verifyToken, aus.getAll);
 
 module.exports = router;

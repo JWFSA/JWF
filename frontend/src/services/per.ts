@@ -1,5 +1,5 @@
 import api from '@/lib/api';
-import type { Cargo, Categoria, Area, Seccion, Turno, TipoContrato, MotivoAusencia, FormaPago, TipoLiquidacion, TipoPago, TipoFamiliar, Idioma, Carrera, Bachillerato, Capacitacion, NivelCapacitacion, EstadoEstudio, Funcion, ClasificacionConcepto, ClasificacionDescuento, TipoSalario, MotivoLicencia, InstEducativa, Concepto, Contrato, Familiar, Empleado, Paginated } from '@/types/per';
+import type { Cargo, Categoria, Area, Seccion, Turno, TipoContrato, MotivoAusencia, FormaPago, TipoLiquidacion, TipoPago, TipoFamiliar, Idioma, Carrera, Bachillerato, Capacitacion, NivelCapacitacion, EstadoEstudio, Funcion, ClasificacionConcepto, ClasificacionDescuento, TipoSalario, MotivoLicencia, InstEducativa, Concepto, Contrato, Familiar, Empleado, Liquidacion, EmplHorario, EmplConcepto, Ausencia, Paginated } from '@/types/per';
 import type { ListParams } from '@/services/gen';
 
 // Cargos
@@ -170,3 +170,16 @@ export const updateEmpleado = (id: number, data: Partial<Empleado>) =>
 
 export const deleteEmpleado = (id: number) =>
   api.delete(`/per/empleados/${id}`);
+
+// Liquidaciones (solo lectura)
+export const getLiquidaciones = (params?: ListParams) => api.get<Paginated<Liquidacion>>('/per/liquidaciones', { params }).then((r) => r.data);
+export const getLiquidacion   = (id: number) => api.get<Liquidacion>(`/per/liquidaciones/${id}`).then((r) => r.data);
+
+// Horarios de empleados (solo lectura)
+export const getHorarios = (params?: ListParams & { empleado?: string }) => api.get<Paginated<EmplHorario>>('/per/horarios', { params }).then((r) => r.data);
+
+// Conceptos fijos por empleado (solo lectura)
+export const getEmplConceptos = (params?: ListParams) => api.get<Paginated<EmplConcepto>>('/per/empl-conceptos', { params }).then((r) => r.data);
+
+// Ausencias (solo lectura)
+export const getAusencias = (params?: ListParams) => api.get<Paginated<Ausencia>>('/per/ausencias', { params }).then((r) => r.data);
