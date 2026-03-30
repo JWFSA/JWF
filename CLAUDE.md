@@ -125,12 +125,12 @@ NEXT_PUBLIC_API_URL=http://localhost:3001/api
 | Código | Nombre       | Estado        |
 |--------|--------------|---------------|
 | GEN    | General      | ✅ Completo   |
-| FAC    | Facturación  | 🔄 Avanzado   |
-| FIN    | Finanzas     | 🔄 Avanzado   |
+| FAC    | Facturación  | ✅ Completo   |
+| FIN    | Finanzas     | ✅ Completo   |
 | STK    | Stock        | 🔄 Avanzado   |
-| PER    | Personal     | 🔄 Avanzado   |
-| COM    | Compras      | 🔄 En progreso |
-| CNT    | Contabilidad | 🔄 En progreso |
+| PER    | Personal     | ✅ Completo   |
+| COM    | Compras      | ✅ Completo   |
+| CNT    | Contabilidad | ✅ Completo   |
 
 ### Convención de nombres por módulo
 - Tablas DB: `{MOD}_TABLA` (ej. `GEN_OPERADOR`, `FAC_FACTURA`)
@@ -317,6 +317,156 @@ Cada vez que se cree una nueva página de listado, agregarla aquí. Usar esta li
 | POST   | `/asientos`                   | Crear asiento con detalle      | Sí   |
 | PUT    | `/asientos/:id`               | Actualizar asiento + detalle   | Sí   |
 | DELETE | `/asientos/:id`               | Eliminar asiento + detalle     | Sí   |
+
+---
+
+## Módulo FIN — Endpoints API
+
+**Base:** `/api/fin`
+
+| Método | Ruta                          | Descripción                    | Auth |
+|--------|-------------------------------|--------------------------------|------|
+| GET    | `/ordenes-pago`               | Listar órdenes de pago         | Sí   |
+| GET    | `/ordenes-pago/:id`           | Detalle orden de pago          | Sí   |
+| POST   | `/ordenes-pago`               | Crear orden de pago            | Sí   |
+| PUT    | `/ordenes-pago/:id`           | Actualizar orden               | Sí   |
+| DELETE | `/ordenes-pago/:id`           | Eliminar orden                 | Sí   |
+| GET    | `/proveedores`                | Listar proveedores             | Sí   |
+| GET    | `/proveedores/:id`            | Detalle proveedor              | Sí   |
+| POST   | `/proveedores`                | Crear proveedor                | Sí   |
+| PUT    | `/proveedores/:id`            | Actualizar proveedor           | Sí   |
+| DELETE | `/proveedores/:id`            | Eliminar proveedor             | Sí   |
+| GET    | `/cuentas-bancarias`          | Listar cuentas bancarias       | Sí   |
+| GET    | `/cuentas-bancarias/:id`      | Detalle cuenta bancaria        | Sí   |
+| POST   | `/cuentas-bancarias`          | Crear cuenta bancaria          | Sí   |
+| PUT    | `/cuentas-bancarias/:id`      | Actualizar cuenta bancaria     | Sí   |
+| DELETE | `/cuentas-bancarias/:id`      | Eliminar cuenta bancaria       | Sí   |
+| GET    | `/documentos`                 | Listar documentos financieros  | Sí   |
+| GET    | `/documentos/:id`             | Detalle + conceptos + cuotas   | Sí   |
+| GET    | `/cheques`                    | Listar cheques recibidos       | Sí   |
+| GET    | `/cheques/:id`                | Detalle cheque recibido        | Sí   |
+| GET    | `/cheques-emitidos`           | Listar cheques emitidos        | Sí   |
+| GET    | `/maestros/bancos`            | CRUD bancos                    | Sí   |
+| GET    | `/maestros/formas-pago`       | CRUD formas de pago            | Sí   |
+| GET    | `/maestros/ramos`             | CRUD ramos                     | Sí   |
+| GET    | `/maestros/tipos-proveedor`   | CRUD tipos de proveedor        | Sí   |
+| GET    | `/maestros/personerias`       | CRUD personerías               | Sí   |
+| GET    | `/maestros/clases-doc`        | CRUD clases de documento       | Sí   |
+| GET    | `/maestros/conceptos`         | CRUD conceptos financieros     | Sí   |
+| GET    | `/maestros/periodos`          | CRUD períodos financieros      | Sí   |
+| GET    | `/maestros/cobradores`        | CRUD cobradores                | Sí   |
+
+## Módulo FAC — Endpoints API
+
+**Base:** `/api/fac`
+
+| Método | Ruta                              | Descripción                    | Auth |
+|--------|-----------------------------------|--------------------------------|------|
+| GET    | `/facturas`                       | Listar facturas                | Sí   |
+| GET    | `/facturas/:id`                   | Detalle + ítems                | Sí   |
+| POST   | `/facturas`                       | Crear factura                  | Sí   |
+| PUT    | `/facturas/:id`                   | Actualizar factura             | Sí   |
+| DELETE | `/facturas/:id`                   | Eliminar factura               | Sí   |
+| GET    | `/pedidos`                        | Listar pedidos                 | Sí   |
+| GET    | `/pedidos/:id`                    | Detalle + ítems                | Sí   |
+| POST   | `/pedidos`                        | Crear pedido                   | Sí   |
+| PUT    | `/pedidos/:id`                    | Actualizar pedido              | Sí   |
+| DELETE | `/pedidos/:id`                    | Eliminar pedido                | Sí   |
+| GET    | `/clientes`                       | Listar clientes                | Sí   |
+| GET    | `/clientes/:id`                   | Detalle cliente                | Sí   |
+| POST   | `/clientes`                       | Crear cliente                  | Sí   |
+| PUT    | `/clientes/:id`                   | Actualizar cliente             | Sí   |
+| DELETE | `/clientes/:id`                   | Eliminar cliente               | Sí   |
+| GET    | `/campanhas`                      | Listar campañas                | Sí   |
+| POST   | `/campanhas`                      | Crear campaña                  | Sí   |
+| PUT    | `/campanhas/:cli/:nro`            | Actualizar campaña             | Sí   |
+| DELETE | `/campanhas/:cli/:nro`            | Eliminar campaña               | Sí   |
+| GET    | `/comisiones`                     | Listar comisiones              | Sí   |
+| GET    | `/solicitudes-descuento`          | Listar solicitudes             | Sí   |
+| GET    | `/solicitudes-descuento/:id`      | Detalle + ítems                | Sí   |
+| GET    | `/maestros/zonas`                 | CRUD zonas                     | Sí   |
+| GET    | `/maestros/categorias`            | CRUD categorías                | Sí   |
+| GET    | `/maestros/condiciones`           | CRUD condiciones de venta      | Sí   |
+| GET    | `/maestros/listas-precio`         | CRUD listas de precio          | Sí   |
+| GET    | `/maestros/barrios`               | CRUD barrios                   | Sí   |
+| GET    | `/vendedores`                     | CRUD vendedores                | Sí   |
+
+## Módulo STK — Endpoints API
+
+**Base:** `/api/stk`
+
+| Método | Ruta                          | Descripción                    | Auth |
+|--------|-------------------------------|--------------------------------|------|
+| GET    | `/movimientos`                | Listar movimientos de stock    | Sí   |
+| GET    | `/movimientos/:id`            | Detalle + ítems                | Sí   |
+| POST   | `/movimientos`                | Crear movimiento               | Sí   |
+| PUT    | `/movimientos/:id`            | Actualizar movimiento          | Sí   |
+| DELETE | `/movimientos/:id`            | Eliminar movimiento            | Sí   |
+| GET    | `/remisiones`                 | Listar remisiones              | Sí   |
+| GET    | `/remisiones/:id`             | Detalle + ítems                | Sí   |
+| POST   | `/remisiones`                 | Crear remisión                 | Sí   |
+| PUT    | `/remisiones/:id`             | Actualizar remisión            | Sí   |
+| DELETE | `/remisiones/:id`             | Eliminar remisión              | Sí   |
+| GET    | `/stock`                      | Consulta stock actual          | Sí   |
+| GET    | `/articulos`                  | Listar artículos               | Sí   |
+| GET    | `/articulos/:id`              | Detalle artículo               | Sí   |
+| POST   | `/articulos`                  | Crear artículo                 | Sí   |
+| PUT    | `/articulos/:id`              | Actualizar artículo            | Sí   |
+| DELETE | `/articulos/:id`              | Eliminar artículo              | Sí   |
+| GET    | `/maestros/depositos`         | CRUD depósitos                 | Sí   |
+| GET    | `/maestros/lineas`            | CRUD líneas                    | Sí   |
+| GET    | `/maestros/grupos`            | CRUD grupos                    | Sí   |
+| GET    | `/maestros/marcas`            | CRUD marcas                    | Sí   |
+| GET    | `/maestros/rubros`            | CRUD rubros                    | Sí   |
+| GET    | `/maestros/unidades-medida`   | CRUD unidades de medida        | Sí   |
+
+## Módulo PER — Endpoints API
+
+**Base:** `/api/per`
+
+| Método | Ruta                          | Descripción                    | Auth |
+|--------|-------------------------------|--------------------------------|------|
+| GET    | `/empleados`                  | Listar empleados               | Sí   |
+| GET    | `/empleados/:id`              | Detalle empleado               | Sí   |
+| POST   | `/empleados`                  | Crear empleado                 | Sí   |
+| PUT    | `/empleados/:id`              | Actualizar empleado            | Sí   |
+| DELETE | `/empleados/:id`              | Eliminar empleado              | Sí   |
+| GET    | `/contratos`                  | Listar contratos               | Sí   |
+| POST   | `/contratos`                  | Crear contrato                 | Sí   |
+| PUT    | `/contratos/:id`              | Actualizar contrato            | Sí   |
+| DELETE | `/contratos/:id`              | Eliminar contrato              | Sí   |
+| GET    | `/familiares`                 | Listar familiares              | Sí   |
+| POST   | `/familiares`                 | Crear familiar                 | Sí   |
+| PUT    | `/familiares/:emp/:id`        | Actualizar familiar            | Sí   |
+| DELETE | `/familiares/:emp/:id`        | Eliminar familiar              | Sí   |
+| GET    | `/conceptos`                  | CRUD conceptos de liquidación  | Sí   |
+| GET    | `/liquidaciones`              | Listar liquidaciones           | Sí   |
+| GET    | `/liquidaciones/:id`          | Detalle + conceptos            | Sí   |
+| GET    | `/horarios`                   | Listar horarios empleados      | Sí   |
+| GET    | `/empl-conceptos`             | Conceptos fijos por empleado   | Sí   |
+| GET    | `/ausencias`                  | Listar ausencias               | Sí   |
+| GET    | `/maestros/cargos`            | CRUD cargos                    | Sí   |
+| GET    | `/maestros/categorias`        | CRUD categorías                | Sí   |
+| GET    | `/maestros/areas`             | CRUD áreas                     | Sí   |
+| GET    | `/maestros/secciones`         | CRUD secciones                 | Sí   |
+| GET    | `/maestros/turnos`            | CRUD turnos                    | Sí   |
+| GET    | `/maestros/tipos-contrato`    | CRUD tipos de contrato         | Sí   |
+| GET    | `/maestros/motivos-ausencia`  | CRUD motivos de ausencia       | Sí   |
+| GET    | `/maestros/formas-pago`       | CRUD formas de pago            | Sí   |
+| GET    | `/maestros/tipos-liquidacion` | CRUD tipos de liquidación      | Sí   |
+| GET    | `/maestros/tipos-pago`        | CRUD tipos de pago             | Sí   |
+| GET    | `/maestros/tipos-familiar`    | CRUD tipos de familiar         | Sí   |
+| GET    | `/maestros/idiomas`           | CRUD idiomas                   | Sí   |
+| GET    | `/maestros/carreras`          | CRUD carreras                  | Sí   |
+| GET    | `/maestros/bachilleratos`     | CRUD bachilleratos             | Sí   |
+| GET    | `/maestros/capacitaciones`    | CRUD capacitaciones            | Sí   |
+| GET    | `/maestros/niveles-capacitacion` | CRUD niveles capacitación   | Sí   |
+| GET    | `/maestros/estados-estudio`   | CRUD estados de estudio        | Sí   |
+| GET    | `/maestros/funciones`         | CRUD funciones                 | Sí   |
+| GET    | `/maestros/clasificaciones-descuento` | CRUD clasif. descuento | Sí   |
+| GET    | `/maestros/tipos-salario`     | CRUD tipos de salario          | Sí   |
+| GET    | `/maestros/motivos-licencia`  | CRUD motivos de licencia       | Sí   |
+| GET    | `/maestros/inst-educativas`   | CRUD inst. educativas          | Sí   |
 
 ---
 
