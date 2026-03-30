@@ -3,6 +3,9 @@ const pool = require('../../../config/db');
 // ─── CONTRATOS DE PROVEEDOR ─────────────────────────────────────────────────
 
 const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  page  = Math.max(1, page);
+  limit = Math.max(1, Math.min(1000, limit));
+
   const params = search ? [`%${search}%`] : [];
   const where  = search
     ? `WHERE (CAST(c."CONT_CLAVE" AS TEXT) ILIKE $1 OR p."PROV_RAZON_SOCIAL" ILIKE $1 OR c."CONT_OBS" ILIKE $1)`
@@ -22,7 +25,7 @@ const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortFiel
     vigente:  'c."CONT_IND_VIGENTE"',
   };
   const dir     = sortDir === 'desc' ? 'DESC' : 'ASC';
-  const orderBy = allowedSort[sortField] ? `${allowedSort[sortField]} ${dir}` : 'c."CONT_CLAVE" DESC';
+  const orderBy = Object.hasOwn(allowedSort, sortField) ? `${allowedSort[sortField]} ${dir}` : 'c."CONT_CLAVE" DESC';
   const select  = `
     SELECT c."CONT_CLAVE"         AS cont_clave,
            c."CONT_NUMERO"        AS cont_numero,
@@ -98,118 +101,129 @@ const getById = async (clave) => {
   return { ...rows[0], detalle };
 };
 
-const create = async (data) => {
-  const { rows: claveRows } = await pool.query('SELECT COALESCE(MAX("CONT_CLAVE"), 0) + 1 AS next FROM com_contrato_prov');
-  const clave = claveRows[0].next;
-  const { rows: numRows } = await pool.query('SELECT COALESCE(MAX("CONT_NUMERO"), 0) + 1 AS next FROM com_contrato_prov');
-  const numero = numRows[0].next;
-
-  await pool.query(
-    `INSERT INTO com_contrato_prov
-     ("CONT_CLAVE","CONT_NUMERO","CONT_PROV","CONT_FECHA","CONT_MON",
-      "CONT_IMP_TOTAL","CONT_IND_INTERNO","CONT_IND_ANTERIOR",
-      "CONT_IND_VIGENTE","CONT_OBS","CONT_IMP_FACTU","CONT_IMP_PEND_F")
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
-    [
-      clave,
-      numero,
-      data.cont_prov          || null,
-      data.cont_fecha,
-      data.cont_mon           || null,
-      data.cont_imp_total     || 0,
-      data.cont_ind_interno   || 'N',
-      data.cont_ind_anterior  || 'N',
-      data.cont_ind_vigente   || 'S',
-      data.cont_obs           || null,
-      0,
-      data.cont_imp_total     || 0,
-    ]
-  );
-
-  if (data.detalle && Array.isArray(data.detalle)) {
-    for (let i = 0; i < data.detalle.length; i++) {
-      const d = data.detalle[i];
-      await pool.query(
-        `INSERT INTO com_contrato_prov_det
-         ("COND_CLAVE_CONT","COND_NRO_ITEM","COND_LOCAL","COND_FEC_INI",
-          "COND_FEC_FIN","COND_UN_MED","COND_CANT","COND_PRECIO",
-          "COND_IMP_TOTAL","COND_IMP_FACTU")
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
-        [
-          clave,
-          i + 1,
-          d.cond_local    || null,
-          d.cond_fec_ini  || null,
-          d.cond_fec_fin  || null,
-          d.cond_un_med   || null,
-          d.cond_cant     || 0,
-          d.cond_precio   || 0,
-          d.cond_imp_total|| 0,
-          0,
-        ]
-      );
-    }
+const insertItems = async (client, clave, items) => {
+  for (let i = 0; i < items.length; i++) {
+    const d = items[i];
+    await client.query(
+      `INSERT INTO com_contrato_prov_det
+       ("COND_CLAVE_CONT","COND_NRO_ITEM","COND_LOCAL","COND_FEC_INI",
+        "COND_FEC_FIN","COND_UN_MED","COND_CANT","COND_PRECIO",
+        "COND_IMP_TOTAL","COND_IMP_FACTU")
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+      [
+        clave, i + 1,
+        d.cond_local    || null,
+        d.cond_fec_ini  || null,
+        d.cond_fec_fin  || null,
+        d.cond_un_med   || null,
+        d.cond_cant     || 0,
+        d.cond_precio   || 0,
+        d.cond_imp_total|| 0,
+        0,
+      ]
+    );
   }
+};
 
-  return getById(clave);
+const create = async (data) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const { rows: claveRows } = await client.query('SELECT COALESCE(MAX("CONT_CLAVE"), 0) + 1 AS next FROM com_contrato_prov');
+    const clave = claveRows[0].next;
+    const { rows: numRows } = await client.query('SELECT COALESCE(MAX("CONT_NUMERO"), 0) + 1 AS next FROM com_contrato_prov');
+    const numero = numRows[0].next;
+
+    await client.query(
+      `INSERT INTO com_contrato_prov
+       ("CONT_CLAVE","CONT_NUMERO","CONT_PROV","CONT_FECHA","CONT_MON",
+        "CONT_IMP_TOTAL","CONT_IND_INTERNO","CONT_IND_ANTERIOR",
+        "CONT_IND_VIGENTE","CONT_OBS","CONT_IMP_FACTU","CONT_IMP_PEND_F")
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+      [
+        clave, numero,
+        data.cont_prov          || null,
+        data.cont_fecha,
+        data.cont_mon           || null,
+        data.cont_imp_total     || 0,
+        data.cont_ind_interno   || 'N',
+        data.cont_ind_anterior  || 'N',
+        data.cont_ind_vigente   || 'S',
+        data.cont_obs           || null,
+        0,
+        data.cont_imp_total     || 0,
+      ]
+    );
+
+    if (data.detalle && Array.isArray(data.detalle)) {
+      await insertItems(client, clave, data.detalle);
+    }
+
+    await client.query('COMMIT');
+    return getById(clave);
+  } catch (e) {
+    await client.query('ROLLBACK');
+    throw e;
+  } finally {
+    client.release();
+  }
 };
 
 const update = async (clave, data) => {
-  const fields = []; const params = [];
-  const map = {
-    cont_prov:          '"CONT_PROV"',
-    cont_fecha:         '"CONT_FECHA"',
-    cont_mon:           '"CONT_MON"',
-    cont_imp_total:     '"CONT_IMP_TOTAL"',
-    cont_ind_interno:   '"CONT_IND_INTERNO"',
-    cont_ind_anterior:  '"CONT_IND_ANTERIOR"',
-    cont_ind_vigente:   '"CONT_IND_VIGENTE"',
-    cont_obs:           '"CONT_OBS"',
-  };
-  for (const [k, col] of Object.entries(map)) {
-    if (data[k] !== undefined) { params.push(data[k]); fields.push(`${col} = $${params.length}`); }
-  }
-  if (fields.length) {
-    params.push(clave);
-    await pool.query(
-      `UPDATE com_contrato_prov SET ${fields.join(', ')} WHERE "CONT_CLAVE" = $${params.length}`,
-      params
-    );
-  }
-
-  if (data.detalle && Array.isArray(data.detalle)) {
-    await pool.query('DELETE FROM com_contrato_prov_det WHERE "COND_CLAVE_CONT" = $1', [clave]);
-    for (let i = 0; i < data.detalle.length; i++) {
-      const d = data.detalle[i];
-      await pool.query(
-        `INSERT INTO com_contrato_prov_det
-         ("COND_CLAVE_CONT","COND_NRO_ITEM","COND_LOCAL","COND_FEC_INI",
-          "COND_FEC_FIN","COND_UN_MED","COND_CANT","COND_PRECIO",
-          "COND_IMP_TOTAL","COND_IMP_FACTU")
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
-        [
-          clave,
-          i + 1,
-          d.cond_local    || null,
-          d.cond_fec_ini  || null,
-          d.cond_fec_fin  || null,
-          d.cond_un_med   || null,
-          d.cond_cant     || 0,
-          d.cond_precio   || 0,
-          d.cond_imp_total|| 0,
-          0,
-        ]
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const fields = []; const params = [];
+    const map = {
+      cont_prov:          '"CONT_PROV"',
+      cont_fecha:         '"CONT_FECHA"',
+      cont_mon:           '"CONT_MON"',
+      cont_imp_total:     '"CONT_IMP_TOTAL"',
+      cont_ind_interno:   '"CONT_IND_INTERNO"',
+      cont_ind_anterior:  '"CONT_IND_ANTERIOR"',
+      cont_ind_vigente:   '"CONT_IND_VIGENTE"',
+      cont_obs:           '"CONT_OBS"',
+    };
+    for (const [k, col] of Object.entries(map)) {
+      if (data[k] !== undefined) { params.push(data[k]); fields.push(`${col} = $${params.length}`); }
+    }
+    if (fields.length) {
+      params.push(clave);
+      await client.query(
+        `UPDATE com_contrato_prov SET ${fields.join(', ')} WHERE "CONT_CLAVE" = $${params.length}`,
+        params
       );
     }
-  }
 
-  return getById(clave);
+    if (data.detalle && Array.isArray(data.detalle)) {
+      await client.query('DELETE FROM com_contrato_prov_det WHERE "COND_CLAVE_CONT" = $1', [clave]);
+      await insertItems(client, clave, data.detalle);
+    }
+
+    await client.query('COMMIT');
+    return getById(clave);
+  } catch (e) {
+    await client.query('ROLLBACK');
+    throw e;
+  } finally {
+    client.release();
+  }
 };
 
 const remove = async (clave) => {
-  await pool.query('DELETE FROM com_contrato_prov_cuo WHERE "CONC_CLAVE_CONT" = $1', [clave]);
-  await pool.query('DELETE FROM com_contrato_prov_det WHERE "COND_CLAVE_CONT" = $1', [clave]);
-  await pool.query('DELETE FROM com_contrato_prov WHERE "CONT_CLAVE" = $1', [clave]);
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query('DELETE FROM com_contrato_prov_cuo WHERE "CONC_CLAVE_CONT" = $1', [clave]);
+    await client.query('DELETE FROM com_contrato_prov_det WHERE "COND_CLAVE_CONT" = $1', [clave]);
+    await client.query('DELETE FROM com_contrato_prov WHERE "CONT_CLAVE" = $1', [clave]);
+    await client.query('COMMIT');
+  } catch (e) {
+    await client.query('ROLLBACK');
+    throw e;
+  } finally {
+    client.release();
+  }
 };
 
 module.exports = { getAll, getById, create, update, remove };

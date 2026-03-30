@@ -36,6 +36,14 @@ const createClaseDoc  = async (req, res, next) => { try { if (!req.body.cldo_des
 const updateClaseDoc  = async (req, res, next) => { try { res.json(await s.updateClaseDoc(req.params.id, req.body)); } catch (e) { next(e); } };
 const deleteClaseDoc  = async (req, res, next) => { try { await s.deleteClaseDoc(req.params.id); res.status(204).end(); } catch (e) { next(e); } };
 
+// Conceptos financieros
+const parseQuery = (req) => ({ all: req.query.all === 'true', page: Math.max(1, parseInt(req.query.page) || 1), limit: Math.max(1, Math.min(1000, parseInt(req.query.limit) || 20)), search: req.query.search || '', sortField: req.query.sortField || '', sortDir: req.query.sortDir === 'desc' ? 'desc' : 'asc' });
+const getConceptos    = async (req, res, next) => { try { res.json(await s.getConceptos(parseQuery(req))); } catch (e) { next(e); } };
+const getConcepto     = async (req, res, next) => { try { const id = Number(req.params.id); if (!Number.isFinite(id)) return res.status(400).json({ message: 'ID inválido' }); res.json(await s.getConcepto(id)); } catch (e) { next(e); } };
+const createConcepto  = async (req, res, next) => { try { if (!req.body.fcon_desc) return res.status(400).json({ message: 'La descripción es requerida' }); res.status(201).json(await s.createConcepto(req.body)); } catch (e) { next(e); } };
+const updateConcepto  = async (req, res, next) => { try { const id = Number(req.params.id); if (!Number.isFinite(id)) return res.status(400).json({ message: 'ID inválido' }); res.json(await s.updateConcepto(id, req.body)); } catch (e) { next(e); } };
+const deleteConcepto  = async (req, res, next) => { try { const id = Number(req.params.id); if (!Number.isFinite(id)) return res.status(400).json({ message: 'ID inválido' }); await s.deleteConcepto(id); res.status(204).end(); } catch (e) { next(e); } };
+
 module.exports = {
   getBancos, createBanco, updateBanco, deleteBanco,
   getFormasPago, createFormaPago, updateFormaPago, deleteFormaPago,
@@ -43,4 +51,5 @@ module.exports = {
   getTiposProveedor, createTipoProveedor, updateTipoProveedor, deleteTipoProveedor,
   getPersonerias, createPersoneria, updatePersoneria, deletePersoneria,
   getClasesDoc, createClaseDoc, updateClaseDoc, deleteClaseDoc,
+  getConceptos, getConcepto, createConcepto, updateConcepto, deleteConcepto,
 };

@@ -1,4 +1,4 @@
-const s = require('../services/contratoProvService');
+const s = require('../services/cuentaService');
 
 const parseListParams = (query) => ({
   all:       query.all === 'true',
@@ -23,7 +23,7 @@ const getById = async (req, res, next) => {
 
 const create  = async (req, res, next) => {
   try {
-    if (!req.body.cont_fecha) return res.status(400).json({ message: 'La fecha del contrato es requerida' });
+    if (!req.body.ctac_nro || !req.body.ctac_desc) return res.status(400).json({ message: 'El número y descripción de la cuenta son requeridos' });
     res.status(201).json(await s.create(req.body));
   } catch (e) { next(e); }
 };

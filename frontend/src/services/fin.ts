@@ -1,5 +1,5 @@
 import api from '@/lib/api';
-import type { Banco, FormaPago, Ramo, TipoProveedor, Proveedor, Personeria, ClaseDoc, CuentaBancaria, OrdenPago, Paginated } from '@/types/fin';
+import type { Banco, FormaPago, Ramo, TipoProveedor, Proveedor, Personeria, ClaseDoc, CuentaBancaria, OrdenPago, ConceptoFin, DocumentoFin, Cheque, Paginated } from '@/types/fin';
 import type { ListParams } from '@/services/gen';
 
 // Bancos
@@ -58,3 +58,18 @@ export const getProveedor     = (id: number) => api.get<Proveedor>(`/fin/proveed
 export const createProveedor  = (data: Partial<Proveedor>) => api.post<Proveedor>('/fin/proveedores', data).then((r) => r.data);
 export const updateProveedor  = (id: number, data: Partial<Proveedor>) => api.put<Proveedor>(`/fin/proveedores/${id}`, data).then((r) => r.data);
 export const deleteProveedor  = (id: number) => api.delete(`/fin/proveedores/${id}`);
+
+// Conceptos financieros
+export const getConceptosFin  = (params?: ListParams) => api.get<Paginated<ConceptoFin>>('/fin/maestros/conceptos', { params }).then((r) => r.data);
+export const getConceptoFin   = (id: number) => api.get<ConceptoFin>(`/fin/maestros/conceptos/${id}`).then((r) => r.data);
+export const createConceptoFin = (data: Partial<ConceptoFin>) => api.post<ConceptoFin>('/fin/maestros/conceptos', data).then((r) => r.data);
+export const updateConceptoFin = (id: number, data: Partial<ConceptoFin>) => api.put<ConceptoFin>(`/fin/maestros/conceptos/${id}`, data).then((r) => r.data);
+export const deleteConceptoFin = (id: number) => api.delete(`/fin/maestros/conceptos/${id}`);
+
+// Documentos financieros (solo lectura)
+export const getDocumentosFin = (params?: ListParams) => api.get<Paginated<DocumentoFin>>('/fin/documentos', { params }).then((r) => r.data);
+export const getDocumentoFin  = (id: number) => api.get<DocumentoFin>(`/fin/documentos/${id}`).then((r) => r.data);
+
+// Cheques recibidos (solo lectura)
+export const getCheques       = (params?: ListParams) => api.get<Paginated<Cheque>>('/fin/cheques', { params }).then((r) => r.data);
+export const getCheque        = (id: number) => api.get<Cheque>(`/fin/cheques/${id}`).then((r) => r.data);

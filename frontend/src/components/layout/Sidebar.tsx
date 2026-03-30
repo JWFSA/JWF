@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Users, Building2, Shield, Globe, Settings, LayoutDashboard, ChevronDown, X, Package, Warehouse, Tag, Layers, BookOpen, DollarSign, MapPin, Map, Code, Ruler, Grid3x3, Building, Percent, ShoppingCart, UserCheck, MapPinned, LayoutList, Handshake, ClipboardList, ListOrdered, Landmark, CreditCard, Briefcase, Truck, FileText, Banknote, Scale, ArrowLeftRight, BarChart3, Receipt, HardHat, UserCog, Network, Columns, Languages, GraduationCap, Award, Brain, Signal, CheckCircle, Wrench, FolderMinus, Heart, Wallet, Stethoscope, MapPinHouse, Ban, Home, CircleDollarSign, ShieldAlert, School, ScrollText, UsersRound, Calculator, ShoppingBag } from 'lucide-react';
+import { Users, Building2, Shield, Globe, Settings, LayoutDashboard, ChevronDown, X, Package, Warehouse, Tag, Layers, BookOpen, DollarSign, MapPin, Map, Code, Ruler, Grid3x3, Building, Percent, ShoppingCart, UserCheck, MapPinned, LayoutList, Handshake, ClipboardList, ListOrdered, Landmark, CreditCard, Briefcase, Truck, FileText, Banknote, Scale, ArrowLeftRight, BarChart3, Receipt, HardHat, UserCog, Network, Columns, Languages, GraduationCap, Award, Brain, Signal, CheckCircle, Wrench, FolderMinus, Heart, Wallet, Stethoscope, MapPinHouse, Ban, Home, CircleDollarSign, ShieldAlert, School, ScrollText, UsersRound, Calculator, ShoppingBag, BookMarked, FolderTree, Calendar, PenLine } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import Image from 'next/image';
@@ -54,15 +54,18 @@ const menu = [
     label: 'Finanzas',
     icon: Landmark,
     children: [
+      { label: 'Documentos',          href: '/fin/documentos',         icon: FileText },
       { label: 'Órdenes de pago',    href: '/fin/ordenes-pago',       icon: Receipt },
+      { label: 'Cheques',           href: '/fin/cheques',            icon: Banknote },
       { label: 'Proveedores',        href: '/fin/proveedores',        icon: Truck },
-      { label: 'Cuentas bancarias', href: '/fin/cuentas-bancarias',  icon: Banknote },
+      { label: 'Cuentas bancarias', href: '/fin/cuentas-bancarias',  icon: CreditCard },
+      { label: 'Conceptos',         href: '/fin/conceptos',          icon: BookOpen },
       { label: 'Bancos',            href: '/fin/bancos',             icon: Landmark },
-      { label: 'Formas de pago',    href: '/fin/formas-pago',        icon: CreditCard },
+      { label: 'Formas de pago',    href: '/fin/formas-pago',        icon: DollarSign },
       { label: 'Ramos',             href: '/fin/ramos',              icon: Briefcase },
       { label: 'Tipos proveedor',   href: '/fin/tipos-proveedor',    icon: Tag },
       { label: 'Personerías',       href: '/fin/personeria',         icon: Scale },
-      { label: 'Clases documento',  href: '/fin/clases-doc',         icon: FileText },
+      { label: 'Clases documento',  href: '/fin/clases-doc',         icon: Layers },
     ],
   },
   {
@@ -87,6 +90,18 @@ const menu = [
     children: [
       { label: 'Órdenes compra', href: '/com/ordenes-compra', icon: ClipboardList },
       { label: 'Contratos prov.', href: '/com/contratos',      icon: ScrollText },
+    ],
+  },
+  {
+    label: 'Contabilidad',
+    icon: BookMarked,
+    children: [
+      { label: 'Asientos',        href: '/cnt/asientos',       icon: PenLine },
+      { label: 'Plan de cuentas', href: '/cnt/cuentas',        icon: FolderTree },
+      { label: 'Ejercicios',      href: '/cnt/ejercicios',     icon: Calendar },
+      { label: 'Grupos',          href: '/cnt/grupos',         icon: Layers },
+      { label: 'Rubros',          href: '/cnt/rubros',         icon: Tag },
+      { label: 'Centros de costo', href: '/cnt/centros-costo', icon: Building },
     ],
   },
   {

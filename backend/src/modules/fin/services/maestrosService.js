@@ -301,6 +301,94 @@ const deleteClaseDoc = async (codigo) => {
   await pool.query('DELETE FROM fin_clase_doc WHERE "CLDO_CODIGO" = $1', [codigo]);
 };
 
+// ─── CONCEPTOS FINANCIEROS ───────────────────────────────────────────────────
+
+const getConceptos = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  page  = Math.max(1, page);
+  limit = Math.max(1, Math.min(1000, limit));
+  const params = search ? [`%${search}%`] : [];
+  const where  = search
+    ? `AND (c."FCON_DESC" ILIKE $1 OR CAST(c."FCON_CODIGO" AS TEXT) ILIKE $1)`
+    : '';
+  const countRes = await pool.query(`SELECT COUNT(*) FROM fin_concepto c WHERE c."FCON_EMPR" = 1 ${where}`, params);
+  const total = parseInt(countRes.rows[0].count);
+  const allowedSort = { codigo: 'c."FCON_CODIGO"', desc: 'c."FCON_DESC"', tipo: 'c."FCON_TIPO_SALDO"' };
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = Object.hasOwn(allowedSort, sortField) ? `${allowedSort[sortField]} ${dir}` : 'c."FCON_CODIGO" ASC';
+  const select = `
+    SELECT c."FCON_CLAVE"                AS fcon_clave,
+           c."FCON_CODIGO"               AS fcon_codigo,
+           c."FCON_DESC"                 AS fcon_desc,
+           c."FCON_TIPO_SALDO"           AS fcon_tipo_saldo,
+           c."FCON_CLAVE_CTACO"          AS fcon_clave_ctaco,
+           c."FCON_RESUM_LIBRO_CAJA"     AS fcon_resum_libro_caja,
+           c."FCON_IND_DCTO_COM"         AS fcon_ind_dcto_com,
+           c."FCON_CCOSTO"               AS fcon_ccosto
+    FROM fin_concepto c
+    WHERE c."FCON_EMPR" = 1 ${where}
+    ORDER BY ${orderBy}`;
+  if (all) {
+    const { rows } = await pool.query(select, params);
+    return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
+  }
+  const offset = (page - 1) * limit;
+  const { rows } = await pool.query(`${select} LIMIT $${params.length + 1} OFFSET $${params.length + 2}`, [...params, limit, offset]);
+  return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+};
+
+const getConcepto = async (clave) => {
+  const { rows } = await pool.query(
+    `SELECT "FCON_CLAVE" AS fcon_clave, "FCON_EMPR" AS fcon_empr, "FCON_CODIGO" AS fcon_codigo,
+            "FCON_DESC" AS fcon_desc, "FCON_TIPO_SALDO" AS fcon_tipo_saldo,
+            "FCON_CLAVE_CTACO" AS fcon_clave_ctaco, "FCON_RESUM_LIBRO_CAJA" AS fcon_resum_libro_caja,
+            "FCON_IND_DCTO_COM" AS fcon_ind_dcto_com, "FCON_CCOSTO" AS fcon_ccosto
+     FROM fin_concepto WHERE "FCON_CLAVE" = $1`, [clave]
+  );
+  if (!rows.length) throw { status: 404, message: 'Concepto no encontrado' };
+  return rows[0];
+};
+
+const createConcepto = async (data) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const { rows: claveRows } = await client.query('SELECT COALESCE(MAX("FCON_CLAVE"), 0) + 1 AS next FROM fin_concepto');
+    const clave = claveRows[0].next;
+    const { rows: codRows } = await client.query('SELECT COALESCE(MAX("FCON_CODIGO"), 0) + 1 AS next FROM fin_concepto WHERE "FCON_EMPR" = 1');
+    const codigo = codRows[0].next;
+    await client.query(
+      `INSERT INTO fin_concepto ("FCON_CLAVE","FCON_EMPR","FCON_CODIGO","FCON_DESC","FCON_TIPO_SALDO",
+        "FCON_CLAVE_CTACO","FCON_RESUM_LIBRO_CAJA","FCON_IND_DCTO_COM","FCON_CCOSTO")
+       VALUES ($1,1,$2,$3,$4,$5,$6,$7,$8)`,
+      [clave, codigo, data.fcon_desc, data.fcon_tipo_saldo || 'D',
+       data.fcon_clave_ctaco || null, data.fcon_resum_libro_caja || 'N',
+       data.fcon_ind_dcto_com || 'N', data.fcon_ccosto || null]
+    );
+    await client.query('COMMIT');
+    return getConcepto(clave);
+  } catch (e) { await client.query('ROLLBACK'); throw e; } finally { client.release(); }
+};
+
+const updateConcepto = async (clave, data) => {
+  const fields = []; const params = [];
+  const map = {
+    fcon_desc: '"FCON_DESC"', fcon_tipo_saldo: '"FCON_TIPO_SALDO"',
+    fcon_clave_ctaco: '"FCON_CLAVE_CTACO"', fcon_resum_libro_caja: '"FCON_RESUM_LIBRO_CAJA"',
+    fcon_ind_dcto_com: '"FCON_IND_DCTO_COM"', fcon_ccosto: '"FCON_CCOSTO"',
+  };
+  for (const [k, col] of Object.entries(map)) {
+    if (data[k] !== undefined) { params.push(data[k]); fields.push(`${col} = $${params.length}`); }
+  }
+  if (!fields.length) return getConcepto(clave);
+  params.push(clave);
+  await pool.query(`UPDATE fin_concepto SET ${fields.join(', ')} WHERE "FCON_CLAVE" = $${params.length}`, params);
+  return getConcepto(clave);
+};
+
+const deleteConcepto = async (clave) => {
+  await pool.query('DELETE FROM fin_concepto WHERE "FCON_CLAVE" = $1', [clave]);
+};
+
 module.exports = {
   getBancos, getBanco, createBanco, updateBanco, deleteBanco,
   getFormasPago, getFormaPago, createFormaPago, updateFormaPago, deleteFormaPago,
@@ -308,4 +396,5 @@ module.exports = {
   getTiposProveedor, getTipoProveedor, createTipoProveedor, updateTipoProveedor, deleteTipoProveedor,
   getPersonerias, getPersoneria, createPersoneria, updatePersoneria, deletePersoneria,
   getClasesDoc, getClaseDoc, createClaseDoc, updateClaseDoc, deleteClaseDoc,
+  getConceptos, getConcepto, createConcepto, updateConcepto, deleteConcepto,
 };

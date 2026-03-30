@@ -8,7 +8,7 @@ Instrucciones y conocimiento del proyecto para Claude Code. Se carga automática
 
 - **Backend:** Node.js + Express, Puerto 3001
 - **Frontend:** Next.js 14 + TypeScript + Tailwind CSS, Puerto 3000
-- **Base de datos:** PostgreSQL 18, base `JWF`
+- **Base de datos:** PostgreSQL 18, base `JWFSA`
 
 ## Levantar el proyecto
 
@@ -23,7 +23,7 @@ cd frontend && npm run dev  # → http://localhost:3000
 ## Conexión PostgreSQL
 
 ```bash
-PGPASSWORD=12345 "/c/Program Files/PostgreSQL/18/bin/psql.exe" -U postgres -h localhost -p 5432 -d JWF -c "..."
+PGPASSWORD=12345 "/c/Program Files/PostgreSQL/18/bin/psql.exe" -U postgres -h localhost -p 5432 -d JWFSA -c "..."
 ```
 
 - Host: localhost | Puerto: 5432 | Usuario: postgres | Password: 12345 | DB: JWFSA
@@ -44,7 +44,13 @@ backend/src/
 │   ├── auth.js        # verifyToken — JWT Bearer
 │   └── errorHandler.js # Mapea PG error codes a HTTP
 └── modules/
-    └── gen/
+    ├── gen/           # General
+    ├── fac/           # Facturación
+    ├── fin/           # Finanzas
+    ├── stk/           # Stock
+    ├── per/           # Personal
+    ├── com/           # Compras
+    └── cnt/           # Contabilidad
         ├── routes/index.js
         ├── controllers/
         └── services/
@@ -63,7 +69,7 @@ backend/src/
 ### Variables de entorno Backend (`.env`)
 ```
 PORT=3001
-DB_HOST=localhost | DB_PORT=5432 | DB_USER=postgres | DB_PASSWORD=12345 | DB_NAME=JWF
+DB_HOST=localhost | DB_PORT=5432 | DB_USER=postgres | DB_PASSWORD=12345 | DB_NAME=JWFSA
 JWT_SECRET=... | JWT_EXPIRES_IN=8h
 ```
 
@@ -80,12 +86,19 @@ frontend/src/
 │   └── (dashboard)/
 │       ├── layout.tsx       # Sidebar + Header
 │       ├── dashboard/
-│       └── gen/             # Pantallas módulo GEN
+│       ├── gen/             # Pantallas módulo GEN
+│       ├── fac/             # Facturación
+│       ├── fin/             # Finanzas
+│       ├── stk/             # Stock
+│       ├── per/             # Personal
+│       ├── com/             # Compras
+│       └── cnt/             # Contabilidad
 ├── components/
 │   ├── layout/              # Header, Sidebar, Providers
-│   └── gen/                 # Componentes específicos GEN
-├── services/gen.ts          # Llamadas axios a la API
-├── types/gen.ts             # Interfaces TypeScript
+│   ├── ui/                  # DataTable, SearchField, TablePagination, PrimaryAddButton
+│   └── {mod}/               # Componentes específicos por módulo (formularios, etc.)
+├── services/{mod}.ts        # Llamadas axios a la API por módulo
+├── types/{mod}.ts           # Interfaces TypeScript por módulo
 └── lib/
     ├── api.ts               # Axios instance + interceptores JWT
     └── utils.ts             # cn() para merge de clases Tailwind
@@ -117,11 +130,12 @@ NEXT_PUBLIC_API_URL=http://localhost:3001/api
 | STK    | Stock        | 🔄 Avanzado   |
 | PER    | Personal     | 🔄 Avanzado   |
 | COM    | Compras      | 🔄 En progreso |
+| CNT    | Contabilidad | 🔄 En progreso |
 
 ### Convención de nombres por módulo
 - Tablas DB: `{MOD}_TABLA` (ej. `GEN_OPERADOR`, `FAC_FACTURA`)
 - Rutas API: `/api/{mod}/...` (ej. `/api/gen/operadores`)
-- Rutas frontend: `/dashboard/{mod}/...` (ej. `/dashboard/gen/operadores`)
+- Rutas frontend: `/{mod}/...` (ej. `/gen/operadores`) — dentro del layout group `(dashboard)`
 - Archivos backend: `modules/{mod}/controllers/`, `modules/{mod}/services/`
 - Archivos frontend: `app/(dashboard)/{mod}/`, `components/{mod}/`, `services/{mod}.ts`, `types/{mod}.ts`
 
@@ -174,6 +188,9 @@ Cada vez que se cree una nueva página de listado, agregarla aquí. Usar esta li
 | `fin/personeria` | Personerías | `desc` asc |
 | `fin/clases-doc` | Clases de documento | `desc` asc |
 | `fin/cuentas-bancarias` | Cuentas bancarias | `desc` asc |
+| `fin/conceptos` | Conceptos financieros | `codigo` asc |
+| `fin/documentos` | Documentos financieros | `fecha` desc |
+| `fin/cheques` | Cheques recibidos | `fecha` desc |
 | `per/empleados` | Empleados | `nombre` asc |
 | `per/cargos` | Cargos | `desc` asc |
 | `per/categorias` | Categorías de personal | `desc` asc |
@@ -202,6 +219,12 @@ Cada vez que se cree una nueva página de listado, agregarla aquí. Usar esta li
 | `per/conceptos` | Conceptos de liquidación | `desc` asc |
 | `com/ordenes-compra` | Órdenes de compra | `fecha` desc |
 | `com/contratos` | Contratos de proveedor | `fecha` desc |
+| `cnt/asientos` | Asientos contables | `fecha` desc |
+| `cnt/cuentas` | Plan de cuentas | `nro` asc |
+| `cnt/ejercicios` | Ejercicios contables | `codigo` desc |
+| `cnt/grupos` | Grupos de cuentas | — (sin sort) |
+| `cnt/rubros` | Rubros contables | `desc` asc |
+| `cnt/centros-costo` | Centros de costo | `desc` asc |
 
 ---
 
@@ -236,6 +259,54 @@ Cada vez que se cree una nueva página de listado, agregarla aquí. Usar esta li
 | POST   | `/contratos`                  | Crear contrato con detalle     | Sí   |
 | PUT    | `/contratos/:id`              | Actualizar contrato + detalle  | Sí   |
 | DELETE | `/contratos/:id`              | Eliminar contrato + detalle    | Sí   |
+
+---
+
+## Módulo CNT — Tablas DB
+
+| Tabla             | Descripción              | PK                          |
+|-------------------|--------------------------|------------------------------|
+| `CNT_CUENTA`      | Plan de cuentas          | `CTAC_CLAVE`                 |
+| `CNT_ASIENTO`     | Asientos contables       | `ASI_CLAVE`                  |
+| `CNT_ASIENTO_DET` | Detalle de asientos      | `ASID_CLAVE_ASI+ASID_ITEM`   |
+| `CNT_EJERCICIO`   | Ejercicios contables     | `EJ_EMPR+EJ_CODIGO`          |
+| `CNT_GRUPO`       | Grupos de cuentas        | `GRUP_CODIGO`                |
+| `CNT_RUBRO`       | Rubros contables         | `RUB_CODIGO`                 |
+| `CNT_CCOSTO`      | Centros de costo         | `CCO_CODIGO`                 |
+
+## Módulo CNT — Endpoints API
+
+**Base:** `/api/cnt`
+
+| Método | Ruta                          | Descripción                    | Auth |
+|--------|-------------------------------|--------------------------------|------|
+| GET    | `/maestros/grupos`            | Listar grupos                  | Sí   |
+| POST   | `/maestros/grupos`            | Crear grupo                    | Sí   |
+| PUT    | `/maestros/grupos/:id`        | Actualizar grupo               | Sí   |
+| DELETE | `/maestros/grupos/:id`        | Eliminar grupo                 | Sí   |
+| GET    | `/maestros/rubros`            | Listar rubros                  | Sí   |
+| POST   | `/maestros/rubros`            | Crear rubro                    | Sí   |
+| PUT    | `/maestros/rubros/:id`        | Actualizar rubro               | Sí   |
+| DELETE | `/maestros/rubros/:id`        | Eliminar rubro                 | Sí   |
+| GET    | `/maestros/centros-costo`     | Listar centros de costo        | Sí   |
+| POST   | `/maestros/centros-costo`     | Crear centro de costo          | Sí   |
+| PUT    | `/maestros/centros-costo/:id` | Actualizar centro de costo     | Sí   |
+| DELETE | `/maestros/centros-costo/:id` | Eliminar centro de costo       | Sí   |
+| GET    | `/ejercicios`                 | Listar ejercicios              | Sí   |
+| GET    | `/ejercicios/:id`             | Detalle ejercicio              | Sí   |
+| POST   | `/ejercicios`                 | Crear ejercicio                | Sí   |
+| PUT    | `/ejercicios/:id`             | Actualizar ejercicio           | Sí   |
+| DELETE | `/ejercicios/:id`             | Eliminar ejercicio             | Sí   |
+| GET    | `/cuentas`                    | Listar plan de cuentas         | Sí   |
+| GET    | `/cuentas/:id`                | Detalle cuenta                 | Sí   |
+| POST   | `/cuentas`                    | Crear cuenta                   | Sí   |
+| PUT    | `/cuentas/:id`                | Actualizar cuenta              | Sí   |
+| DELETE | `/cuentas/:id`                | Eliminar cuenta                | Sí   |
+| GET    | `/asientos`                   | Listar asientos                | Sí   |
+| GET    | `/asientos/:id`               | Detalle + líneas D/H           | Sí   |
+| POST   | `/asientos`                   | Crear asiento con detalle      | Sí   |
+| PUT    | `/asientos/:id`               | Actualizar asiento + detalle   | Sí   |
+| DELETE | `/asientos/:id`               | Eliminar asiento + detalle     | Sí   |
 
 ---
 
@@ -288,7 +359,7 @@ Cada vez que se cree una nueva página de listado, agregarla aquí. Usar esta li
 | GET    | `/maestros/secciones?dpto=X`  | Secciones (filtra por dpto)    | Sí   |
 | GET    | `/maestros/sistemas`          | Sistemas disponibles           | Sí   |
 | GET    | `/maestros/programas?sistema=X` | Programas (filtra por sistema) | Sí |
-| GET    | `/api/health`                 | Health check DB                | No   |
+| GET    | `/api/health` (ruta global)   | Health check DB                | No   |
 
 ---
 
@@ -311,10 +382,62 @@ Toda entidad del sistema debe tener CRUD completo — sin excepciones. Esto incl
 
 ### Backend
 - Patrón: `Controller → Service → DB` — los controllers solo manejan request/response, la lógica va en services
-- Códigos auto-incrementales: se calculan con `SELECT COALESCE(MAX(campo), 0) + 1`
+- Códigos auto-incrementales: se calculan con `SELECT COALESCE(MAX(campo), 0) + 1` **dentro de una transacción**
 - Passwords: siempre hasheadas con `bcryptjs`
 - Queries directas con `pg` (sin ORM)
 - Nombres de tabla en minúsculas (sin comillas), columnas con comillas dobles en mayúsculas
+
+### Transacciones (OBLIGATORIO en operaciones master-detail)
+Cuando una operación involucra más de una tabla (header + detalle, o borrado en cascada), usar transacciones con `pool.connect()`:
+
+```js
+const client = await pool.connect();
+try {
+  await client.query('BEGIN');
+  // ... operaciones con client.query() ...
+  await client.query('COMMIT');
+  return result;
+} catch (e) {
+  await client.query('ROLLBACK');
+  throw e;
+} finally {
+  client.release();
+}
+```
+
+**Regla:** el MAX+1 para auto-increment SIEMPRE debe ejecutarse dentro de la transacción (vía `client.query()`) para evitar race conditions.
+
+### Validación de inputs en controllers (OBLIGATORIO)
+Todos los controllers deben validar inputs del usuario antes de pasar a los services:
+
+```js
+// Helper reutilizable — extraer de req.query con bounds seguros
+const parseListParams = (query) => ({
+  all:       query.all === 'true',
+  page:      Math.max(1, parseInt(query.page) || 1),
+  limit:     Math.max(1, Math.min(1000, parseInt(query.limit) || 20)),
+  search:    query.search    || '',
+  sortField: query.sortField || '',
+  sortDir:   query.sortDir === 'desc' ? 'desc' : 'asc',   // whitelist estricta
+});
+
+// Validar req.params.id como número finito
+const id = Number(req.params.id);
+if (!Number.isFinite(id)) return res.status(400).json({ message: 'ID inválido' });
+```
+
+### Seguridad en ordenamiento (OBLIGATORIO)
+Para evitar SQL injection vía `sortField`, siempre usar `Object.hasOwn()` en vez de acceso directo por bracket:
+
+```js
+// ✅ Correcto — seguro contra prototype pollution
+const orderBy = Object.hasOwn(allowedSort, sortField)
+  ? `${allowedSort[sortField]} ${dir}`
+  : 'columna_default DESC';
+
+// ❌ Incorrecto — vulnerable a prototype pollution
+const orderBy = allowedSort[sortField] ? ...
+```
 
 ### Paginación y búsqueda (OBLIGATORIO en todos los listados)
 Todos los endpoints de lista y sus pantallas deben implementar paginación y búsqueda desde el backend. Nunca filtrar ni paginar en el frontend.
@@ -327,19 +450,20 @@ Todos los endpoints de lista y sus pantallas deben implementar paginación y bú
 ```
 
 **Backend — patrón en service:**
-- `getAll({ page = 1, limit = 20, search = '', all = false } = {})`
+- `getAll({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {})`
+- Primeras líneas: `page = Math.max(1, page); limit = Math.max(1, Math.min(1000, limit));`
 - Usar `ILIKE $1` con `%search%` para el WHERE de búsqueda
 - Siempre hacer `COUNT(*)` primero; si `all=true` omitir LIMIT/OFFSET
 - Si no hay search, los parámetros de LIMIT y OFFSET son `$1` y `$2`; si hay search, son `$2` y `$3`
 - Con `all=true`: devolver todos los registros sin LIMIT/OFFSET (para selectores/dropdowns)
+- Usar `Object.hasOwn(allowedSort, sortField)` para el ORDER BY dinámico
 
 **Backend — patrón en controller:**
 ```js
-const all    = req.query.all === 'true';
-const page   = parseInt(req.query.page)  || 1;
-const limit  = parseInt(req.query.limit) || 20;
-const search = req.query.search || '';
-res.json(await service.getAll({ page, limit, search, all }));
+// Usar parseListParams (ver sección "Validación de inputs en controllers")
+const getAll = async (req, res, next) => {
+  try { res.json(await s.getAll(parseListParams(req.query))); } catch (e) { next(e); }
+};
 ```
 
 **Frontend — tipo:** `Paginated<T>` de `@/types/gen`
@@ -356,40 +480,29 @@ const items = data?.data ?? [];
 
 **Frontend — debounce:** 400ms con `useEffect` + `setTimeout`; al cambiar search resetear `page` a 1
 
-**Frontend — UI paginación:** el selector de página siempre visible; los botones de navegación solo si `totalPages > 1`:
+**Frontend — UI paginación:** usar el componente reutilizable `TablePagination`:
 ```tsx
+import TablePagination from '@/components/ui/TablePagination';
+
 {pagination && (
-  <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t border-gray-100 text-sm text-gray-500">
-    <div className="flex items-center gap-2">
-      <span>{pagination.total} registros</span>
-      <select value={limit} onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }}
-        className="border border-gray-200 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
-        <option value={20}>20 por página</option>
-        <option value={50}>50 por página</option>
-        <option value={100}>100 por página</option>
-      </select>
-    </div>
-    {pagination.totalPages > 1 && (
-      <div className="flex items-center gap-1">
-        <button onClick={() => setPage(1)} disabled={page === 1} className="p-1 rounded hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed" title="Primera página"><ChevronsLeft size={16} /></button>
-        <button onClick={() => setPage(p => p - 1)} disabled={page === 1} className="p-1 rounded hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed" title="Página anterior"><ChevronLeft size={16} /></button>
-        <span className="px-2">Página {page} de {pagination.totalPages}</span>
-        <button onClick={() => setPage(p => p + 1)} disabled={page === pagination.totalPages} className="p-1 rounded hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed" title="Página siguiente"><ChevronRight size={16} /></button>
-        <button onClick={() => setPage(pagination.totalPages)} disabled={page === pagination.totalPages} className="p-1 rounded hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed" title="Última página"><ChevronsRight size={16} /></button>
-      </div>
-    )}
-  </div>
+  <TablePagination
+    total={pagination.total}
+    page={page}
+    limit={limit}
+    totalPages={pagination.totalPages}
+    onPageChange={setPage}
+    onLimitChange={(n) => { setLimit(n); setPage(1); }}
+  />
 )}
 ```
-- Íconos: `ChevronLeft`, `ChevronRight`, `ChevronsLeft`, `ChevronsRight` de `lucide-react`
 - Estado `limit` con default 20; al cambiar resetear `page` a 1
 
 ### Ordenamiento en DataTable (OBLIGATORIO)
 Todo componente que use `DataTable` debe implementar ordenamiento asc/desc en todas las columnas que tengan sentido ordenar.
 
 **Si el listado usa paginación server-side** (datos paginados desde el backend):
-- Backend — service: aceptar `sortField` y `sortDir` en los parámetros; usar `allowedSort` para mapear claves a columnas SQL; aplicar `ORDER BY` dinámico
-- Backend — controller: pasar `sortField: req.query.sortField || ''` y `sortDir: req.query.sortDir || 'asc'`
+- Backend — service: aceptar `sortField` y `sortDir` en los parámetros; usar `allowedSort` + `Object.hasOwn()` para mapear claves a columnas SQL; aplicar `ORDER BY` dinámico
+- Backend — controller: usar `parseListParams(req.query)` que ya incluye whitelist de `sortDir` y bounds de `page`/`limit`
 - Frontend — service: incluir `sortField` y `sortDir` en los params de la request
 - Frontend — página: estados `sortField` y `sortDir`; `handleSortChange` que actualiza ambos y resetea `page` a 1; pasar `sortField`, `sortDir`, `onSortChange` al `DataTable`; incluir `sortField` y `sortDir` en el `queryKey`
 
@@ -431,6 +544,16 @@ const [form, setForm] = useState({ fecha: toInputDate(initial?.fecha) });
 - Interfaces en `types/{mod}.ts`
 - Servicios en `services/{mod}.ts` usando el cliente axios de `lib/api.ts`
 - Merge de clases Tailwind con `cn()` de `lib/utils.ts`
+
+### Frontend — Componentes UI reutilizables
+Ubicados en `components/ui/`. Usar siempre estos en vez de reimplementar:
+
+| Componente          | Uso                                                                |
+|---------------------|--------------------------------------------------------------------|
+| `DataTable`         | Tabla con columnas, sort, acciones editar/eliminar                 |
+| `TablePagination`   | Barra de paginación (total, selector limit, botones navegación)    |
+| `SearchField`       | Input de búsqueda con icono, `w-full sm:w-72`                     |
+| `PrimaryAddButton`  | Botón "Nuevo" con texto largo/corto responsive                    |
 
 ### Frontend — Pantallas (patrón estándar)
 - Lista con búsqueda server-side (debounce 400ms) + paginación server-side + botón "Nuevo"
@@ -484,7 +607,7 @@ Todos los commits deben seguir el formato de **Conventional Commits** en **espa�
 ### Alcance (opcional pero recomendado)
 
 Usar el módulo o componente afectado:
-- Backend: `auth`, `gen`, `fac`, `fin`, `stk`, `per`
+- Backend: `auth`, `gen`, `fac`, `fin`, `stk`, `per`, `com`, `cnt`
 - Frontend: componente o pantalla (`operadores`, `roles`, etc.)
 - Infraestructura: `db`, `config`, `docker`
 

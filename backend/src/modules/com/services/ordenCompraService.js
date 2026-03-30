@@ -3,6 +3,9 @@ const pool = require('../../../config/db');
 // ─── ÓRDENES DE COMPRA ──────────────────────────────────────────────────────
 
 const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  page  = Math.max(1, page);
+  limit = Math.max(1, Math.min(1000, limit));
+
   const params = search ? [`%${search}%`] : [];
   const where  = search
     ? `WHERE (CAST(o."ORCOM_NRO" AS TEXT) ILIKE $1 OR p."PROV_RAZON_SOCIAL" ILIKE $1 OR o."ORCOM_OBS" ILIKE $1 OR o."ORCOM_CLIENTE" ILIKE $1)`
@@ -22,7 +25,7 @@ const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortFiel
     estado:  'o."ORCOM_ESTADO"',
   };
   const dir     = sortDir === 'desc' ? 'DESC' : 'ASC';
-  const orderBy = allowedSort[sortField] ? `${allowedSort[sortField]} ${dir}` : 'o."ORCOM_NRO" DESC';
+  const orderBy = Object.hasOwn(allowedSort, sortField) ? `${allowedSort[sortField]} ${dir}` : 'o."ORCOM_NRO" DESC';
   const select  = `
     SELECT o."ORCOM_NRO"           AS orcom_nro,
            o."ORCOM_FEC_EMIS"      AS orcom_fec_emis,
@@ -86,7 +89,6 @@ const getById = async (nro) => {
   );
   if (!rows.length) throw { status: 404, message: 'Orden de compra no encontrada' };
 
-  // Traer detalle
   const { rows: detalle } = await pool.query(
     `SELECT d."ORCOMDET_NRO"          AS orcomdet_nro,
             d."ORCOMDET_ITEM"         AS orcomdet_item,
@@ -111,141 +113,146 @@ const getById = async (nro) => {
   return { ...rows[0], detalle };
 };
 
-const create = async (data) => {
-  const { rows: nroRows } = await pool.query('SELECT COALESCE(MAX("ORCOM_NRO"), 0) + 1 AS next FROM com_orden_compra');
-  const nro = nroRows[0].next;
-  const now = new Date().toISOString().split('T')[0];
-
-  await pool.query(
-    `INSERT INTO com_orden_compra
-     ("ORCOM_NRO","ORCOM_FEC_EMIS","ORCOM_PROV","ORCOM_DPTO_SOLICITA",
-      "ORCOM_RESPONSABLE","ORCOM_CLIENTE","ORCOM_MON","ORCOM_TASA",
-      "ORCOM_TOTAL","ORCOM_ESTADO","ORCOM_LOGIN_ESTADO","ORCOM_FEC_ESTADO",
-      "ORCOM_OBS","ORCOM_LOGIN","ORCOM_FEC_GRAB","ORCOM_FORMA_PAGO",
-      "ORCOM_FEC_VTO","ORCOM_PROCESADO")
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)`,
-    [
-      nro,
-      data.orcom_fec_emis,
-      data.orcom_prov          || null,
-      data.orcom_dpto_solicita || null,
-      data.orcom_responsable   || null,
-      data.orcom_cliente       || null,
-      data.orcom_mon           || null,
-      data.orcom_tasa          || null,
-      data.orcom_total         || 0,
-      data.orcom_estado        || 'PE',
-      data.orcom_login         || null,
-      now,
-      data.orcom_obs           || null,
-      data.orcom_login         || null,
-      now,
-      data.orcom_forma_pago    || null,
-      data.orcom_fec_vto       || null,
-      data.orcom_procesado     || null,
-    ]
-  );
-
-  // Insertar detalle si viene
-  if (data.detalle && Array.isArray(data.detalle)) {
-    for (let i = 0; i < data.detalle.length; i++) {
-      const d = data.detalle[i];
-      await pool.query(
-        `INSERT INTO com_orden_compra_det
-         ("ORCOMDET_NRO","ORCOMDET_ITEM","ORCOMDET_TIPO_MOV","ORCOMDET_ART",
-          "ORCOMDET_ART_DESC","ORCOMDET_ART_UNID_MED","ORCOMDET_CANT",
-          "ORCOMDET_PRECIO_UNIT","ORCOMDET_IMPU_CODIGO","ORCOMDET_EXENTA",
-          "ORCOMDET_GRAVADA","ORCOMDET_IMPUESTO","ORCOMDET_TOTAL","ORCOMDET_DESC_LARGA")
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
-        [
-          nro,
-          i + 1,
-          d.orcomdet_tipo_mov    || null,
-          d.orcomdet_art         || null,
-          d.orcomdet_art_desc    || null,
-          d.orcomdet_art_unid_med|| null,
-          d.orcomdet_cant        || 0,
-          d.orcomdet_precio_unit || 0,
-          d.orcomdet_impu_codigo || null,
-          d.orcomdet_exenta      || 0,
-          d.orcomdet_gravada     || 0,
-          d.orcomdet_impuesto    || 0,
-          d.orcomdet_total       || 0,
-          d.orcomdet_desc_larga  || null,
-        ]
-      );
-    }
+const insertItems = async (client, nro, items) => {
+  for (let i = 0; i < items.length; i++) {
+    const d = items[i];
+    await client.query(
+      `INSERT INTO com_orden_compra_det
+       ("ORCOMDET_NRO","ORCOMDET_ITEM","ORCOMDET_TIPO_MOV","ORCOMDET_ART",
+        "ORCOMDET_ART_DESC","ORCOMDET_ART_UNID_MED","ORCOMDET_CANT",
+        "ORCOMDET_PRECIO_UNIT","ORCOMDET_IMPU_CODIGO","ORCOMDET_EXENTA",
+        "ORCOMDET_GRAVADA","ORCOMDET_IMPUESTO","ORCOMDET_TOTAL","ORCOMDET_DESC_LARGA")
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
+      [
+        nro, i + 1,
+        d.orcomdet_tipo_mov     || null,
+        d.orcomdet_art          || null,
+        d.orcomdet_art_desc     || null,
+        d.orcomdet_art_unid_med || null,
+        d.orcomdet_cant         || 0,
+        d.orcomdet_precio_unit  || 0,
+        d.orcomdet_impu_codigo  || null,
+        d.orcomdet_exenta       || 0,
+        d.orcomdet_gravada      || 0,
+        d.orcomdet_impuesto     || 0,
+        d.orcomdet_total        || 0,
+        d.orcomdet_desc_larga   || null,
+      ]
+    );
   }
+};
 
-  return getById(nro);
+const create = async (data) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const { rows: nroRows } = await client.query('SELECT COALESCE(MAX("ORCOM_NRO"), 0) + 1 AS next FROM com_orden_compra');
+    const nro = nroRows[0].next;
+    const now = new Date().toISOString().split('T')[0];
+
+    await client.query(
+      `INSERT INTO com_orden_compra
+       ("ORCOM_NRO","ORCOM_FEC_EMIS","ORCOM_PROV","ORCOM_DPTO_SOLICITA",
+        "ORCOM_RESPONSABLE","ORCOM_CLIENTE","ORCOM_MON","ORCOM_TASA",
+        "ORCOM_TOTAL","ORCOM_ESTADO","ORCOM_LOGIN_ESTADO","ORCOM_FEC_ESTADO",
+        "ORCOM_OBS","ORCOM_LOGIN","ORCOM_FEC_GRAB","ORCOM_FORMA_PAGO",
+        "ORCOM_FEC_VTO","ORCOM_PROCESADO")
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)`,
+      [
+        nro,
+        data.orcom_fec_emis,
+        data.orcom_prov          || null,
+        data.orcom_dpto_solicita || null,
+        data.orcom_responsable   || null,
+        data.orcom_cliente       || null,
+        data.orcom_mon           || null,
+        data.orcom_tasa          || null,
+        data.orcom_total         || 0,
+        data.orcom_estado        || 'PE',
+        data.orcom_login         || null,
+        now,
+        data.orcom_obs           || null,
+        data.orcom_login         || null,
+        now,
+        data.orcom_forma_pago    || null,
+        data.orcom_fec_vto       || null,
+        data.orcom_procesado     || null,
+      ]
+    );
+
+    if (data.detalle && Array.isArray(data.detalle)) {
+      await insertItems(client, nro, data.detalle);
+    }
+
+    await client.query('COMMIT');
+    return getById(nro);
+  } catch (e) {
+    await client.query('ROLLBACK');
+    throw e;
+  } finally {
+    client.release();
+  }
 };
 
 const update = async (nro, data) => {
-  const fields = []; const params = [];
-  const map = {
-    orcom_fec_emis:      '"ORCOM_FEC_EMIS"',
-    orcom_prov:          '"ORCOM_PROV"',
-    orcom_dpto_solicita: '"ORCOM_DPTO_SOLICITA"',
-    orcom_responsable:   '"ORCOM_RESPONSABLE"',
-    orcom_cliente:       '"ORCOM_CLIENTE"',
-    orcom_mon:           '"ORCOM_MON"',
-    orcom_tasa:          '"ORCOM_TASA"',
-    orcom_total:         '"ORCOM_TOTAL"',
-    orcom_estado:        '"ORCOM_ESTADO"',
-    orcom_obs:           '"ORCOM_OBS"',
-    orcom_forma_pago:    '"ORCOM_FORMA_PAGO"',
-    orcom_fec_vto:       '"ORCOM_FEC_VTO"',
-    orcom_procesado:     '"ORCOM_PROCESADO"',
-  };
-  for (const [k, col] of Object.entries(map)) {
-    if (data[k] !== undefined) { params.push(data[k]); fields.push(`${col} = $${params.length}`); }
-  }
-  if (fields.length) {
-    params.push(nro);
-    await pool.query(
-      `UPDATE com_orden_compra SET ${fields.join(', ')} WHERE "ORCOM_NRO" = $${params.length}`,
-      params
-    );
-  }
-
-  // Reemplazar detalle si viene
-  if (data.detalle && Array.isArray(data.detalle)) {
-    await pool.query('DELETE FROM com_orden_compra_det WHERE "ORCOMDET_NRO" = $1', [nro]);
-    for (let i = 0; i < data.detalle.length; i++) {
-      const d = data.detalle[i];
-      await pool.query(
-        `INSERT INTO com_orden_compra_det
-         ("ORCOMDET_NRO","ORCOMDET_ITEM","ORCOMDET_TIPO_MOV","ORCOMDET_ART",
-          "ORCOMDET_ART_DESC","ORCOMDET_ART_UNID_MED","ORCOMDET_CANT",
-          "ORCOMDET_PRECIO_UNIT","ORCOMDET_IMPU_CODIGO","ORCOMDET_EXENTA",
-          "ORCOMDET_GRAVADA","ORCOMDET_IMPUESTO","ORCOMDET_TOTAL","ORCOMDET_DESC_LARGA")
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
-        [
-          nro,
-          i + 1,
-          d.orcomdet_tipo_mov    || null,
-          d.orcomdet_art         || null,
-          d.orcomdet_art_desc    || null,
-          d.orcomdet_art_unid_med|| null,
-          d.orcomdet_cant        || 0,
-          d.orcomdet_precio_unit || 0,
-          d.orcomdet_impu_codigo || null,
-          d.orcomdet_exenta      || 0,
-          d.orcomdet_gravada     || 0,
-          d.orcomdet_impuesto    || 0,
-          d.orcomdet_total       || 0,
-          d.orcomdet_desc_larga  || null,
-        ]
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const fields = []; const params = [];
+    const map = {
+      orcom_fec_emis:      '"ORCOM_FEC_EMIS"',
+      orcom_prov:          '"ORCOM_PROV"',
+      orcom_dpto_solicita: '"ORCOM_DPTO_SOLICITA"',
+      orcom_responsable:   '"ORCOM_RESPONSABLE"',
+      orcom_cliente:       '"ORCOM_CLIENTE"',
+      orcom_mon:           '"ORCOM_MON"',
+      orcom_tasa:          '"ORCOM_TASA"',
+      orcom_total:         '"ORCOM_TOTAL"',
+      orcom_estado:        '"ORCOM_ESTADO"',
+      orcom_obs:           '"ORCOM_OBS"',
+      orcom_forma_pago:    '"ORCOM_FORMA_PAGO"',
+      orcom_fec_vto:       '"ORCOM_FEC_VTO"',
+      orcom_procesado:     '"ORCOM_PROCESADO"',
+    };
+    for (const [k, col] of Object.entries(map)) {
+      if (data[k] !== undefined) { params.push(data[k]); fields.push(`${col} = $${params.length}`); }
+    }
+    if (fields.length) {
+      params.push(nro);
+      await client.query(
+        `UPDATE com_orden_compra SET ${fields.join(', ')} WHERE "ORCOM_NRO" = $${params.length}`,
+        params
       );
     }
-  }
 
-  return getById(nro);
+    if (data.detalle && Array.isArray(data.detalle)) {
+      await client.query('DELETE FROM com_orden_compra_det WHERE "ORCOMDET_NRO" = $1', [nro]);
+      await insertItems(client, nro, data.detalle);
+    }
+
+    await client.query('COMMIT');
+    return getById(nro);
+  } catch (e) {
+    await client.query('ROLLBACK');
+    throw e;
+  } finally {
+    client.release();
+  }
 };
 
 const remove = async (nro) => {
-  await pool.query('DELETE FROM com_orden_compra_det WHERE "ORCOMDET_NRO" = $1', [nro]);
-  await pool.query('DELETE FROM com_orden_compra WHERE "ORCOM_NRO" = $1', [nro]);
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query('DELETE FROM com_orden_compra_det WHERE "ORCOMDET_NRO" = $1', [nro]);
+    await client.query('DELETE FROM com_orden_compra WHERE "ORCOM_NRO" = $1', [nro]);
+    await client.query('COMMIT');
+  } catch (e) {
+    await client.query('ROLLBACK');
+    throw e;
+  } finally {
+    client.release();
+  }
 };
 
 module.exports = { getAll, getById, create, update, remove };
