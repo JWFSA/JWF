@@ -11,6 +11,7 @@ import PrimaryAddButton from '@/components/ui/PrimaryAddButton';
 import SearchField from '@/components/ui/SearchField';
 import TablePagination from '@/components/ui/TablePagination';
 import ExportButton from '@/components/ui/ExportButton';
+import { Filter, X } from 'lucide-react';
 
 const fmt = (n: number | null | undefined) =>
   n != null ? Number(n).toLocaleString('es-PY') : '—';
@@ -26,6 +27,11 @@ const COLUMNS = [
   { key: 'obs',    header: 'Obs.',                       headerClassName: 'hidden lg:table-cell',    cell: (r: Factura) => r.doc_obs ?? '—',                  cellClassName: 'hidden lg:table-cell text-xs text-gray-400 truncate max-w-[160px]' },
 ];
 
+const MONEDAS = [
+  { value: '1', label: 'Guaraníes' },
+  { value: '2', label: 'Dólares americanos' },
+];
+
 export default function FacturasPage() {
   const router = useRouter();
   const qc = useQueryClient();
@@ -36,24 +42,50 @@ export default function FacturasPage() {
   const [sortField, setSortField] = useState('fecha');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
+  // Filtros avanzados
+  const [showFilters, setShowFilters] = useState(false);
+  const [fechaDesde, setFechaDesde] = useState('');
+  const [fechaHasta, setFechaHasta] = useState('');
+  const [moneda, setMoneda] = useState('');
+  const [soloConSaldo, setSoloConSaldo] = useState(false);
+
+  const activeFilters = [fechaDesde, fechaHasta, moneda, soloConSaldo].filter(Boolean).length;
+
+  const clearFilters = () => { setFechaDesde(''); setFechaHasta(''); setMoneda(''); setSoloConSaldo(false); setPage(1); };
+
   useEffect(() => {
     const t = setTimeout(() => { setDebouncedSearch(search); setPage(1); }, 400);
     return () => clearTimeout(t);
   }, [search]);
 
+  const queryParams: any = { page, limit, search: debouncedSearch, sortField, sortDir };
+  if (fechaDesde) queryParams.fechaDesde = fechaDesde;
+  if (fechaHasta) queryParams.fechaHasta = fechaHasta;
+  if (moneda) queryParams.moneda = moneda;
+  if (soloConSaldo) queryParams.soloConSaldo = 'true';
+
   const { data, isLoading } = useQuery({
-    queryKey: ['facturas', { page, limit, search: debouncedSearch, sortField, sortDir }],
-    queryFn: () => getFacturas({ page, limit, search: debouncedSearch, sortField, sortDir }),
+    queryKey: ['facturas', queryParams],
+    queryFn: () => getFacturas(queryParams),
   });
 
   const facturas = data?.data ?? [];
   const pagination = data?.pagination;
+  const summary = (data as any)?.summary as { totalGrav10: number; totalGrav5: number; totalExenta: number; totalIva10: number; totalIva5: number; totalSaldo: number } | undefined;
   const handleSortChange = (field: string, dir: 'asc' | 'desc') => { setSortField(field); setSortDir(dir); setPage(1); };
 
   const deleteMut = useMutation({
     mutationFn: deleteFactura,
     onSuccess: () => qc.invalidateQueries({ queryKey: ['facturas'] }),
   });
+
+  const exportParams: any = { all: true };
+  if (fechaDesde) exportParams.fechaDesde = fechaDesde;
+  if (fechaHasta) exportParams.fechaHasta = fechaHasta;
+  if (moneda) exportParams.moneda = moneda;
+  if (soloConSaldo) exportParams.soloConSaldo = 'true';
+
+  const sel = 'border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500';
 
   return (
     <div className="p-4 sm:p-6">
@@ -63,10 +95,16 @@ export default function FacturasPage() {
           <p className="text-sm text-gray-500 mt-0.5">Facturas de venta emitidas</p>
         </div>
         <div className="flex items-center gap-2">
-          <ExportButton filename="facturas" fetchData={() => getFacturas({ all: true })} columns={[
-            { header: 'Nro.', value: (r) => r.fac_nro },
-            { header: 'Fecha', value: (r) => r.fac_fecha },
-            { header: 'Cliente', value: (r) => r.cli_nom },
+          <button onClick={() => setShowFilters(!showFilters)}
+            className={`inline-flex items-center gap-1.5 border text-sm font-medium px-3 py-2 rounded-lg transition shrink-0 ${activeFilters > 0 ? 'border-primary-300 bg-primary-50 text-primary-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}`}>
+            <Filter size={16} />
+            <span className="hidden sm:inline">Filtros</span>
+            {activeFilters > 0 && <span className="bg-primary-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">{activeFilters}</span>}
+          </button>
+          <ExportButton filename="facturas" fetchData={() => getFacturas(exportParams)} columns={[
+            { header: 'Nro.', value: (r) => r.doc_nro_doc },
+            { header: 'Fecha', value: (r) => r.doc_fec_doc },
+            { header: 'Cliente', value: (r) => r.cli_nom ?? r.doc_cli_nom },
             { header: 'Moneda', value: (r) => r.mon_desc },
             { header: 'Gravada 10%', value: (r) => r.doc_grav_10_loc },
             { header: 'Gravada 5%', value: (r) => r.doc_grav_5_loc },
@@ -78,6 +116,64 @@ export default function FacturasPage() {
           <PrimaryAddButton label="Nueva factura" shortLabel="Nueva" onClick={() => router.push('/fac/facturas/nuevo')} />
         </div>
       </div>
+
+      {/* Panel de filtros */}
+      {showFilters && (
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold text-gray-700">Filtros avanzados</h3>
+            {activeFilters > 0 && (
+              <button onClick={clearFilters} className="text-xs text-gray-500 hover:text-red-500 flex items-center gap-1">
+                <X size={14} /> Limpiar filtros
+              </button>
+            )}
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">Fecha desde</label>
+              <input type="date" value={fechaDesde} onChange={(e) => { setFechaDesde(e.target.value); setPage(1); }} className={`w-full ${sel}`} />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">Fecha hasta</label>
+              <input type="date" value={fechaHasta} onChange={(e) => { setFechaHasta(e.target.value); setPage(1); }} className={`w-full ${sel}`} />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">Moneda</label>
+              <select value={moneda} onChange={(e) => { setMoneda(e.target.value); setPage(1); }} className={`w-full ${sel}`}>
+                <option value="">Todas</option>
+                {MONEDAS.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
+              </select>
+            </div>
+            <div className="flex items-end">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={soloConSaldo} onChange={(e) => { setSoloConSaldo(e.target.checked); setPage(1); }}
+                  className="h-4 w-4 rounded border-gray-300 text-primary-600" />
+                <span className="text-sm text-gray-700">Solo con saldo</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Resumen de totales */}
+      {summary && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-4">
+          {[
+            { label: 'Gravada 10%', value: summary.totalGrav10 },
+            { label: 'Gravada 5%', value: summary.totalGrav5 },
+            { label: 'Exenta', value: summary.totalExenta },
+            { label: 'IVA 10%', value: summary.totalIva10 },
+            { label: 'IVA 5%', value: summary.totalIva5 },
+            { label: 'Total saldo', value: summary.totalSaldo },
+          ].map((item) => (
+            <div key={item.label} className="bg-white rounded-xl border border-gray-200 shadow-sm p-3">
+              <p className="text-xs font-medium text-gray-500 truncate">{item.label}</p>
+              <p className="text-sm font-semibold text-gray-800 tabular-nums mt-0.5">{fmt(item.value)}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
         <div className="p-4 border-b border-gray-100">
           <SearchField value={search} onChange={setSearch} placeholder="Buscar por cliente, nro. o timbrado..." />

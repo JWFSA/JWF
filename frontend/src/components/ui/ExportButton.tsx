@@ -31,7 +31,13 @@ export default function ExportButton({ fetchData, columns, filename, format = 'x
       if (!rows.length) { alert('No hay datos para exportar'); return; }
 
       const headers = columns.map((c) => c.header);
-      const data = rows.map((row) => columns.map((c) => c.value(row) ?? ''));
+      const cleanNum = (v: unknown) => {
+        if (v == null || v === '') return '';
+        const n = Number(v);
+        if (!isFinite(n)) return v;
+        return Number.isInteger(n) ? n : parseFloat(n.toFixed(4).replace(/\.?0+$/, ''));
+      };
+      const data = rows.map((row) => columns.map((c) => cleanNum(c.value(row))));
 
       const ws = XLSX.utils.aoa_to_sheet([headers, ...data]);
 

@@ -1,15 +1,20 @@
 const svc = require('../services/facturaService');
 
+const parseListParams = (query) => ({
+  all:          query.all === 'true',
+  page:         Math.max(1, parseInt(query.page) || 1),
+  limit:        Math.max(1, Math.min(1000, parseInt(query.limit) || 20)),
+  search:       query.search    || '',
+  sortField:    query.sortField || '',
+  sortDir:      query.sortDir === 'desc' ? 'desc' : 'asc',
+  fechaDesde:   query.fechaDesde || '',
+  fechaHasta:   query.fechaHasta || '',
+  moneda:       query.moneda     || '',
+  soloConSaldo: query.soloConSaldo === 'true',
+});
+
 const getAll  = async (req, res, next) => {
-  try {
-    const all      = req.query.all === 'true';
-    const page     = parseInt(req.query.page)  || 1;
-    const limit    = parseInt(req.query.limit) || 20;
-    const search   = req.query.search   || '';
-    const sortField = req.query.sortField || '';
-    const sortDir   = req.query.sortDir   || 'desc';
-    res.json(await svc.getAll({ page, limit, search, all, sortField, sortDir }));
-  } catch (e) { next(e); }
+  try { res.json(await svc.getAll(parseListParams(req.query))); } catch (e) { next(e); }
 };
 
 const getById = async (req, res, next) => {

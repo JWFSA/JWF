@@ -27,37 +27,57 @@ const BASE_SELECT = `
   WHERE d."DOC_TIPO_MOV" = 10
 `;
 
-const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc',
+  fechaDesde = '', fechaHasta = '', moneda = '', soloConSaldo = false } = {}) => {
   page  = Math.max(1, page);
   limit = Math.max(1, Math.min(1000, limit));
-  const searchWhere = search
-    ? `AND (COALESCE(c."CLI_NOM", d."DOC_CLI_NOM") ILIKE $1 OR CAST(d."DOC_NRO_DOC" AS TEXT) ILIKE $1 OR d."DOC_NRO_TIMBRADO" ILIKE $1)`
-    : '';
-  const params = search ? [`%${search}%`] : [];
-  const countRes = await pool.query(
-    `SELECT COUNT(*) FROM fin_documento d
+
+  const params = [];
+  let filters = '';
+  if (search) { params.push(`%${search}%`); filters += ` AND (COALESCE(c."CLI_NOM", d."DOC_CLI_NOM") ILIKE $${params.length} OR CAST(d."DOC_NRO_DOC" AS TEXT) ILIKE $${params.length} OR d."DOC_NRO_TIMBRADO" ILIKE $${params.length})`; }
+  if (fechaDesde) { params.push(fechaDesde); filters += ` AND d."DOC_FEC_DOC" >= $${params.length}`; }
+  if (fechaHasta) { params.push(fechaHasta); filters += ` AND d."DOC_FEC_DOC" <= $${params.length}`; }
+  if (moneda) { params.push(Number(moneda)); filters += ` AND d."DOC_MON" = $${params.length}`; }
+  if (soloConSaldo) { filters += ` AND d."DOC_SALDO_LOC" > 0`; }
+
+  const summaryRes = await pool.query(
+    `SELECT COUNT(*) AS count,
+            COALESCE(SUM(d."DOC_GRAV_10_LOC"), 0)    AS sum_grav_10,
+            COALESCE(SUM(d."DOC_GRAV_5_LOC"), 0)     AS sum_grav_5,
+            COALESCE(SUM(d."DOC_NETO_EXEN_LOC"), 0)  AS sum_exenta,
+            COALESCE(SUM(d."DOC_IVA_10_LOC"), 0)     AS sum_iva_10,
+            COALESCE(SUM(d."DOC_IVA_5_LOC"), 0)      AS sum_iva_5,
+            COALESCE(SUM(d."DOC_SALDO_LOC"), 0)       AS sum_saldo
+     FROM fin_documento d
      LEFT JOIN fin_cliente c ON c."CLI_CODIGO" = d."DOC_CLI"
-     WHERE d."DOC_TIPO_MOV" = 10 ${searchWhere}`,
+     WHERE d."DOC_TIPO_MOV" = 10 ${filters}`,
     params
   );
-  const total = parseInt(countRes.rows[0].count);
+  const { count, sum_grav_10, sum_grav_5, sum_exenta, sum_iva_10, sum_iva_5, sum_saldo } = summaryRes.rows[0];
+  const total = parseInt(count);
+  const summary = {
+    totalGrav10: Number(sum_grav_10), totalGrav5: Number(sum_grav_5),
+    totalExenta: Number(sum_exenta), totalIva10: Number(sum_iva_10),
+    totalIva5: Number(sum_iva_5), totalSaldo: Number(sum_saldo),
+  };
+
   const allowedSort = {
     clave: 'd."DOC_CLAVE"', nro: 'd."DOC_NRO_DOC"', fecha: 'd."DOC_FEC_DOC"',
     cliente: 'COALESCE(c."CLI_NOM", d."DOC_CLI_NOM")', total: 'd."DOC_SALDO_LOC"',
   };
   const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
-  const orderBy = allowedSort[sortField] ? `${allowedSort[sortField]} ${dir}` : 'd."DOC_CLAVE" DESC';
-  const select = `${BASE_SELECT} ${searchWhere} ORDER BY ${orderBy}`;
+  const orderBy = Object.hasOwn(allowedSort, sortField) ? `${allowedSort[sortField]} ${dir}` : 'd."DOC_CLAVE" DESC';
+  const select = `${BASE_SELECT} ${filters} ORDER BY ${orderBy}`;
   if (all) {
     const { rows } = await pool.query(select, params);
-    return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
+    return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 }, summary };
   }
   const offset = (page - 1) * limit;
   const { rows } = await pool.query(
     `${select} LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
     [...params, limit, offset]
   );
-  return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+  return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) }, summary };
 };
 
 const getById = async (clave) => {
