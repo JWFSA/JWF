@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { getFacturas, deleteFactura } from '@/services/fac';
+import { getMonedas } from '@/services/gen';
 import { formatDate } from '@/lib/utils';
 import type { Factura } from '@/types/fac';
+import type { Moneda } from '@/types/gen';
 import DataTable from '@/components/ui/DataTable';
 import PrimaryAddButton from '@/components/ui/PrimaryAddButton';
 import SearchField from '@/components/ui/SearchField';
@@ -25,11 +27,6 @@ const COLUMNS = [
     cell: (r: Factura) => fmt(r.doc_saldo_loc),
     cellClassName: 'hidden md:table-cell text-xs text-right font-mono text-gray-700' },
   { key: 'obs',    header: 'Obs.',                       headerClassName: 'hidden lg:table-cell',    cell: (r: Factura) => r.doc_obs ?? '—',                  cellClassName: 'hidden lg:table-cell text-xs text-gray-400 truncate max-w-[160px]' },
-];
-
-const MONEDAS = [
-  { value: '1', label: 'Guaraníes' },
-  { value: '2', label: 'Dólares americanos' },
 ];
 
 export default function FacturasPage() {
@@ -57,6 +54,12 @@ export default function FacturasPage() {
     const t = setTimeout(() => { setDebouncedSearch(search); setPage(1); }, 400);
     return () => clearTimeout(t);
   }, [search]);
+
+  const { data: monedasData } = useQuery({
+    queryKey: ['monedas', { all: true }],
+    queryFn: () => getMonedas(),
+  });
+  const monedas_list = monedasData ?? [];
 
   const queryParams: any = { page, limit, search: debouncedSearch, sortField, sortDir };
   if (fechaDesde) queryParams.fechaDesde = fechaDesde;
@@ -141,7 +144,7 @@ export default function FacturasPage() {
               <label className="block text-xs font-medium text-gray-500 mb-1">Moneda</label>
               <select value={moneda} onChange={(e) => { setMoneda(e.target.value); setPage(1); }} className={`w-full ${sel}`}>
                 <option value="">Todas</option>
-                {MONEDAS.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
+                {monedas_list.map((m: Moneda) => <option key={m.mon_codigo} value={m.mon_codigo}>{m.mon_desc}</option>)}
               </select>
             </div>
             <div className="flex items-end">
