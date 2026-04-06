@@ -164,6 +164,7 @@ export interface Factura {
   doc_iva_10_loc: number;
   doc_iva_5_loc: number;
   doc_saldo_loc: number;
+  doc_tipo_mov: number;
   items?: FacturaDet[];
 }
 

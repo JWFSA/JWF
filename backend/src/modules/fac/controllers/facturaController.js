@@ -11,6 +11,8 @@ const parseListParams = (query) => ({
   fechaHasta:   query.fechaHasta || '',
   moneda:       query.moneda     || '',
   soloConSaldo: query.soloConSaldo === 'true',
+  tipoMov:      query.tipoMov    || '',
+  nroDoc:       query.nroDoc     || '',
 });
 
 const getAll  = async (req, res, next) => {

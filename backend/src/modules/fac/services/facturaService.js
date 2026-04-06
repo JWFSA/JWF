@@ -20,15 +20,16 @@ const BASE_SELECT = `
     d."DOC_NETO_EXEN_LOC" AS doc_neto_exen_loc,
     d."DOC_IVA_10_LOC" AS doc_iva_10_loc,
     d."DOC_IVA_5_LOC" AS doc_iva_5_loc,
-    d."DOC_SALDO_LOC" AS doc_saldo_loc
+    d."DOC_SALDO_LOC" AS doc_saldo_loc,
+    d."DOC_TIPO_MOV" AS doc_tipo_mov
   FROM fin_documento d
   LEFT JOIN fin_cliente c ON c."CLI_CODIGO" = d."DOC_CLI"
   LEFT JOIN gen_moneda m ON m."MON_CODIGO" = d."DOC_MON"
-  WHERE d."DOC_TIPO_MOV" = 10
+  WHERE d."DOC_TIPO_MOV" IN (9, 10, 16)
 `;
 
 const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc',
-  fechaDesde = '', fechaHasta = '', moneda = '', soloConSaldo = false } = {}) => {
+  fechaDesde = '', fechaHasta = '', moneda = '', soloConSaldo = false, tipoMov = '', nroDoc = '' } = {}) => {
   page  = Math.max(1, page);
   limit = Math.max(1, Math.min(1000, limit));
 
@@ -39,18 +40,20 @@ const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortFiel
   if (fechaHasta) { params.push(fechaHasta); filters += ` AND d."DOC_FEC_DOC" <= $${params.length}`; }
   if (moneda) { params.push(Number(moneda)); filters += ` AND d."DOC_MON" = $${params.length}`; }
   if (soloConSaldo) { filters += ` AND d."DOC_SALDO_LOC" > 0`; }
+  if (tipoMov) { params.push(Number(tipoMov)); filters += ` AND d."DOC_TIPO_MOV" = $${params.length}`; }
+  if (nroDoc) { params.push(`%${nroDoc}%`); filters += ` AND CAST(d."DOC_NRO_DOC" AS TEXT) ILIKE $${params.length}`; }
 
   const summaryRes = await pool.query(
     `SELECT COUNT(*) AS count,
-            COALESCE(SUM(d."DOC_GRAV_10_LOC"), 0)    AS sum_grav_10,
-            COALESCE(SUM(d."DOC_GRAV_5_LOC"), 0)     AS sum_grav_5,
-            COALESCE(SUM(d."DOC_NETO_EXEN_LOC"), 0)  AS sum_exenta,
-            COALESCE(SUM(d."DOC_IVA_10_LOC"), 0)     AS sum_iva_10,
-            COALESCE(SUM(d."DOC_IVA_5_LOC"), 0)      AS sum_iva_5,
-            COALESCE(SUM(d."DOC_SALDO_LOC"), 0)       AS sum_saldo
+            COALESCE(SUM(CASE WHEN d."DOC_TIPO_MOV" = 16 THEN -d."DOC_GRAV_10_LOC" ELSE d."DOC_GRAV_10_LOC" END), 0)    AS sum_grav_10,
+            COALESCE(SUM(CASE WHEN d."DOC_TIPO_MOV" = 16 THEN -d."DOC_GRAV_5_LOC" ELSE d."DOC_GRAV_5_LOC" END), 0)     AS sum_grav_5,
+            COALESCE(SUM(CASE WHEN d."DOC_TIPO_MOV" = 16 THEN -d."DOC_NETO_EXEN_LOC" ELSE d."DOC_NETO_EXEN_LOC" END), 0)  AS sum_exenta,
+            COALESCE(SUM(CASE WHEN d."DOC_TIPO_MOV" = 16 THEN -d."DOC_IVA_10_LOC" ELSE d."DOC_IVA_10_LOC" END), 0)     AS sum_iva_10,
+            COALESCE(SUM(CASE WHEN d."DOC_TIPO_MOV" = 16 THEN -d."DOC_IVA_5_LOC" ELSE d."DOC_IVA_5_LOC" END), 0)      AS sum_iva_5,
+            COALESCE(SUM(CASE WHEN d."DOC_TIPO_MOV" = 16 THEN -d."DOC_SALDO_LOC" ELSE d."DOC_SALDO_LOC" END), 0)       AS sum_saldo
      FROM fin_documento d
      LEFT JOIN fin_cliente c ON c."CLI_CODIGO" = d."DOC_CLI"
-     WHERE d."DOC_TIPO_MOV" = 10 ${filters}`,
+     WHERE d."DOC_TIPO_MOV" IN (9, 10, 16) ${filters}`,
     params
   );
   const { count, sum_grav_10, sum_grav_5, sum_exenta, sum_iva_10, sum_iva_5, sum_saldo } = summaryRes.rows[0];
@@ -63,7 +66,7 @@ const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortFiel
 
   const allowedSort = {
     clave: 'd."DOC_CLAVE"', nro: 'd."DOC_NRO_DOC"', fecha: 'd."DOC_FEC_DOC"',
-    cliente: 'COALESCE(c."CLI_NOM", d."DOC_CLI_NOM")', total: 'd."DOC_SALDO_LOC"',
+    tipo: 'd."DOC_TIPO_MOV"', cliente: 'COALESCE(c."CLI_NOM", d."DOC_CLI_NOM")', total: 'd."DOC_SALDO_LOC"',
   };
   const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
   const orderBy = Object.hasOwn(allowedSort, sortField) ? `${allowedSort[sortField]} ${dir}` : 'd."DOC_CLAVE" DESC';
@@ -81,7 +84,7 @@ const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortFiel
 };
 
 const getById = async (clave) => {
-  const { rows } = await pool.query(`${BASE_SELECT} AND d."DOC_CLAVE" = $1`, [clave]);
+  const { rows } = await pool.query(`${BASE_SELECT} AND d."DOC_CLAVE" = $1`, [Number(clave)]);
   if (!rows.length) throw { status: 404, message: 'Factura no encontrada' };
   const factura = rows[0];
   const { rows: items } = await pool.query(
@@ -184,7 +187,7 @@ const update = async (clave, data) => {
       "DOC_GRAV_10_LOC" = $10, "DOC_GRAV_5_LOC" = $11, "DOC_NETO_EXEN_LOC" = $12,
       "DOC_IVA_10_LOC" = $13, "DOC_IVA_5_LOC" = $14, "DOC_SALDO_LOC" = $15,
       "DOC_NETO_GRAV_LOC" = $16, "DOC_IVA_LOC" = $17
-    WHERE "DOC_CLAVE" = $18 AND "DOC_TIPO_MOV" = 10`,
+    WHERE "DOC_CLAVE" = $18 AND "DOC_TIPO_MOV" IN (9, 10, 16)`,
     [
       doc_fec_doc,
       doc_cli || null, doc_cli_nom || null, doc_cli_ruc || null,
@@ -226,7 +229,7 @@ const update = async (clave, data) => {
 
 const remove = async (clave) => {
   await pool.query('DELETE FROM fac_documento_det WHERE "DET_CLAVE_DOC" = $1', [clave]);
-  await pool.query('DELETE FROM fin_documento WHERE "DOC_CLAVE" = $1 AND "DOC_TIPO_MOV" = 10', [clave]);
+  await pool.query('DELETE FROM fin_documento WHERE "DOC_CLAVE" = $1 AND "DOC_TIPO_MOV" IN (9, 10, 16)', [clave]);
 };
 
 module.exports = { getAll, getById, create, update, remove };
