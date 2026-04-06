@@ -62,6 +62,15 @@ router.get('/pedidos/:id',    verifyToken, pedidoController.getById);
 router.post('/pedidos',       verifyToken, pedidoController.create);
 router.put('/pedidos/:id',    verifyToken, pedidoController.update);
 router.delete('/pedidos/:id', verifyToken, pedidoController.remove);
+router.get('/pedidos/:id/para-facturar', verifyToken, pedidoController.getParaFacturar);
+
+// Presupuestos (misma tabla, tipo='P')
+router.get('/presupuestos', verifyToken, (req, res, next) => { req.query.tipo = 'P'; pedidoController.getAll(req, res, next); });
+router.get('/presupuestos/:id', verifyToken, pedidoController.getById);
+router.post('/presupuestos', verifyToken, (req, res, next) => { req.body.ped_tipo = 'P'; pedidoController.create(req, res, next); });
+router.put('/presupuestos/:id', verifyToken, pedidoController.update);
+router.delete('/presupuestos/:id', verifyToken, pedidoController.remove);
+router.post('/presupuestos/:id/convertir', verifyToken, pedidoController.convertir);
 
 const facturaController  = require('../controllers/facturaController');
 

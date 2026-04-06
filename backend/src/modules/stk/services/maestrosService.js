@@ -344,6 +344,61 @@ const deleteChofer = async (codigo) => {
   await pool.query('DELETE FROM stk_chofer WHERE "CHOF_CODIGO" = $1', [codigo]);
 };
 
+// ─── INSERCIONES ─────────────────────────────────────────────────────────────
+
+const getInserciones = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  const params = search ? [`%${search}%`] : [];
+  const where  = search ? `WHERE "INS_DESC" ILIKE $1` : '';
+  const countRes = await pool.query(`SELECT COUNT(*) FROM stk_inserciones ${where}`, params);
+  const total = parseInt(countRes.rows[0].count);
+  const allowedSort = { cod: '"INS_CODIGO"', desc: '"INS_DESC"', seg: '"INS_SEG"', ins: '"INS_INSERCIONES"', total: '"INS_TOTAL"' };
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = allowedSort[sortField] ? `${allowedSort[sortField]} ${dir}` : '"INS_CODIGO" ASC';
+  const select = `SELECT "INS_CODIGO" AS ins_codigo, "INS_DESC" AS ins_desc, "INS_SEG" AS ins_seg, "INS_INSERCIONES" AS ins_inserciones, "INS_TOTAL" AS ins_total FROM stk_inserciones ${where} ORDER BY ${orderBy}`;
+  if (all) {
+    const { rows } = await pool.query(select, params);
+    return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
+  }
+  const offset = (page - 1) * limit;
+  const { rows } = await pool.query(`${select} LIMIT $${params.length + 1} OFFSET $${params.length + 2}`, [...params, limit, offset]);
+  return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+};
+
+const createInsercion = async (data) => {
+  const { rows: [{ next }] } = await pool.query('SELECT COALESCE(MAX("INS_CODIGO"), 0) + 1 AS next FROM stk_inserciones');
+  const totalSeg = (Number(data.ins_seg) || 0) * (Number(data.ins_inserciones) || 0);
+  await pool.query(
+    'INSERT INTO stk_inserciones ("INS_CODIGO","INS_DESC","INS_SEG","INS_INSERCIONES","INS_TOTAL") VALUES ($1,$2,$3,$4,$5)',
+    [next, data.ins_desc, data.ins_seg || 0, data.ins_inserciones || 0, totalSeg]
+  );
+  return { ins_codigo: next, ins_desc: data.ins_desc, ins_seg: data.ins_seg, ins_inserciones: data.ins_inserciones, ins_total: totalSeg };
+};
+
+const updateInsercion = async (codigo, data) => {
+  const fields = []; const params = [];
+  if (data.ins_desc !== undefined)         { params.push(data.ins_desc);         fields.push(`"INS_DESC" = $${params.length}`); }
+  if (data.ins_seg !== undefined)          { params.push(data.ins_seg);          fields.push(`"INS_SEG" = $${params.length}`); }
+  if (data.ins_inserciones !== undefined)  { params.push(data.ins_inserciones);  fields.push(`"INS_INSERCIONES" = $${params.length}`); }
+  // Recalcular total
+  const seg = data.ins_seg !== undefined ? Number(data.ins_seg) : null;
+  const ins = data.ins_inserciones !== undefined ? Number(data.ins_inserciones) : null;
+  if (seg != null || ins != null) {
+    // Obtener valores actuales si faltan
+    const { rows: [curr] } = await pool.query('SELECT "INS_SEG","INS_INSERCIONES" FROM stk_inserciones WHERE "INS_CODIGO" = $1', [codigo]);
+    const finalSeg = seg ?? Number(curr.INS_SEG);
+    const finalIns = ins ?? Number(curr.INS_INSERCIONES);
+    params.push(finalSeg * finalIns);
+    fields.push(`"INS_TOTAL" = $${params.length}`);
+  }
+  if (!fields.length) throw { status: 400, message: 'Nada que actualizar' };
+  params.push(codigo);
+  await pool.query(`UPDATE stk_inserciones SET ${fields.join(', ')} WHERE "INS_CODIGO" = $${params.length}`, params);
+};
+
+const deleteInsercion = async (codigo) => {
+  await pool.query('DELETE FROM stk_inserciones WHERE "INS_CODIGO" = $1', [codigo]);
+};
+
 module.exports = {
   getLineas, getLinea, createLinea, updateLinea, deleteLinea,
   getMarcas, getMarca, createMarca, updateMarca, deleteMarca,
@@ -353,4 +408,5 @@ module.exports = {
   getOperaciones,
   getClasificaciones, createClasificacion, updateClasificacion, deleteClasificacion,
   getChoferes, createChofer, updateChofer, deleteChofer,
+  getInserciones, createInsercion, updateInsercion, deleteInsercion,
 };

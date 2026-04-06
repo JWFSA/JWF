@@ -141,6 +141,22 @@ export interface FacturaDet {
   det_neto_loc: number;     // base imponible (sin IVA)
   det_iva_loc: number;      // monto IVA
   det_cod_iva: number;      // 1=exento, 2=10%, 3=5%
+  det_clave_ped?: number | null;
+  det_nro_item_ped?: number | null;
+}
+
+/** Datos de pedido transformados para pre-llenar el formulario de factura */
+export interface PedidoParaFacturar {
+  ped_clave: number;
+  doc_fec_doc: string;
+  doc_cli: number;
+  cli_nom: string;
+  doc_cli_nom: string;
+  doc_cli_ruc: string | null;
+  doc_cond_vta: number | null;
+  doc_mon: number;
+  doc_obs: string | null;
+  items: FacturaDet[];
 }
 
 export interface Factura {

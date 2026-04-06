@@ -13,7 +13,7 @@ import PrimaryAddButton from '@/components/ui/PrimaryAddButton';
 import SearchField from '@/components/ui/SearchField';
 import TablePagination from '@/components/ui/TablePagination';
 import ExportButton from '@/components/ui/ExportButton';
-import { Filter, X } from 'lucide-react';
+import { Filter, X, Truck } from 'lucide-react';
 
 const fmt = (n: number | null | undefined) =>
   n != null ? Number(n).toLocaleString('es-PY') : '—';
@@ -228,6 +228,16 @@ export default function FacturasPage() {
           sortDir={sortDir}
           onSortChange={handleSortChange}
           columns={COLUMNS}
+          extraActions={(r) => (
+            <button
+              type="button"
+              title="Remitir mercadería"
+              onClick={() => router.push(`/stk/remisiones/nuevo?factura=${r.doc_clave}`)}
+              className="p-1 text-gray-400 hover:text-blue-600 rounded transition"
+            >
+              <Truck size={14} />
+            </button>
+          )}
         />
         {pagination && (
           <TablePagination

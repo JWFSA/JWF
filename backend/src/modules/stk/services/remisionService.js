@@ -90,6 +90,29 @@ const insertItems = async (client, nro, items = []) => {
   }
 };
 
+/** Descuenta stock del depósito origen para cada item de la remisión */
+const updateStock = async (client, dep, items = [], signo = -1) => {
+  for (const it of items) {
+    if (!it.detr_art || !dep) continue;
+    const cant = (parseFloat(it.detr_cant_rem) || 0) * signo;
+    // Intenta actualizar; si no existe la fila, la crea
+    const { rowCount } = await client.query(
+      `UPDATE stk_articulo_deposito
+       SET "ARDE_CANT_ACT" = "ARDE_CANT_ACT" + $1,
+           "ARDE_CANT_SAL" = "ARDE_CANT_SAL" + $2
+       WHERE "ARDE_EMPR" = 1 AND "ARDE_SUC" = 1 AND "ARDE_DEP" = $3 AND "ARDE_ART" = $4`,
+      [cant, signo === -1 ? Math.abs(cant) : 0, dep, it.detr_art]
+    );
+    if (!rowCount) {
+      await client.query(
+        `INSERT INTO stk_articulo_deposito ("ARDE_EMPR","ARDE_SUC","ARDE_DEP","ARDE_ART","ARDE_CANT_ACT","ARDE_CANT_ENT","ARDE_CANT_SAL")
+         VALUES (1, 1, $1, $2, $3, 0, $4)`,
+        [dep, it.detr_art, cant, signo === -1 ? Math.abs(cant) : 0]
+      );
+    }
+  }
+};
+
 const create = async (data) => {
   const client = await pool.connect();
   try {
@@ -102,8 +125,8 @@ const create = async (data) => {
     await client.query(
       `INSERT INTO stk_remision
        ("REM_EMPR","REM_NRO","REM_FEC_EMIS","REM_CLI","REM_CLI_NOM",
-        "REM_DEP","REM_DEP_ORIG","REM_DEP_DEST","REM_OBS","REM_NRO_TIMBRADO","REM_FEC_GRAB")
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+        "REM_DEP","REM_DEP_ORIG","REM_DEP_DEST","REM_OBS","REM_NRO_TIMBRADO","REM_FEC_GRAB","REM_CLAVE_DOC")
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
       [
         1, nro,
         data.rem_fec_emis || new Date().toISOString().split('T')[0],
@@ -115,9 +138,15 @@ const create = async (data) => {
         data.rem_obs || null,
         data.rem_nro_timbrado || null,
         new Date().toISOString().split('T')[0],
+        data.rem_clave_doc || null,
       ]
     );
-    await insertItems(client, nro, data.items || []);
+    const items = data.items || [];
+    await insertItems(client, nro, items);
+    // Descontar stock del depósito origen
+    if (data.rem_dep) {
+      await updateStock(client, data.rem_dep, items, -1);
+    }
     await client.query('COMMIT');
     return getById(nro);
   } catch (e) {
@@ -181,4 +210,38 @@ const remove = async (nro) => {
   }
 };
 
-module.exports = { getAll, getById, create, update, remove };
+const getFromFactura = async (docClave) => {
+  const facPool = pool;
+  const { rows } = await facPool.query(
+    `SELECT d."DOC_CLAVE" AS doc_clave, d."DOC_CLI" AS doc_cli,
+            COALESCE(c."CLI_NOM", d."DOC_CLI_NOM") AS cli_nom,
+            d."DOC_CLI_NOM" AS doc_cli_nom, d."DOC_MON" AS doc_mon
+     FROM fin_documento d
+     LEFT JOIN fin_cliente c ON c."CLI_CODIGO" = d."DOC_CLI"
+     WHERE d."DOC_CLAVE" = $1`,
+    [docClave]
+  );
+  if (!rows.length) throw { status: 404, message: 'Factura no encontrada' };
+  const fac = rows[0];
+
+  const { rows: items } = await facPool.query(
+    `SELECT dd."DET_ART" AS detr_art, dd."DET_ART_DESC" AS art_desc,
+            a."ART_UNID_MED" AS art_unid_med, dd."DET_CANT" AS detr_cant_rem
+     FROM fac_documento_det dd
+     LEFT JOIN stk_articulo a ON a."ART_CODIGO" = dd."DET_ART"
+     WHERE dd."DET_CLAVE_DOC" = $1
+     ORDER BY dd."DET_NRO_ITEM"`,
+    [docClave]
+  );
+
+  return {
+    rem_clave_doc: fac.doc_clave,
+    rem_fec_emis: new Date().toISOString().split('T')[0],
+    rem_cli: fac.doc_cli,
+    cli_nom: fac.cli_nom,
+    rem_cli_nom: fac.doc_cli_nom,
+    items: items.filter((it) => it.detr_art != null),
+  };
+};
+
+module.exports = { getAll, getById, create, update, remove, getFromFactura };

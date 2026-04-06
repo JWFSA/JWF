@@ -1,5 +1,5 @@
 import api from '@/lib/api';
-import type { Articulo, Deposito, Linea, Marca, Rubro, UnidadMedida, Grupo, Operacion, Movimiento, StockActual, Remision, Clasificacion, Chofer, Paginated } from '@/types/stk';
+import type { Articulo, Deposito, Linea, Marca, Rubro, UnidadMedida, Grupo, Operacion, Movimiento, StockActual, Remision, FacturaParaRemitir, Clasificacion, Chofer, OcupacionEspacio, Insercion, Cotizacion, Paginated } from '@/types/stk';
 import type { ListParams } from '@/services/gen';
 
 // Líneas
@@ -93,6 +93,9 @@ export const updateRemision = (nro: number, data: Partial<Remision>) =>
 export const deleteRemision = (nro: number) =>
   api.delete(`/stk/remisiones/${nro}`);
 
+export const getFacturaParaRemitir = (docClave: number) =>
+  api.get<FacturaParaRemitir>(`/stk/remisiones/from-factura/${docClave}`).then((r) => r.data);
+
 // Clasificaciones
 export const getClasificaciones     = (params?: ListParams) => api.get<Paginated<Clasificacion>>('/stk/maestros/clasificaciones', { params }).then((r) => r.data);
 export const createClasificacion    = (data: Partial<Clasificacion>) => api.post<Clasificacion>('/stk/maestros/clasificaciones', data).then((r) => r.data);
@@ -104,3 +107,19 @@ export const getChoferes     = (params?: ListParams) => api.get<Paginated<Chofer
 export const createChofer    = (data: Partial<Chofer>) => api.post<Chofer>('/stk/maestros/choferes', data).then((r) => r.data);
 export const updateChofer    = (id: number, data: Partial<Chofer>) => api.put(`/stk/maestros/choferes/${id}`, data).then((r) => r.data);
 export const deleteChofer    = (id: number) => api.delete(`/stk/maestros/choferes/${id}`);
+
+// Ocupaciones de espacios
+export const getOcupaciones    = (params?: ListParams) => api.get<Paginated<OcupacionEspacio>>('/stk/ocupaciones', { params }).then((r) => r.data);
+export const getUbicaciones    = () => api.get<string[]>('/stk/ocupaciones/ubicaciones').then((r) => r.data);
+
+// Inserciones
+export const getInserciones    = (params?: ListParams) => api.get<Paginated<Insercion>>('/stk/maestros/inserciones', { params }).then((r) => r.data);
+export const createInsercion   = (data: Partial<Insercion>) => api.post<Insercion>('/stk/maestros/inserciones', data).then((r) => r.data);
+export const updateInsercion   = (id: number, data: Partial<Insercion>) => api.put(`/stk/maestros/inserciones/${id}`, data).then((r) => r.data);
+export const deleteInsercion   = (id: number) => api.delete(`/stk/maestros/inserciones/${id}`);
+
+// Cotizaciones
+export const getCotizaciones   = (params?: ListParams) => api.get<Paginated<Cotizacion>>('/stk/cotizaciones', { params }).then((r) => r.data);
+export const createCotizacion  = (data: Partial<Cotizacion>) => api.post<Cotizacion>('/stk/cotizaciones', data).then((r) => r.data);
+export const updateCotizacion  = (fec: string, mon: number, data: Partial<Cotizacion>) => api.put<Cotizacion>(`/stk/cotizaciones/${fec}/${mon}`, data).then((r) => r.data);
+export const deleteCotizacion  = (fec: string, mon: number) => api.delete(`/stk/cotizaciones/${fec}/${mon}`);

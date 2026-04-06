@@ -6,6 +6,8 @@ const articuloController    = require('../controllers/articuloController');
 const movimientoController  = require('../controllers/movimientoController');
 const stockActualController = require('../controllers/stockActualController');
 const remisionController    = require('../controllers/remisionController');
+const cotizacionController  = require('../controllers/cotizacionController');
+const ocupacionController   = require('../controllers/ocupacionController');
 
 // Líneas
 router.get('/maestros/lineas',          verifyToken, maestrosController.getLineas);
@@ -68,6 +70,7 @@ router.get('/remisiones/:nro',  verifyToken, remisionController.getById);
 router.post('/remisiones',      verifyToken, remisionController.create);
 router.put('/remisiones/:nro',  verifyToken, remisionController.update);
 router.delete('/remisiones/:nro', verifyToken, remisionController.remove);
+router.get('/remisiones/from-factura/:id', verifyToken, remisionController.getFromFactura);
 
 // Clasificaciones
 router.get('/maestros/clasificaciones',         verifyToken, maestrosController.getClasificaciones);
@@ -80,5 +83,21 @@ router.get('/maestros/choferes',         verifyToken, maestrosController.getChof
 router.post('/maestros/choferes',        verifyToken, maestrosController.createChofer);
 router.put('/maestros/choferes/:id',     verifyToken, maestrosController.updateChofer);
 router.delete('/maestros/choferes/:id',  verifyToken, maestrosController.deleteChofer);
+
+// Ocupaciones de espacios
+router.get('/ocupaciones',              verifyToken, ocupacionController.getAll);
+router.get('/ocupaciones/ubicaciones',  verifyToken, ocupacionController.getUbicaciones);
+
+// Inserciones
+router.get('/maestros/inserciones',         verifyToken, maestrosController.getInserciones);
+router.post('/maestros/inserciones',        verifyToken, maestrosController.createInsercion);
+router.put('/maestros/inserciones/:id',     verifyToken, maestrosController.updateInsercion);
+router.delete('/maestros/inserciones/:id',  verifyToken, maestrosController.deleteInsercion);
+
+// Cotizaciones
+router.get('/cotizaciones',                verifyToken, cotizacionController.getAll);
+router.post('/cotizaciones',               verifyToken, cotizacionController.create);
+router.put('/cotizaciones/:fec/:mon',      verifyToken, cotizacionController.update);
+router.delete('/cotizaciones/:fec/:mon',   verifyToken, cotizacionController.remove);
 
 module.exports = router;

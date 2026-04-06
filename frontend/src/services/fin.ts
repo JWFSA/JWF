@@ -1,5 +1,5 @@
 import api from '@/lib/api';
-import type { Banco, FormaPago, Ramo, TipoProveedor, Proveedor, Personeria, ClaseDoc, CuentaBancaria, OrdenPago, ConceptoFin, DocumentoFin, Cheque, ChequeEmit, PeriodoFin, Cobrador, Paginated } from '@/types/fin';
+import type { Banco, FormaPago, Ramo, TipoProveedor, Proveedor, Personeria, ClaseDoc, CuentaBancaria, OrdenPago, ConceptoFin, DocumentoFin, Cheque, ChequeEmit, PeriodoFin, Cobrador, FacturaPendiente, Cuota, Cobro, CobroResult, Paginated } from '@/types/fin';
 import type { ListParams } from '@/services/gen';
 
 // Bancos
@@ -88,3 +88,10 @@ export const getCobradores    = (params?: ListParams) => api.get<Paginated<Cobra
 export const createCobrador   = (data: Partial<Cobrador>) => api.post<Cobrador>('/fin/maestros/cobradores', data).then((r) => r.data);
 export const updateCobrador   = (id: number, data: Partial<Cobrador>) => api.put(`/fin/maestros/cobradores/${id}`, data).then((r) => r.data);
 export const deleteCobrador   = (id: number) => api.delete(`/fin/maestros/cobradores/${id}`);
+
+// Cobranzas
+export const getFacturasPendientes = (params?: ListParams) => api.get<Paginated<FacturaPendiente>>('/fin/cobranzas/pendientes', { params }).then((r) => r.data);
+export const getCuotasFactura      = (docClave: number) => api.get<Cuota[]>(`/fin/cobranzas/cuotas/${docClave}`).then((r) => r.data);
+export const getCobros             = (params?: ListParams) => api.get<Paginated<Cobro>>('/fin/cobranzas/cobros', { params }).then((r) => r.data);
+export const registrarCobro        = (data: { doc_clave: number; importe: number; fec_pago?: string; fec_vto?: string }) =>
+  api.post<CobroResult>('/fin/cobranzas/cobrar', data).then((r) => r.data);

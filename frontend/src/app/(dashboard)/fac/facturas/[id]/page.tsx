@@ -6,6 +6,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getFactura, updateFactura } from '@/services/fac';
 import type { Factura } from '@/types/fac';
 import FacturaForm from '@/components/fac/FacturaForm';
+import { Truck } from 'lucide-react';
 
 export default function EditarFacturaPage() {
   const { id } = useParams<{ id: string }>();
@@ -33,9 +34,19 @@ export default function EditarFacturaPage() {
 
   return (
     <div className="p-4 sm:p-6">
-      <div className="mb-6">
-        <h1 className="text-xl font-semibold text-gray-800">Editar factura #{factura.doc_nro_doc}</h1>
-        <p className="text-sm text-gray-500 mt-0.5">Modifique los datos de la factura</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+        <div>
+          <h1 className="text-xl font-semibold text-gray-800">Editar factura #{factura.doc_nro_doc}</h1>
+          <p className="text-sm text-gray-500 mt-0.5">Modifique los datos de la factura</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => router.push(`/stk/remisiones/nuevo?factura=${factura.doc_clave}`)}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition"
+        >
+          <Truck size={16} />
+          Remitir
+        </button>
       </div>
       <FacturaForm
         initial={factura}

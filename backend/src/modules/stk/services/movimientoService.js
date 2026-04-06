@@ -105,6 +105,31 @@ const insertItems = async (client, clave, items = []) => {
   }
 };
 
+/** Actualiza stock en stk_articulo_deposito según entrada o salida */
+const updateStock = async (client, dep, items = [], entSal) => {
+  if (!dep) return;
+  const signo = entSal === 'E' ? 1 : -1;
+  const colAcum = entSal === 'E' ? '"ARDE_CANT_ENT"' : '"ARDE_CANT_SAL"';
+  for (const it of items) {
+    if (!it.deta_art) continue;
+    const cant = parseFloat(it.deta_cant) || 0;
+    const { rowCount } = await client.query(
+      `UPDATE stk_articulo_deposito
+       SET "ARDE_CANT_ACT" = "ARDE_CANT_ACT" + $1,
+           ${colAcum} = ${colAcum} + $2
+       WHERE "ARDE_EMPR" = 1 AND "ARDE_SUC" = 1 AND "ARDE_DEP" = $3 AND "ARDE_ART" = $4`,
+      [cant * signo, cant, dep, it.deta_art]
+    );
+    if (!rowCount) {
+      await client.query(
+        `INSERT INTO stk_articulo_deposito ("ARDE_EMPR","ARDE_SUC","ARDE_DEP","ARDE_ART","ARDE_CANT_ACT","ARDE_CANT_ENT","ARDE_CANT_SAL")
+         VALUES (1, 1, $1, $2, $3, $4, $5)`,
+        [dep, it.deta_art, cant * signo, entSal === 'E' ? cant : 0, entSal === 'S' ? cant : 0]
+      );
+    }
+  }
+};
+
 const create = async (data) => {
   const client = await pool.connect();
   try {
@@ -134,7 +159,20 @@ const create = async (data) => {
         'N',
       ]
     );
-    await insertItems(client, clave, data.items || []);
+    const items = data.items || [];
+    await insertItems(client, clave, items);
+
+    // Determinar si es entrada o salida y actualizar stock
+    if (data.docu_tipo_mov) {
+      const { rows: opRows } = await client.query(
+        'SELECT "OPER_ENT_SAL" FROM stk_operacion WHERE "OPER_CODIGO" = $1',
+        [data.docu_tipo_mov]
+      );
+      if (opRows.length && opRows[0].OPER_ENT_SAL) {
+        await updateStock(client, data.docu_dep_orig, items, opRows[0].OPER_ENT_SAL);
+      }
+    }
+
     await client.query('COMMIT');
     return getById(clave);
   } catch (e) {

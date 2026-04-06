@@ -42,6 +42,12 @@ const createChofer    = async (req, res, next) => { try { if (!req.body.chof_nom
 const updateChofer    = async (req, res, next) => { try { const id = Number(req.params.id); if (!Number.isFinite(id)) return res.status(400).json({ message: 'ID inválido' }); await s.updateChofer(id, req.body); res.json({ ok: true }); } catch (e) { next(e); } };
 const deleteChofer    = async (req, res, next) => { try { const id = Number(req.params.id); if (!Number.isFinite(id)) return res.status(400).json({ message: 'ID inválido' }); await s.deleteChofer(id); res.status(204).end(); } catch (e) { next(e); } };
 
+// Inserciones
+const getInserciones     = async (req, res, next) => { try { res.json(await s.getInserciones(pq(req))); } catch (e) { next(e); } };
+const createInsercion    = async (req, res, next) => { try { if (!req.body.ins_desc) return res.status(400).json({ message: 'La descripción es requerida' }); res.status(201).json(await s.createInsercion(req.body)); } catch (e) { next(e); } };
+const updateInsercion    = async (req, res, next) => { try { const id = Number(req.params.id); if (!Number.isFinite(id)) return res.status(400).json({ message: 'ID inválido' }); await s.updateInsercion(id, req.body); res.json({ ok: true }); } catch (e) { next(e); } };
+const deleteInsercion    = async (req, res, next) => { try { const id = Number(req.params.id); if (!Number.isFinite(id)) return res.status(400).json({ message: 'ID inválido' }); await s.deleteInsercion(id); res.status(204).end(); } catch (e) { next(e); } };
+
 module.exports = {
   getLineas, createLinea, updateLinea, deleteLinea,
   getMarcas, createMarca, updateMarca, deleteMarca,
@@ -51,4 +57,5 @@ module.exports = {
   getOperaciones: async (_req, res, next) => { try { res.json(await s.getOperaciones()); } catch (e) { next(e); } },
   getClasificaciones, createClasificacion, updateClasificacion, deleteClasificacion,
   getChoferes, createChofer, updateChofer, deleteChofer,
+  getInserciones, createInsercion, updateInsercion, deleteInsercion,
 };

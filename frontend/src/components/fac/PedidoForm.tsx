@@ -12,6 +12,7 @@ interface Props {
   onSave: (data: Partial<Pedido>) => Promise<void>;
   isPending: boolean;
   error?: string;
+  tipo?: 'V' | 'P';
 }
 
 const empty: Partial<Pedido> = {
@@ -27,7 +28,9 @@ const empty: Partial<Pedido> = {
   items: [],
 };
 
-export default function PedidoForm({ initial, onSave, isPending, error }: Props) {
+export default function PedidoForm({ initial, onSave, isPending, error, tipo = 'V' }: Props) {
+  const label = tipo === 'P' ? 'presupuesto' : 'pedido';
+  const labelCap = tipo === 'P' ? 'Presupuesto' : 'Pedido';
   const router = useRouter();
   const [form, setForm] = useState<Partial<Pedido>>({ ...empty, ...initial });
   const [items, setItems] = useState<PedidoDet[]>(initial?.items ?? []);
@@ -129,7 +132,7 @@ export default function PedidoForm({ initial, onSave, isPending, error }: Props)
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Cabecera */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-6">
-        <h2 className="text-sm font-semibold text-gray-700 mb-4 uppercase tracking-wide">Datos del pedido</h2>
+        <h2 className="text-sm font-semibold text-gray-700 mb-4 uppercase tracking-wide">Datos del {label}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {/* Fecha */}
           <div>
@@ -210,7 +213,7 @@ export default function PedidoForm({ initial, onSave, isPending, error }: Props)
           <div className="sm:col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-1">Producto / Descripción</label>
             <input value={form.ped_producto ?? ''} onChange={(e) => set('ped_producto', e.target.value)}
-              placeholder="Descripción general del pedido"
+              placeholder={`Descripción general del ${label}`}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
           </div>
 
@@ -233,7 +236,7 @@ export default function PedidoForm({ initial, onSave, isPending, error }: Props)
       {/* Items */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Items del pedido</h2>
+          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Items del {label}</h2>
         </div>
 
         {/* Article search */}
@@ -348,7 +351,7 @@ export default function PedidoForm({ initial, onSave, isPending, error }: Props)
         </button>
         <button type="submit" disabled={isPending}
           className="w-full sm:w-auto px-5 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 disabled:opacity-50 transition">
-          {isPending ? 'Guardando…' : 'Guardar pedido'}
+          {isPending ? 'Guardando…' : `Guardar ${label}`}
         </button>
       </div>
     </form>

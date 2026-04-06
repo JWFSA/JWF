@@ -41,6 +41,7 @@ const menu = [
     children: [
       { label: 'Facturas',          href: '/fac/facturas',      icon: Receipt },
       { label: 'Pedidos',          href: '/fac/pedidos',       icon: ClipboardList },
+      { label: 'Presupuestos',    href: '/fac/presupuestos',  icon: FileText },
       { label: 'Clientes',         href: '/fac/clientes',      icon: UserCheck },
       { label: 'Vendedores',       href: '/fac/vendedores',    icon: Handshake },
       { label: 'Campañas',         href: '/fac/campanhas',     icon: BarChart3 },
@@ -57,6 +58,8 @@ const menu = [
     label: 'Finanzas',
     icon: Landmark,
     children: [
+      { label: 'Cobranzas',          href: '/fin/cobranzas',          icon: CircleDollarSign },
+      { label: 'Historial cobros',  href: '/fin/cobros',             icon: DollarSign },
       { label: 'Documentos',          href: '/fin/documentos',         icon: FileText },
       { label: 'Órdenes de pago',    href: '/fin/ordenes-pago',       icon: Receipt },
       { label: 'Cheques recibidos', href: '/fin/cheques',            icon: Banknote },
@@ -90,6 +93,9 @@ const menu = [
       { label: 'Clasificaciones', href: '/stk/clasificaciones', icon: LayoutList },
       { label: 'Choferes',        href: '/stk/choferes',        icon: Truck },
       { label: 'Unidades de medida', href: '/stk/unidades-medida', icon: Ruler },
+      { label: 'Ocupaciones',        href: '/stk/ocupaciones',     icon: Grid3x3 },
+      { label: 'Inserciones',        href: '/stk/inserciones',     icon: Signal },
+      { label: 'Cotizaciones',      href: '/stk/cotizaciones',    icon: ArrowLeftRight },
     ],
   },
   {

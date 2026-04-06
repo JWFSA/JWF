@@ -216,3 +216,48 @@ export interface Cobrador {
   empl_nombre?: string;
   empl_ape?: string;
 }
+
+export interface FacturaPendiente {
+  doc_clave: number;
+  doc_nro_doc: number;
+  doc_fec_doc: string;
+  doc_tipo_mov: number;
+  doc_cli: number | null;
+  cli_nom: string | null;
+  doc_cli_ruc: string | null;
+  doc_mon: number | null;
+  mon_desc?: string;
+  doc_saldo_loc: number;
+  doc_saldo_mon: number;
+  doc_total_loc: number;
+}
+
+export interface Cuota {
+  cuo_clave_doc: number;
+  cuo_fec_vto: string;
+  cuo_imp_loc: number;
+  cuo_imp_mon: number;
+  cuo_saldo_loc: number;
+  cuo_saldo_mon: number;
+}
+
+export interface Cobro {
+  pag_clave_doc: number;
+  pag_fec_vto: string;
+  pag_clave_pago: number;
+  pag_fec_pago: string;
+  pag_imp_loc: number;
+  pag_imp_mon: number;
+  pag_login: string | null;
+  doc_nro_doc: number;
+  doc_fec_doc: string;
+  cli_nom: string | null;
+  doc_cli: number | null;
+}
+
+export interface CobroResult {
+  doc_clave: number;
+  importe: number;
+  saldo_anterior: number;
+  saldo_nuevo: number;
+}

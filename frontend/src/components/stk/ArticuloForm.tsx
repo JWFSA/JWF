@@ -14,9 +14,9 @@ const schema = z.object({
   art_desc_abrev:    z.string().max(20).optional().nullable(),
   art_codigo_fabrica:z.string().max(20).optional().nullable(),
   art_unid_med:      z.string().optional().nullable(),
-  art_linea:         z.coerce.number().optional().nullable(),
-  art_marca:         z.coerce.number().optional().nullable(),
-  art_rubro:         z.coerce.number().optional().nullable(),
+  art_linea:         z.string().optional().nullable(),
+  art_marca:         z.string().optional().nullable(),
+  art_rubro:         z.string().optional().nullable(),
   art_est:           z.enum(['A', 'I']),
 });
 
@@ -31,15 +31,17 @@ export default function ArticuloForm({ articulo }: Props) {
   const queryClient = useQueryClient();
   const isEdit = !!articulo;
 
-  const { data: lineasData }  = useQuery({ queryKey: ['lineas', { all: true }],  queryFn: () => getLineas({ all: true }) });
-  const { data: marcasData }  = useQuery({ queryKey: ['marcas', { all: true }],  queryFn: () => getMarcas({ all: true }) });
-  const { data: rubrosData }  = useQuery({ queryKey: ['rubros', { all: true }],  queryFn: () => getRubros({ all: true }) });
-  const { data: umedData }    = useQuery({ queryKey: ['unidades-medida'],         queryFn: () => getUnidadesMedida({ all: true }) });
+  const { data: lineasData, isLoading: loadingLineas }  = useQuery({ queryKey: ['lineas', { all: true }],  queryFn: () => getLineas({ all: true }) });
+  const { data: marcasData, isLoading: loadingMarcas }  = useQuery({ queryKey: ['marcas', { all: true }],  queryFn: () => getMarcas({ all: true }) });
+  const { data: rubrosData, isLoading: loadingRubros }  = useQuery({ queryKey: ['rubros', { all: true }],  queryFn: () => getRubros({ all: true }) });
+  const { data: umedData, isLoading: loadingUmed }      = useQuery({ queryKey: ['unidades-medida'],         queryFn: () => getUnidadesMedida({ all: true }) });
 
   const lineas  = lineasData?.data  ?? [];
   const marcas  = marcasData?.data  ?? [];
   const rubros  = rubrosData?.data  ?? [];
   const unidades = umedData?.data   ?? [];
+
+  const loadingCatalogs = loadingLineas || loadingMarcas || loadingRubros || loadingUmed;
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -48,18 +50,25 @@ export default function ArticuloForm({ articulo }: Props) {
       art_desc_abrev:     articulo?.art_desc_abrev ?? '',
       art_codigo_fabrica: articulo?.art_codigo_fabrica ?? '',
       art_unid_med:       articulo?.art_unid_med ?? '',
-      art_linea:          articulo?.art_linea ?? null,
-      art_marca:          articulo?.art_marca ?? null,
-      art_rubro:          articulo?.art_rubro ?? null,
+      art_linea:          articulo?.art_linea != null ? String(articulo.art_linea) : '',
+      art_marca:          articulo?.art_marca != null ? String(articulo.art_marca) : '',
+      art_rubro:          articulo?.art_rubro != null ? String(articulo.art_rubro) : '',
       art_est:            articulo?.art_est ?? 'A',
     },
   });
 
   const mutation = useMutation({
-    mutationFn: (data: FormData) =>
-      isEdit
-        ? updateArticulo(articulo!.art_codigo, data)
-        : createArticulo(data),
+    mutationFn: (data: FormData) => {
+      const payload = {
+        ...data,
+        art_linea: data.art_linea ? Number(data.art_linea) : null,
+        art_marca: data.art_marca ? Number(data.art_marca) : null,
+        art_rubro: data.art_rubro ? Number(data.art_rubro) : null,
+      };
+      return isEdit
+        ? updateArticulo(articulo!.art_codigo, payload)
+        : createArticulo(payload);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['articulos'] });
       router.push('/stk/articulos');
@@ -77,6 +86,9 @@ export default function ArticuloForm({ articulo }: Props) {
         </p>
       </div>
 
+      {loadingCatalogs ? (
+        <div className="text-sm text-gray-500">Cargando datos...</div>
+      ) : (
       <form onSubmit={handleSubmit((d) => mutation.mutate(d))} className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-5">
         {/* Descripción */}
         <div>
@@ -180,6 +192,7 @@ export default function ArticuloForm({ articulo }: Props) {
           </button>
         </div>
       </form>
+      )}
     </div>
   );
 }

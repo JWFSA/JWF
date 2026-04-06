@@ -95,4 +95,11 @@ router.post('/maestros/cobradores',        verifyToken, maestrosController.creat
 router.put('/maestros/cobradores/:id',     verifyToken, maestrosController.updateCobrador);
 router.delete('/maestros/cobradores/:id',  verifyToken, maestrosController.deleteCobrador);
 
+// Cobranzas
+const cobranzaController = require('../controllers/cobranzaController');
+router.get('/cobranzas/pendientes',    verifyToken, cobranzaController.getPendientes);
+router.get('/cobranzas/cobros',        verifyToken, cobranzaController.getCobros);
+router.get('/cobranzas/cuotas/:id',    verifyToken, cobranzaController.getCuotas);
+router.post('/cobranzas/cobrar',       verifyToken, cobranzaController.registrarCobro);
+
 module.exports = router;

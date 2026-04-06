@@ -1,5 +1,5 @@
 import api from '@/lib/api';
-import type { Barrio, Zona, Categoria, Condicion, Vendedor, Cliente, Articulo, Pedido, ListaPrecio, ListaPrecioDetalle, Factura, FacturaDet, Campanha, ComisionFac, SolicitudDescuento, Paginated } from '@/types/fac';
+import type { Barrio, Zona, Categoria, Condicion, Vendedor, Cliente, Articulo, Pedido, ListaPrecio, ListaPrecioDetalle, Factura, FacturaDet, PedidoParaFacturar, Campanha, ComisionFac, SolicitudDescuento, Paginated } from '@/types/fac';
 import type { ListParams } from '@/services/gen';
 
 // Barrios
@@ -57,6 +57,17 @@ export const getPedido     = (id: number) => api.get<Pedido>(`/fac/pedidos/${id}
 export const createPedido  = (data: Partial<Pedido>) => api.post<Pedido>('/fac/pedidos', data).then((r) => r.data);
 export const updatePedido  = (id: number, data: Partial<Pedido>) => api.put<Pedido>(`/fac/pedidos/${id}`, data).then((r) => r.data);
 export const deletePedido  = (id: number) => api.delete(`/fac/pedidos/${id}`);
+
+// Pedido → Factura
+export const getPedidoParaFacturar = (id: number) => api.get<PedidoParaFacturar>(`/fac/pedidos/${id}/para-facturar`).then((r) => r.data);
+
+// Presupuestos
+export const getPresupuestos      = (params?: ListParams) => api.get<Paginated<Pedido>>('/fac/presupuestos', { params }).then((r) => r.data);
+export const getPresupuesto       = (id: number) => api.get<Pedido>(`/fac/presupuestos/${id}`).then((r) => r.data);
+export const createPresupuesto    = (data: Partial<Pedido>) => api.post<Pedido>('/fac/presupuestos', data).then((r) => r.data);
+export const updatePresupuesto    = (id: number, data: Partial<Pedido>) => api.put<Pedido>(`/fac/presupuestos/${id}`, data).then((r) => r.data);
+export const deletePresupuesto    = (id: number) => api.delete(`/fac/presupuestos/${id}`);
+export const convertirPresupuesto = (id: number) => api.post<Pedido>(`/fac/presupuestos/${id}/convertir`).then((r) => r.data);
 
 // Facturas
 export const getFacturas   = (params?: ListParams) => api.get<Paginated<Factura>>('/fac/facturas', { params }).then((r) => r.data);

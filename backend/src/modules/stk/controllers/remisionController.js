@@ -39,4 +39,10 @@ module.exports = {
       res.status(204).end();
     } catch (e) { next(e); }
   },
+
+  getFromFactura: async (req, res, next) => {
+    try {
+      res.json(await s.getFromFactura(Number(req.params.id)));
+    } catch (e) { next(e); }
+  },
 };

@@ -32,6 +32,8 @@ export interface DataTableProps<T> {
   sortDir?: 'asc' | 'desc';
   /** Llamado cuando el usuario hace clic en un encabezado de columna ordenable */
   onSortChange?: (field: string, dir: 'asc' | 'desc') => void;
+  /** Botones extra de acción por fila (se muestran antes de editar/eliminar) */
+  extraActions?: (row: T) => ReactNode;
 }
 
 export default function DataTable<T>({
@@ -48,8 +50,9 @@ export default function DataTable<T>({
   sortField,
   sortDir,
   onSortChange,
+  extraActions,
 }: DataTableProps<T>) {
-  const hasActions = !!(onEdit || onDelete);
+  const hasActions = !!(onEdit || onDelete || extraActions);
   const colSpan = columns.length + (hasActions ? 1 : 0);
 
   const handleSort = (key: string) => {
@@ -113,6 +116,7 @@ export default function DataTable<T>({
                 {hasActions && (
                   <td className="px-4 py-3 text-right">
                     <div className="flex justify-end gap-2">
+                      {extraActions && extraActions(row)}
                       {onEdit && (
                         <button
                           type="button"

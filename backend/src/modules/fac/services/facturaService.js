@@ -109,64 +109,85 @@ const getById = async (clave) => {
 };
 
 const create = async (data) => {
-  const { rows: [{ next: clave }] } = await pool.query(
-    'SELECT COALESCE(MAX("DOC_CLAVE"), 1493000000) + 1 AS next FROM fin_documento'
-  );
-  const { rows: [{ next: nro_doc }] } = await pool.query(
-    'SELECT COALESCE(MAX("DOC_NRO_DOC") FILTER (WHERE "DOC_TIPO_MOV" = 10), 10010000000) + 1 AS next FROM fin_documento'
-  );
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
 
-  const {
-    doc_fec_doc, doc_cli, doc_cli_nom, doc_cli_ruc,
-    doc_nro_timbrado, doc_serie, doc_cond_vta, doc_mon = 1, doc_obs,
-    doc_grav_10_loc = 0, doc_grav_5_loc = 0, doc_neto_exen_loc = 0,
-    doc_iva_10_loc = 0, doc_iva_5_loc = 0, doc_saldo_loc = 0,
-    items = [],
-  } = data;
+    const { rows: [{ next: clave }] } = await client.query(
+      'SELECT COALESCE(MAX("DOC_CLAVE"), 1493000000) + 1 AS next FROM fin_documento'
+    );
+    const { rows: [{ next: nro_doc }] } = await client.query(
+      'SELECT COALESCE(MAX("DOC_NRO_DOC") FILTER (WHERE "DOC_TIPO_MOV" = 10), 10010000000) + 1 AS next FROM fin_documento'
+    );
 
-  await pool.query(
-    `INSERT INTO fin_documento (
-      "DOC_CLAVE","DOC_TIPO_MOV","DOC_NRO_DOC","DOC_FEC_DOC","DOC_FEC_OPER",
-      "DOC_CLI","DOC_CLI_NOM","DOC_CLI_RUC","DOC_NRO_TIMBRADO","DOC_SERIE",
-      "DOC_COND_VTA","DOC_MON","DOC_OBS",
-      "DOC_GRAV_10_LOC","DOC_GRAV_5_LOC","DOC_NETO_EXEN_LOC",
-      "DOC_IVA_10_LOC","DOC_IVA_5_LOC","DOC_SALDO_LOC",
-      "DOC_NETO_GRAV_LOC","DOC_IVA_LOC","DOC_SIST"
-    ) VALUES ($1,10,$2,$3,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,'FAC')`,
-    [
-      clave, nro_doc, doc_fec_doc,
-      doc_cli || null, doc_cli_nom || null, doc_cli_ruc || null,
-      doc_nro_timbrado || null, doc_serie || null,
-      doc_cond_vta || null, doc_mon, doc_obs || null,
-      doc_grav_10_loc, doc_grav_5_loc, doc_neto_exen_loc,
-      doc_iva_10_loc, doc_iva_5_loc, doc_saldo_loc,
-      Number(doc_grav_10_loc) + Number(doc_grav_5_loc),
-      Number(doc_iva_10_loc) + Number(doc_iva_5_loc),
-    ]
-  );
+    const {
+      doc_fec_doc, doc_cli, doc_cli_nom, doc_cli_ruc,
+      doc_nro_timbrado, doc_serie, doc_cond_vta, doc_mon = 1, doc_obs,
+      doc_grav_10_loc = 0, doc_grav_5_loc = 0, doc_neto_exen_loc = 0,
+      doc_iva_10_loc = 0, doc_iva_5_loc = 0, doc_saldo_loc = 0,
+      items = [], ped_clave = null,
+    } = data;
 
-  for (let i = 0; i < items.length; i++) {
-    const it = items[i];
-    await pool.query(
-      `INSERT INTO fac_documento_det (
-        "DET_CLAVE_DOC","DET_NRO_ITEM","DET_ART","DET_ART_DESC",
-        "DET_CANT","DET_UM_FAC","DET_PRECIO_MON","DET_PORC_DTO",
-        "DET_NETO_LOC","DET_NETO_MON","DET_COD_IVA","DET_IVA_LOC","DET_IVA_MON",
-        "DET_NETO_GRAV_LOC","DET_NETO_GRAV_MON","DET_NETO_EXEN_LOC","DET_NETO_EXEN_MON"
-      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$9,$10,$11,$11,$12,$12,$13,$13)`,
+    await client.query(
+      `INSERT INTO fin_documento (
+        "DOC_CLAVE","DOC_TIPO_MOV","DOC_NRO_DOC","DOC_FEC_DOC","DOC_FEC_OPER",
+        "DOC_CLI","DOC_CLI_NOM","DOC_CLI_RUC","DOC_NRO_TIMBRADO","DOC_SERIE",
+        "DOC_COND_VTA","DOC_MON","DOC_OBS",
+        "DOC_GRAV_10_LOC","DOC_GRAV_5_LOC","DOC_NETO_EXEN_LOC",
+        "DOC_IVA_10_LOC","DOC_IVA_5_LOC","DOC_SALDO_LOC",
+        "DOC_NETO_GRAV_LOC","DOC_IVA_LOC","DOC_SIST"
+      ) VALUES ($1,10,$2,$3,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,'FAC')`,
       [
-        clave, i + 1, it.det_art || null, it.det_art_desc || null,
-        it.det_cant, it.det_um_fac || null, it.det_precio_mon,
-        it.det_porc_dto || 0,
-        it.det_neto_loc, it.det_cod_iva,
-        it.det_iva_loc,
-        it.det_cod_iva === 1 ? 0 : it.det_neto_loc,
-        it.det_cod_iva === 1 ? it.det_neto_loc : 0,
+        clave, nro_doc, doc_fec_doc,
+        doc_cli || null, doc_cli_nom || null, doc_cli_ruc || null,
+        doc_nro_timbrado || null, doc_serie || null,
+        doc_cond_vta || null, doc_mon, doc_obs || null,
+        doc_grav_10_loc, doc_grav_5_loc, doc_neto_exen_loc,
+        doc_iva_10_loc, doc_iva_5_loc, doc_saldo_loc,
+        Number(doc_grav_10_loc) + Number(doc_grav_5_loc),
+        Number(doc_iva_10_loc) + Number(doc_iva_5_loc),
       ]
     );
-  }
 
-  return getById(clave);
+    for (let i = 0; i < items.length; i++) {
+      const it = items[i];
+      await client.query(
+        `INSERT INTO fac_documento_det (
+          "DET_CLAVE_DOC","DET_NRO_ITEM","DET_ART","DET_ART_DESC",
+          "DET_CANT","DET_UM_FAC","DET_PRECIO_MON","DET_PORC_DTO",
+          "DET_NETO_LOC","DET_NETO_MON","DET_COD_IVA","DET_IVA_LOC","DET_IVA_MON",
+          "DET_NETO_GRAV_LOC","DET_NETO_GRAV_MON","DET_NETO_EXEN_LOC","DET_NETO_EXEN_MON",
+          "DET_CLAVE_PED","DET_NRO_ITEM_PED"
+        ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$9,$10,$11,$11,$12,$12,$13,$13,$14,$15)`,
+        [
+          clave, i + 1, it.det_art || null, it.det_art_desc || null,
+          it.det_cant, it.det_um_fac || null, it.det_precio_mon,
+          it.det_porc_dto || 0,
+          it.det_neto_loc, it.det_cod_iva,
+          it.det_iva_loc,
+          it.det_cod_iva === 1 ? 0 : it.det_neto_loc,
+          it.det_cod_iva === 1 ? it.det_neto_loc : 0,
+          it.det_clave_ped || null, it.det_nro_item_ped || null,
+        ]
+      );
+    }
+
+    // Si la factura viene de un pedido, marcar pedido como facturado
+    if (ped_clave) {
+      await client.query(
+        'UPDATE fac_pedido SET "PED_ESTADO" = $1, "PED_IND_FAC" = $2 WHERE "PED_CLAVE" = $3',
+        ['A', 'S', ped_clave]
+      );
+    }
+
+    await client.query('COMMIT');
+    return getById(clave);
+  } catch (e) {
+    await client.query('ROLLBACK');
+    throw e;
+  } finally {
+    client.release();
+  }
 };
 
 const update = async (clave, data) => {

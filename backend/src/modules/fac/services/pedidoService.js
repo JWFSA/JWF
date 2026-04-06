@@ -2,13 +2,16 @@ const pool = require('../../../config/db');
 
 // ─── PEDIDOS ─────────────────────────────────────────────────────────────────
 
-const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc', tipo = 'V' } = {}) => {
   page  = Math.max(1, page);
   limit = Math.max(1, Math.min(1000, limit));
-  const params = search ? [`%${search}%`] : [];
-  const where  = search
-    ? `WHERE (c."CLI_NOM" ILIKE $1 OR CAST(p."PED_NRO" AS TEXT) ILIKE $1 OR p."PED_PRODUCTO" ILIKE $1)`
-    : '';
+  const params = [tipo];
+  const conditions = ['p."PED_TIPO" = $1'];
+  if (search) {
+    params.push(`%${search}%`);
+    conditions.push(`(c."CLI_NOM" ILIKE $${params.length} OR CAST(p."PED_NRO" AS TEXT) ILIKE $${params.length} OR p."PED_PRODUCTO" ILIKE $${params.length})`);
+  }
+  const where = `WHERE ${conditions.join(' AND ')}`;
   const countRes = await pool.query(
     `SELECT COUNT(*) FROM fac_pedido p LEFT JOIN fin_cliente c ON c."CLI_CODIGO" = p."PED_CLI" ${where}`,
     params
@@ -135,7 +138,7 @@ const create = async (data, login = 'SISTEMA') => {
         "PED_IND_FAC","PED_FEC_GRAB","PED_LOGIN","PED_TASA_US")
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25)`,
       [
-        clave, 1, 1, nro, 'V', 'N',
+        clave, 1, 1, nro, data.ped_tipo || 'V', 'N',
         data.ped_estado || 'P', data.ped_fecha, data.ped_mon || 1,
         data.ped_cli || null, data.ped_vendedor || null, data.ped_cond_venta || null,
         data.ped_producto || null, data.ped_concepto || null, data.ped_obs || null,
@@ -160,7 +163,7 @@ const update = async (id, data) => {
     await client.query('BEGIN');
     const fields = []; const params = [];
     const map = {
-      ped_fecha: '"PED_FECHA"', ped_cli: '"PED_CLI"', ped_vendedor: '"PED_VENDEDOR"',
+      ped_tipo: '"PED_TIPO"', ped_fecha: '"PED_FECHA"', ped_cli: '"PED_CLI"', ped_vendedor: '"PED_VENDEDOR"',
       ped_cond_venta: '"PED_COND_VENTA"', ped_mon: '"PED_MON"',
       ped_producto: '"PED_PRODUCTO"', ped_concepto: '"PED_CONCEPTO"',
       ped_obs: '"PED_OBS"', ped_estado: '"PED_ESTADO"',
@@ -235,4 +238,37 @@ const getArticulos = async ({ page = 1, limit = 20, search = '', all = false } =
   return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
 };
 
-module.exports = { getAll, getById, create, update, remove, getArticulos };
+const getParaFacturar = async (id) => {
+  const pedido = await getById(id);
+  return {
+    ped_clave: pedido.ped_clave,
+    doc_fec_doc: new Date().toISOString().split('T')[0],
+    doc_cli: pedido.ped_cli,
+    cli_nom: pedido.cli_nom,
+    doc_cli_nom: pedido.cli_nom,
+    doc_cli_ruc: pedido.cli_ruc || null,
+    doc_cond_vta: pedido.ped_cond_venta || null,
+    doc_mon: pedido.ped_mon || 1,
+    doc_obs: pedido.ped_obs || null,
+    items: (pedido.items || []).map((it, idx) => ({
+      det_art: it.pdet_art,
+      det_art_desc: it.art_desc || it.pdet_desc_larga || '',
+      det_cant: Number(it.pdet_cant_ped),
+      det_um_fac: it.pdet_um_ped || 'U',
+      det_precio_mon: Number(it.pdet_precio),
+      det_porc_dto: Number(it.pdet_porc_dcto) || 0,
+      det_cod_iva: 2,  // default IVA 10%, usuario puede ajustar
+      det_clave_ped: pedido.ped_clave,
+      det_nro_item_ped: it.pdet_nro_item || idx + 1,
+    })),
+  };
+};
+
+const convertirAVenta = async (id) => {
+  const pedido = await getById(id);
+  if (pedido.ped_tipo === 'V') throw { status: 400, message: 'Ya es un pedido de venta' };
+  await pool.query('UPDATE fac_pedido SET "PED_TIPO" = $1 WHERE "PED_CLAVE" = $2', ['V', id]);
+  return getById(id);
+};
+
+module.exports = { getAll, getById, create, update, remove, getArticulos, getParaFacturar, convertirAVenta };

@@ -2,7 +2,7 @@ const s = require('../services/pedidoService');
 
 const getAll = async (req, res, next) => {
   try {
-    const { all, page, limit, search, sortField, sortDir } = req.query;
+    const { all, page, limit, search, sortField, sortDir, tipo } = req.query;
     res.json(await s.getAll({
       all: all === 'true',
       page: parseInt(page) || 1,
@@ -10,6 +10,7 @@ const getAll = async (req, res, next) => {
       search: search || '',
       sortField: sortField || '',
       sortDir: sortDir || 'asc',
+      tipo: tipo || 'V',
     }));
   } catch (e) { next(e); }
 };
@@ -46,4 +47,12 @@ const getArticulos = async (req, res, next) => {
   } catch (e) { next(e); }
 };
 
-module.exports = { getAll, getById, create, update, remove, getArticulos };
+const getParaFacturar = async (req, res, next) => {
+  try { res.json(await s.getParaFacturar(req.params.id)); } catch (e) { next(e); }
+};
+
+const convertir = async (req, res, next) => {
+  try { res.json(await s.convertirAVenta(req.params.id)); } catch (e) { next(e); }
+};
+
+module.exports = { getAll, getById, create, update, remove, getArticulos, getParaFacturar, convertir };

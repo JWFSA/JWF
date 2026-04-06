@@ -106,7 +106,18 @@ export interface Remision {
   dep_dest_desc?: string;
   rem_obs?: string | null;
   rem_nro_timbrado?: string | null;
+  rem_clave_doc?: number | null;
   items?: RemisionDetalle[];
+}
+
+/** Datos de factura transformados para pre-llenar el formulario de remisión */
+export interface FacturaParaRemitir {
+  rem_clave_doc: number;
+  rem_fec_emis: string;
+  rem_cli: number | null;
+  cli_nom: string | null;
+  rem_cli_nom: string | null;
+  items: RemisionDetalle[];
 }
 
 export interface Movimiento {
@@ -139,4 +150,51 @@ export interface Chofer {
   chof_direccion: string | null;
   chof_veh_marca: string | null;
   chof_veh_chapa: string | null;
+}
+
+export interface OcupacionEspacio {
+  res_cod_reserva: number;
+  res_cod_art: number;
+  art_desc: string;
+  res_cod_alfa?: string | null;
+  res_fec_desde: string | null;
+  res_fec_hasta: string | null;
+  res_precio: number | null;
+  res_estado: string;
+  res_grupo: number | null;
+  res_linea: number | null;
+  res_grupo_desc: string | null;
+  res_cant: number | null;
+  res_um: string | null;
+  res_cant_dias: number | null;
+  res_segundos: number | null;
+  res_inserciones: number | null;
+  res_cod_ins: number | null;
+  res_tot_seg: number | null;
+  res_ped_clave: number | null;
+  res_nro_ped: number | null;
+  res_item_ped: number | null;
+  res_est_it: string | null;
+  res_fec_est_it: string | null;
+  res_obs_it: string | null;
+  cli_nom: string | null;
+}
+
+export interface Insercion {
+  ins_codigo: number;
+  ins_desc: string;
+  ins_seg: number;
+  ins_inserciones: number;
+  ins_total: number;
+}
+
+export interface Cotizacion {
+  cot_fec: string;
+  cot_mon: number;
+  mon_desc?: string;
+  mon_simbolo?: string;
+  cot_tasa: number;
+  cot_tasa_com?: number | null;
+  cot_tasa_vta_cnt?: number | null;
+  cot_tasa_com_cnt?: number | null;
 }
