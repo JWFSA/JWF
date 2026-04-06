@@ -13,6 +13,7 @@ import PrimaryAddButton from '@/components/ui/PrimaryAddButton';
 import SearchField from '@/components/ui/SearchField';
 import TablePagination from '@/components/ui/TablePagination';
 import ExportButton from '@/components/ui/ExportButton';
+import { useFilters } from '@/stores/useFilterStore';
 import { Filter, X, Truck } from 'lucide-react';
 
 const fmt = (n: number | null | undefined) =>
@@ -44,33 +45,29 @@ const COLUMNS = [
   { key: 'obs',    header: 'Obs.',                       headerClassName: 'hidden lg:table-cell',    cell: (r: Factura) => r.doc_obs ?? '—',                  cellClassName: 'hidden lg:table-cell text-xs text-gray-400 truncate max-w-[160px]' },
 ];
 
+const PAGE_ID = 'facturas';
+const DEFAULTS = { fechaDesde: '', fechaHasta: '', moneda: '', soloConSaldo: '', tipoMov: '', nroDoc: '', search: '' };
+
 export default function FacturasPage() {
   const router = useRouter();
   const qc = useQueryClient();
-  const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [filters, setFilter, clearFilters] = useFilters(PAGE_ID, DEFAULTS);
+  const sf = (key: keyof typeof DEFAULTS, value: string) => { setFilter(key, value); setPage(1); };
+
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
   const [sortField, setSortField] = useState('fecha');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
-  // Filtros avanzados
-  const [showFilters, setShowFilters] = useState(false);
-  const [fechaDesde, setFechaDesde] = useState('');
-  const [fechaHasta, setFechaHasta] = useState('');
-  const [moneda, setMoneda] = useState('');
-  const [soloConSaldo, setSoloConSaldo] = useState(false);
-  const [tipoMov, setTipoMov] = useState('');
-  const [nroDoc, setNroDoc] = useState('');
+  const activeFilters = [filters.fechaDesde, filters.fechaHasta, filters.moneda, filters.soloConSaldo, filters.tipoMov, filters.nroDoc].filter(Boolean).length;
+  const [showFilters, setShowFilters] = useState(activeFilters > 0);
 
-  const activeFilters = [fechaDesde, fechaHasta, moneda, soloConSaldo, tipoMov, nroDoc].filter(Boolean).length;
-
-  const clearFilters = () => { setFechaDesde(''); setFechaHasta(''); setMoneda(''); setSoloConSaldo(false); setTipoMov(''); setNroDoc(''); setPage(1); };
-
+  // Search con debounce
+  const [searchInput, setSearchInput] = useState(filters.search);
   useEffect(() => {
-    const t = setTimeout(() => { setDebouncedSearch(search); setPage(1); }, 400);
+    const t = setTimeout(() => sf('search', searchInput), 400);
     return () => clearTimeout(t);
-  }, [search]);
+  }, [searchInput]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const { data: monedasData } = useQuery({
     queryKey: ['monedas', { all: true }],
@@ -78,13 +75,13 @@ export default function FacturasPage() {
   });
   const monedas_list = monedasData ?? [];
 
-  const queryParams: any = { page, limit, search: debouncedSearch, sortField, sortDir };
-  if (fechaDesde) queryParams.fechaDesde = fechaDesde;
-  if (fechaHasta) queryParams.fechaHasta = fechaHasta;
-  if (moneda) queryParams.moneda = moneda;
-  if (soloConSaldo) queryParams.soloConSaldo = 'true';
-  if (tipoMov) queryParams.tipoMov = tipoMov;
-  if (nroDoc) queryParams.nroDoc = nroDoc;
+  const queryParams: any = { page, limit, search: filters.search, sortField, sortDir };
+  if (filters.fechaDesde) queryParams.fechaDesde = filters.fechaDesde;
+  if (filters.fechaHasta) queryParams.fechaHasta = filters.fechaHasta;
+  if (filters.moneda) queryParams.moneda = filters.moneda;
+  if (filters.soloConSaldo) queryParams.soloConSaldo = 'true';
+  if (filters.tipoMov) queryParams.tipoMov = filters.tipoMov;
+  if (filters.nroDoc) queryParams.nroDoc = filters.nroDoc;
 
   const { data, isLoading } = useQuery({
     queryKey: ['facturas', queryParams],
@@ -102,12 +99,12 @@ export default function FacturasPage() {
   });
 
   const exportParams: any = { all: true };
-  if (fechaDesde) exportParams.fechaDesde = fechaDesde;
-  if (fechaHasta) exportParams.fechaHasta = fechaHasta;
-  if (moneda) exportParams.moneda = moneda;
-  if (soloConSaldo) exportParams.soloConSaldo = 'true';
-  if (tipoMov) exportParams.tipoMov = tipoMov;
-  if (nroDoc) exportParams.nroDoc = nroDoc;
+  if (filters.fechaDesde) exportParams.fechaDesde = filters.fechaDesde;
+  if (filters.fechaHasta) exportParams.fechaHasta = filters.fechaHasta;
+  if (filters.moneda) exportParams.moneda = filters.moneda;
+  if (filters.soloConSaldo) exportParams.soloConSaldo = 'true';
+  if (filters.tipoMov) exportParams.tipoMov = filters.tipoMov;
+  if (filters.nroDoc) exportParams.nroDoc = filters.nroDoc;
 
   const sel = 'border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500';
 
@@ -148,7 +145,7 @@ export default function FacturasPage() {
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-semibold text-gray-700">Filtros avanzados</h3>
             {activeFilters > 0 && (
-              <button onClick={clearFilters} className="text-xs text-gray-500 hover:text-red-500 flex items-center gap-1">
+              <button onClick={() => { clearFilters(); setSearchInput(''); }} className="text-xs text-gray-500 hover:text-red-500 flex items-center gap-1">
                 <X size={14} /> Limpiar filtros
               </button>
             )}
@@ -156,15 +153,15 @@ export default function FacturasPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">Fecha desde</label>
-              <input type="date" value={fechaDesde} onChange={(e) => { setFechaDesde(e.target.value); setPage(1); }} className={`w-full ${sel}`} />
+              <input type="date" value={filters.fechaDesde} onChange={(e) => sf('fechaDesde', e.target.value)} className={`w-full ${sel}`} />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">Fecha hasta</label>
-              <input type="date" value={fechaHasta} onChange={(e) => { setFechaHasta(e.target.value); setPage(1); }} className={`w-full ${sel}`} />
+              <input type="date" value={filters.fechaHasta} onChange={(e) => sf('fechaHasta', e.target.value)} className={`w-full ${sel}`} />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">Tipo</label>
-              <select value={tipoMov} onChange={(e) => { setTipoMov(e.target.value); setPage(1); }} className={`w-full ${sel}`}>
+              <select value={filters.tipoMov} onChange={(e) => sf('tipoMov', e.target.value)} className={`w-full ${sel}`}>
                 <option value="">Todos</option>
                 <option value="9">Contado</option>
                 <option value="10">Crédito</option>
@@ -173,18 +170,18 @@ export default function FacturasPage() {
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">Nro. comprobante</label>
-              <input value={nroDoc} onChange={(e) => { setNroDoc(e.target.value); setPage(1); }} placeholder="Ej: 10010002773" className={`w-full ${sel}`} />
+              <input value={filters.nroDoc} onChange={(e) => sf('nroDoc', e.target.value)} placeholder="Ej: 10010002773" className={`w-full ${sel}`} />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">Moneda</label>
-              <select value={moneda} onChange={(e) => { setMoneda(e.target.value); setPage(1); }} className={`w-full ${sel}`}>
+              <select value={filters.moneda} onChange={(e) => sf('moneda', e.target.value)} className={`w-full ${sel}`}>
                 <option value="">Todas</option>
                 {monedas_list.map((m: Moneda) => <option key={m.mon_codigo} value={m.mon_codigo}>{m.mon_desc}</option>)}
               </select>
             </div>
             <div className="flex items-end">
               <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" checked={soloConSaldo} onChange={(e) => { setSoloConSaldo(e.target.checked); setPage(1); }}
+                <input type="checkbox" checked={!!filters.soloConSaldo} onChange={(e) => sf('soloConSaldo', e.target.checked ? 'true' : '')}
                   className="h-4 w-4 rounded border-gray-300 text-primary-600" />
                 <span className="text-sm text-gray-700">Solo con saldo</span>
               </label>
@@ -214,7 +211,7 @@ export default function FacturasPage() {
 
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
         <div className="p-4 border-b border-gray-100">
-          <SearchField value={search} onChange={setSearch} placeholder="Buscar por cliente, nro. o timbrado..." />
+          <SearchField value={searchInput} onChange={setSearchInput} placeholder="Buscar por cliente, nro. o timbrado..." />
         </div>
         <DataTable
           isLoading={isLoading}

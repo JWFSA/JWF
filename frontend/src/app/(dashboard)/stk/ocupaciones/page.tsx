@@ -9,6 +9,7 @@ import DataTable from '@/components/ui/DataTable';
 import SearchField from '@/components/ui/SearchField';
 import TablePagination from '@/components/ui/TablePagination';
 import ExportButton from '@/components/ui/ExportButton';
+import { useFilters } from '@/stores/useFilterStore';
 
 const fmt = (n?: number | null) => n != null ? Number(n).toLocaleString('es-PY') : '—';
 
@@ -47,23 +48,27 @@ const COLUMNS = [
     } },
 ];
 
+const PAGE_ID = 'ocupaciones';
+const DEFAULTS = { ubicacion: '', search: '' };
+
 export default function OcupacionesPage() {
-  const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [filters, setFilter] = useFilters(PAGE_ID, DEFAULTS);
+  const sf = (key: keyof typeof DEFAULTS, value: string) => { setFilter(key, value); setPage(1); };
+
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
   const [sortField, setSortField] = useState('');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
-  const [ubicacion, setUbicacion] = useState('');
 
+  const [searchInput, setSearchInput] = useState(filters.search);
   useEffect(() => {
-    const t = setTimeout(() => { setDebouncedSearch(search); setPage(1); }, 400);
+    const t = setTimeout(() => sf('search', searchInput), 400);
     return () => clearTimeout(t);
-  }, [search]);
+  }, [searchInput]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const { data, isLoading } = useQuery({
-    queryKey: ['ocupaciones', { page, limit, search: debouncedSearch, sortField, sortDir, ubicacion }],
-    queryFn: () => getOcupaciones({ page, limit, search: debouncedSearch, sortField, sortDir, ubicacion } as any),
+    queryKey: ['ocupaciones', { page, limit, search: filters.search, sortField, sortDir, ubicacion: filters.ubicacion }],
+    queryFn: () => getOcupaciones({ page, limit, search: filters.search, sortField, sortDir, ubicacion: filters.ubicacion } as any),
   });
 
   const { data: ubicaciones } = useQuery({
@@ -97,9 +102,9 @@ export default function OcupacionesPage() {
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
         <div className="p-4 border-b border-gray-100 flex flex-col sm:flex-row gap-3">
           <div className="flex-1">
-            <SearchField value={search} onChange={setSearch} placeholder="Buscar por espacio, cliente, pedido o ubicación..." />
+            <SearchField value={searchInput} onChange={setSearchInput} placeholder="Buscar por espacio, cliente, pedido o ubicación..." />
           </div>
-          <select value={ubicacion} onChange={(e) => { setUbicacion(e.target.value); setPage(1); }}
+          <select value={filters.ubicacion} onChange={(e) => sf('ubicacion', e.target.value)}
             className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 sm:w-56">
             <option value="">Todas las ubicaciones</option>
             {(ubicaciones ?? []).map((u) => (

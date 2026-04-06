@@ -8,7 +8,11 @@ const getAll = async (req, res, next) => {
     const search = req.query.search || '';
     const sortField = req.query.sortField || '';
     const sortDir   = req.query.sortDir   || 'asc';
-    res.json(await articuloService.getAll({ page, limit, search, all, sortField, sortDir }));
+    const linea  = req.query.linea  || '';
+    const marca  = req.query.marca  || '';
+    const rubro  = req.query.rubro  || '';
+    const estado = req.query.estado || '';
+    res.json(await articuloService.getAll({ page, limit, search, all, sortField, sortDir, linea, marca, rubro, estado }));
   } catch (err) { next(err); }
 };
 

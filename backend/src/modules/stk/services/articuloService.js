@@ -1,12 +1,16 @@
 const pool = require('../../../config/db');
 
-const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc', linea = '', marca = '', rubro = '', estado = '' } = {}) => {
   page  = Math.max(1, page);
   limit = Math.max(1, Math.min(1000, limit));
-  const params = search ? [`%${search}%`] : [];
-  const where = search
-    ? `WHERE (a."ART_DESC" ILIKE $1 OR a."ART_DESC_ABREV" ILIKE $1 OR a."ART_CODIGO_FABRICA" ILIKE $1)`
-    : '';
+  const params = [];
+  const conditions = [];
+  if (search) { params.push(`%${search}%`); conditions.push(`(a."ART_DESC" ILIKE $${params.length} OR a."ART_DESC_ABREV" ILIKE $${params.length} OR a."ART_CODIGO_FABRICA" ILIKE $${params.length})`); }
+  if (linea)  { params.push(Number(linea));  conditions.push(`a."ART_LINEA" = $${params.length}`); }
+  if (marca)  { params.push(Number(marca));  conditions.push(`a."ART_MARCA" = $${params.length}`); }
+  if (rubro)  { params.push(Number(rubro));  conditions.push(`a."ART_RUBRO" = $${params.length}`); }
+  if (estado) { params.push(estado);         conditions.push(`a."ART_EST" = $${params.length}`); }
+  const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
   const allowedSort = {
     cod: 'a."ART_CODIGO"', desc: 'a."ART_DESC"', abrev: 'a."ART_DESC_ABREV"',
     linea: 'l."LIN_DESC"', marca: 'm."MARC_DESC"', rubro: 'r."RUB_DESC"', estado: 'a."ART_EST"',
