@@ -61,6 +61,10 @@ export interface Cliente {
   cli_ind_potencial: 'S' | 'N';
   cli_obs: string | null;
   cli_pers_contacto: string | null;
+  cli_vendedor: number | null;
+  vend_nombre?: string;
+  vend_apellido?: string;
+  cli_cond_venta: string | null;
 }
 
 export interface Articulo {
@@ -259,6 +263,16 @@ export interface Pedido {
   ped_login?: string;
   ped_fec_grab?: string;
   items?: PedidoDet[];
+  ordenes_trabajo?: {
+    ot_clave: number;
+    ot_nro: number;
+    ot_serie: string | null;
+    ot_desc: string | null;
+    ot_situacion: number | null;
+    ot_nro_item_ped: number | null;
+    ot_fec_emis: string | null;
+    tipo_desc: string | null;
+  }[];
 }
 
 export interface ListaPrecio {

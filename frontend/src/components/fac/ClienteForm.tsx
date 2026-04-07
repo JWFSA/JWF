@@ -1,8 +1,8 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { getZonas, getCategorias } from '@/services/fac';
-import { getPaises, getMonedas } from '@/services/gen';
+import { getZonas, getCategorias, getVendedores, getCondiciones } from '@/services/fac';
+import { getPaises } from '@/services/gen';
 
 export interface ClienteFormData {
   cli_nom: string;
@@ -15,7 +15,6 @@ export interface ClienteFormData {
   cli_zona: number | '';
   cli_categ: number | '';
   cli_pais: number | '';
-  cli_mon: number | '';
   cli_est_cli: 'A' | 'I';
   cli_imp_lim_cr: number;
   cli_bloq_lim_cr: 'S' | 'N';
@@ -23,13 +22,17 @@ export interface ClienteFormData {
   cli_ind_potencial: 'S' | 'N';
   cli_obs: string;
   cli_pers_contacto: string;
+  cli_vendedor: number | '';
+  cli_cond_venta: string;
 }
 
 export const emptyCliente: ClienteFormData = {
   cli_nom: '', cli_ruc: '', cli_tel: '', cli_fax: '', cli_email: '',
-  cli_dir2: '', cli_localidad: '', cli_zona: '', cli_categ: '', cli_pais: '', cli_mon: '',
+  cli_dir2: '', cli_localidad: '', cli_zona: '', cli_categ: '', cli_pais: '',
   cli_est_cli: 'A', cli_imp_lim_cr: 0, cli_bloq_lim_cr: 'N',
   cli_max_dias_atraso: 0, cli_ind_potencial: 'N', cli_obs: '', cli_pers_contacto: '',
+  cli_vendedor: '',
+  cli_cond_venta: '',
 };
 
 interface Props {
@@ -48,12 +51,14 @@ export default function ClienteForm({ form, onChange, error, isPending, onSubmit
   const { data: zonasData } = useQuery({ queryKey: ['zonas', { all: true }], queryFn: () => getZonas({ all: true }) });
   const { data: catsData }  = useQuery({ queryKey: ['categorias', { all: true }], queryFn: () => getCategorias({ all: true }) });
   const { data: paisesData } = useQuery({ queryKey: ['paises'], queryFn: getPaises });
-  const { data: monedasData } = useQuery({ queryKey: ['monedas'], queryFn: getMonedas });
+  const { data: vendData } = useQuery({ queryKey: ['vendedores', { all: true }], queryFn: () => getVendedores({ all: true }) });
+  const { data: condData } = useQuery({ queryKey: ['condiciones'], queryFn: getCondiciones });
 
-  const zonas    = zonasData?.data ?? [];
-  const cats     = catsData?.data ?? [];
-  const paises   = Array.isArray(paisesData) ? paisesData : [];
-  const monedas  = Array.isArray(monedasData) ? monedasData : [];
+  const zonas       = zonasData?.data ?? [];
+  const cats        = catsData?.data ?? [];
+  const paises      = Array.isArray(paisesData) ? paisesData : [];
+  const vendedores  = vendData?.data ?? [];
+  const condiciones = condData ?? [];
 
   const input = 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500';
   const sel   = `${input}`;
@@ -134,10 +139,21 @@ export default function ClienteForm({ form, onChange, error, isPending, onSubmit
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Moneda</label>
-            <select value={form.cli_mon} onChange={(e) => set({ cli_mon: e.target.value ? Number(e.target.value) : '' })} className={sel}>
-              <option value="">Sin moneda</option>
-              {monedas.map((m: any) => <option key={m.mon_codigo} value={m.mon_codigo}>{m.mon_desc}</option>)}
+            <label className="block text-sm font-medium text-gray-700 mb-1">Vendedor</label>
+            <select value={form.cli_vendedor} onChange={(e) => set({ cli_vendedor: e.target.value ? Number(e.target.value) : '' })} className={sel}>
+              <option value="">Sin vendedor</option>
+              {vendedores.map((v) => (
+                <option key={v.vend_legajo} value={v.vend_legajo}>{v.oper_nombre} {v.oper_apellido}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Cond. de venta</label>
+            <select value={form.cli_cond_venta} onChange={(e) => set({ cli_cond_venta: e.target.value })} className={sel}>
+              <option value="">Sin condici&oacute;n</option>
+              {condiciones.map((c) => (
+                <option key={c.con_desc} value={c.con_desc}>{c.con_desc}</option>
+              ))}
             </select>
           </div>
           <div>

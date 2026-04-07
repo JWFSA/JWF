@@ -44,7 +44,7 @@ export const menu: MenuItem[] = [
       { label: 'Pedidos / Presupuestos', href: '/fac/pedidos',       icon: ClipboardList },
       { label: 'Clientes',         href: '/fac/clientes',      icon: UserCheck },
       { label: 'Vendedores',       href: '/fac/vendedores',    icon: Handshake },
-      { label: 'Campañas',         href: '/fac/campanhas',     icon: BarChart3 },
+      { label: 'Marcas',            href: '/fac/campanhas',     icon: BarChart3 },
       { label: 'Comisiones',       href: '/fac/comisiones',    icon: Percent },
       { label: 'Sol. descuento',   href: '/fac/solicitudes-descuento', icon: ListOrdered },
       { label: 'Listas de precio', href: '/fac/listas-precio', icon: DollarSign },

@@ -31,7 +31,6 @@ export default function EditarClientePage() {
       cli_zona: cliente.cli_zona ?? '',
       cli_categ: cliente.cli_categ ?? '',
       cli_pais: cliente.cli_pais ?? '',
-      cli_mon: cliente.cli_mon ?? '',
       cli_est_cli: cliente.cli_est_cli ?? 'A',
       cli_imp_lim_cr: cliente.cli_imp_lim_cr ?? 0,
       cli_bloq_lim_cr: cliente.cli_bloq_lim_cr ?? 'N',
@@ -39,6 +38,8 @@ export default function EditarClientePage() {
       cli_ind_potencial: cliente.cli_ind_potencial ?? 'N',
       cli_obs: cliente.cli_obs ?? '',
       cli_pers_contacto: cliente.cli_pers_contacto ?? '',
+      cli_vendedor: cliente.cli_vendedor ?? '',
+      cli_cond_venta: cliente.cli_cond_venta ?? '',
     });
   }, [cliente]);
 
@@ -60,7 +61,6 @@ export default function EditarClientePage() {
       cli_zona:  form.cli_zona  || undefined,
       cli_categ: form.cli_categ || undefined,
       cli_pais:  form.cli_pais  || undefined,
-      cli_mon:   form.cli_mon   || undefined,
     } as any);
   };
 

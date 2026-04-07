@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getPedido, updatePedido, aprobarPedido, rechazarPedido } from '@/services/fac';
 import { crearOTDesdePedido, crearPPDesdePedido } from '@/services/prd';
+import { formatDate } from '@/lib/utils';
 import type { Pedido } from '@/types/fac';
 import PedidoForm from '@/components/fac/PedidoForm';
 import { Receipt, Printer, CheckCircle, XCircle, TicketPercent, Wrench, Factory } from 'lucide-react';
@@ -169,6 +170,50 @@ export default function EditarPedidoPage() {
                 {rechazarMut.isPending ? 'Rechazando...' : 'Confirmar rechazo'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* OTs vinculadas */}
+      {(pedido.ordenes_trabajo ?? []).length > 0 && (
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-6 mb-4">
+          <h2 className="text-sm font-semibold text-primary-600 uppercase tracking-wide mb-3">{'\u00d3'}rdenes de trabajo vinculadas</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm min-w-[500px]">
+              <thead>
+                <tr className="text-left text-xs text-gray-500 uppercase border-b border-gray-200">
+                  <th className="py-2 px-2 w-20">OT Nro.</th>
+                  <th className="py-2 px-2 w-16">Item</th>
+                  <th className="py-2 px-2 w-24">Tipo</th>
+                  <th className="py-2 px-2">Descripci{'\u00f3'}n</th>
+                  <th className="py-2 px-2 w-24">Fecha</th>
+                  <th className="py-2 px-2 w-24">Situaci{'\u00f3'}n</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pedido.ordenes_trabajo!.map((ot) => {
+                  const sitMap: Record<number, { label: string; cls: string }> = {
+                    0: { label: 'Ingresada', cls: 'bg-gray-100 text-gray-600' },
+                    1: { label: 'Abierta', cls: 'bg-blue-100 text-blue-700' },
+                    2: { label: 'En proceso', cls: 'bg-yellow-100 text-yellow-700' },
+                    3: { label: 'Terminada', cls: 'bg-green-100 text-green-700' },
+                    4: { label: 'Facturada', cls: 'bg-purple-100 text-purple-700' },
+                  };
+                  const sit = sitMap[Number(ot.ot_situacion)] ?? { label: String(ot.ot_situacion), cls: 'bg-gray-100 text-gray-500' };
+                  return (
+                    <tr key={ot.ot_clave} className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
+                      onClick={() => router.push(`/prd/ordenes-trabajo/${ot.ot_clave}`)}>
+                      <td className="py-2 px-2 font-mono text-xs text-primary-600 font-medium">{ot.ot_nro}{ot.ot_serie ? `-${ot.ot_serie}` : ''}</td>
+                      <td className="py-2 px-2 text-xs text-gray-500">{ot.ot_nro_item_ped ?? '\u2014'}</td>
+                      <td className="py-2 px-2 text-xs text-gray-500">{ot.tipo_desc ?? '\u2014'}</td>
+                      <td className="py-2 px-2 text-gray-700 truncate max-w-[250px]">{ot.ot_desc ?? '\u2014'}</td>
+                      <td className="py-2 px-2 text-xs text-gray-500">{ot.ot_fec_emis ? formatDate(ot.ot_fec_emis) : '\u2014'}</td>
+                      <td className="py-2 px-2"><span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${sit.cls}`}>{sit.label}</span></td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         </div>
       )}

@@ -190,6 +190,21 @@ const getById = async (id) => {
     [id]
   );
   pedido.items = items;
+
+  // OTs vinculadas
+  const { rows: ordenesTrabajo } = await pool.query(
+    `SELECT ot."OT_CLAVE" AS ot_clave, ot."OT_NRO" AS ot_nro, ot."OT_SERIE" AS ot_serie,
+            ot."OT_DESC" AS ot_desc, ot."OT_SITUACION" AS ot_situacion,
+            ot."OT_NRO_ITEM_PED" AS ot_nro_item_ped, ot."OT_FEC_EMIS" AS ot_fec_emis,
+            t."TIPO_DESC" AS tipo_desc
+     FROM prd_orden_trabajo ot
+     LEFT JOIN prd_tipo_ot t ON t."TIPO_CODIGO" = ot."OT_TIPO"
+     WHERE ot."OT_CLAVE_PED" = $1
+     ORDER BY ot."OT_NRO_ITEM_PED", ot."OT_NRO"`,
+    [id]
+  );
+  pedido.ordenes_trabajo = ordenesTrabajo;
+
   return pedido;
 };
 

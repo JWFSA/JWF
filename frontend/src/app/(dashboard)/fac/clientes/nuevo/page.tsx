@@ -26,10 +26,11 @@ export default function NuevoClientePage() {
     setError('');
     createMut.mutate({
       ...form,
-      cli_zona:  form.cli_zona  || null,
-      cli_categ: form.cli_categ || null,
-      cli_pais:  form.cli_pais  || null,
-      cli_mon:   form.cli_mon   || null,
+      cli_zona:     form.cli_zona     || null,
+      cli_categ:    form.cli_categ    || null,
+      cli_pais:     form.cli_pais     || null,
+      cli_vendedor:   form.cli_vendedor   || null,
+      cli_cond_venta: form.cli_cond_venta || null,
     });
   };
 

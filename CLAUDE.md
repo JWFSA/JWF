@@ -691,7 +691,8 @@ Todos los componentes deben ser responsive. Reglas:
 Todas las fechas en el frontend deben usar las utilidades de `@/lib/utils`:
 
 - **En tablas/listas** (mostrar al usuario): usar `formatDate(value)` → produce `dd/mm/aaaa`
-- **En `<input type="date">`** (formularios): usar `toInputDate(value)` → produce `yyyy-mm-dd`
+- **En `<input type="date">` editables** (formularios): usar `toInputDate(value)` → produce `yyyy-mm-dd`
+- **En campos readonly de formularios** (auditoría, información de solo lectura): usar `formatDate(value)` → produce `dd/mm/aaaa`. Nunca usar `toInputDate()` para campos que el usuario no edita
 - **Nunca** usar `.toString().substring(0, 10)`, `.split('T')[0]` ni ninguna manipulación manual de strings de fecha directamente en componentes
 
 ```ts

@@ -54,17 +54,17 @@ export default function CampanhasPage() {
     <div className="p-4 sm:p-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-xl font-semibold text-gray-800">Campañas</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Campañas comerciales por cliente</p>
+          <h1 className="text-xl font-semibold text-gray-800">Marcas</h1>
+          <p className="text-sm text-gray-500 mt-0.5">Marcas por cliente</p>
         </div>
-        <PrimaryAddButton label="Nueva campaña" shortLabel="Nueva" onClick={openNew} />
+        <PrimaryAddButton label="Nueva marca" shortLabel="Nueva" onClick={openNew} />
       </div>
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
         <div className="p-4 border-b border-gray-100">
           <SearchField value={search} onChange={setSearch} placeholder="Buscar por nombre o cliente..." />
         </div>
         <DataTable isLoading={isLoading} rows={items} getRowKey={(r) => `${r.camp_cli}-${r.camp_nro}`} columns={COLUMNS}
-          onEdit={openEdit} onDelete={(r) => deleteMut.mutate(r)} deleteConfirmMessage="¿Eliminar esta campaña?"
+          onEdit={openEdit} onDelete={(r) => deleteMut.mutate(r)} deleteConfirmMessage="¿Eliminar esta marca?"
           tableClassName="w-full text-sm min-w-[350px]" sortField={sortField} sortDir={sortDir}
           onSortChange={(f, d) => { setSortField(f); setSortDir(d); setPage(1); }} />
         {pagination && <TablePagination total={pagination.total} page={page} limit={limit} totalPages={pagination.totalPages} onPageChange={setPage} onLimitChange={(n) => { setLimit(n); setPage(1); }} />}
@@ -73,7 +73,7 @@ export default function CampanhasPage() {
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={() => setShowModal(false)}>
           <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md mx-4" onClick={(e) => e.stopPropagation()}>
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">{editItem ? 'Editar campaña' : 'Nueva campaña'}</h2>
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">{editItem ? 'Editar marca' : 'Nueva marca'}</h2>
             <div className="space-y-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Nombre <span className="text-red-500">*</span></label>

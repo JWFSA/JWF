@@ -53,11 +53,12 @@ const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortFiel
 const getById = async (id) => {
   const { rows } = await pool.query(
     `SELECT ot.*, t."TIPO_DESC" AS tipo_desc, c."CLI_NOM" AS cli_nom_full,
-            m."MON_DESC" AS mon_desc
+            m."MON_DESC" AS mon_desc, p."PED_NRO" AS ped_nro
      FROM prd_orden_trabajo ot
      LEFT JOIN prd_tipo_ot t ON t."TIPO_CODIGO" = ot."OT_TIPO"
      LEFT JOIN fin_cliente c ON c."CLI_CODIGO" = ot."OT_CLI"
      LEFT JOIN gen_moneda m ON m."MON_CODIGO" = ot."OT_MON"
+     LEFT JOIN fac_pedido p ON p."PED_CLAVE" = ot."OT_CLAVE_PED"
      WHERE ot."OT_CLAVE" = $1`, [id]
   );
   if (!rows.length) throw { status: 404, message: 'OT no encontrada' };

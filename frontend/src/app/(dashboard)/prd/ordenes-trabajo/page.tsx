@@ -15,11 +15,11 @@ import { useFilters } from '@/stores/useFilterStore';
 import { Filter, X } from 'lucide-react';
 
 const SIT: Record<number, { label: string; cls: string }> = {
+  0: { label: 'Ingresada',   cls: 'bg-gray-100 text-gray-600' },
   1: { label: 'Abierta',     cls: 'bg-blue-100 text-blue-700' },
   2: { label: 'En proceso',  cls: 'bg-yellow-100 text-yellow-700' },
   3: { label: 'Terminada',   cls: 'bg-green-100 text-green-700' },
-  4: { label: 'Facturada',   cls: 'bg-gray-100 text-gray-600' },
-  5: { label: 'Anulada',     cls: 'bg-red-100 text-red-600' },
+  4: { label: 'Facturada',   cls: 'bg-purple-100 text-purple-700' },
 };
 
 const fmt = (n?: number | null) => n != null ? new Intl.NumberFormat('es-PY').format(Number(n)) : '\u2014';

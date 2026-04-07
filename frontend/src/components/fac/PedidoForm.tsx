@@ -5,9 +5,9 @@ import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { getClientes, getVendedores, getCondiciones, getArticulos } from '@/services/fac';
 import { getMonedas } from '@/services/gen';
-import { getDepositos } from '@/services/stk';
 import type { Pedido, PedidoDet, Articulo } from '@/types/fac';
 import { Search, Plus, Trash2, ChevronDown, ChevronRight } from 'lucide-react';
+import { toInputDate, formatDate } from '@/lib/utils';
 
 interface Props {
   initial?: Partial<Pedido>;
@@ -41,7 +41,7 @@ const empty: Partial<Pedido> = {
   ped_fec_entreg_prd: null,
   ped_tipo_fac: null,
   ped_dep: null,
-  ped_ind_hab_fac: 'N',
+  ped_ind_hab_fac: 'S',
   ped_ind_req_rem: 'N',
   ped_ind_gar_fun: 'N',
   ped_dias_validez: null,
@@ -50,7 +50,7 @@ const empty: Partial<Pedido> = {
   ped_cli_porc_ex: 0,
   ped_porc_dto: 0,
   ped_porc_rgo: 0,
-  ped_fto_imp: null,
+  ped_fto_imp: 1,
   ped_list_precio: null,
   items: [],
 };
@@ -128,6 +128,9 @@ function ItemDetailPanel({ it, idx, updateItem }: { it: PedidoDet; idx: number; 
           <div><label className={lbl}>Fec.Inicio</label><input type="date" className={inp} value={it.pdet_fec_ini_cont ?? ''} onChange={upd('pdet_fec_ini_cont')} /></div>
           <div><label className={lbl}>Fec.Fin</label><input type="date" className={inp} value={it.pdet_fec_fin_cont ?? ''} onChange={upd('pdet_fec_fin_cont')} /></div>
           <div><label className={lbl}>Duraci&oacute;n</label><input type="number" className={inp} value={it.pdet_duracion ?? ''} onChange={upd('pdet_duracion')} /></div>
+          <div><label className={lbl}>Segundos</label><input type="number" className={inp} value={it.pdet_segundos ?? ''} onChange={upd('pdet_segundos')} /></div>
+          <div><label className={lbl}>Inserciones</label><input type="number" className={inp} value={it.pdet_inserciones ?? ''} onChange={upd('pdet_inserciones')} /></div>
+          <div><label className={lbl}>Tot.Seg/Día</label><input type="number" className={`${inp} bg-gray-100`} value={it.pdet_tot_seg_dia ?? ''} readOnly /></div>
           <div><label className={lbl}>Bonif.</label><input className={inp} maxLength={1} value={it.pdet_art_bonif ?? ''} onChange={upd('pdet_art_bonif')} /></div>
 
           {/* Indicadores */}
@@ -152,8 +155,24 @@ function ItemDetailPanel({ it, idx, updateItem }: { it: PedidoDet; idx: number; 
 export default function PedidoForm({ initial, onSave, isPending, error, tipo = 'V' }: Props) {
   const label = TIPO_LABEL[tipo] ? `pedido (${TIPO_LABEL[tipo]})` : 'pedido';
   const router = useRouter();
-  const [form, setForm] = useState<Partial<Pedido>>({ ...empty, ...initial });
-  const [items, setItems] = useState<PedidoDet[]>(initial?.items ?? []);
+  const [form, setForm] = useState<Partial<Pedido>>(() => {
+    const merged = { ...empty, ...initial };
+    // Convertir fechas ISO a yyyy-mm-dd para inputs type="date"
+    merged.ped_fecha = toInputDate(merged.ped_fecha) || new Date().toISOString().split('T')[0];
+    merged.ped_fec_orco = toInputDate(merged.ped_fec_orco) || null;
+    merged.ped_fec_entreg_req = toInputDate(merged.ped_fec_entreg_req) || null;
+    merged.ped_fec_entreg_prd = toInputDate(merged.ped_fec_entreg_prd) || null;
+    merged.ped_fec_cierre = toInputDate(merged.ped_fec_cierre) || null;
+    merged.ped_fec_envio = toInputDate(merged.ped_fec_envio) || null;
+    return merged;
+  });
+  const [items, setItems] = useState<PedidoDet[]>(() =>
+    (initial?.items ?? []).map((it) => ({
+      ...it,
+      pdet_fec_ini_cont: toInputDate(it.pdet_fec_ini_cont) || null,
+      pdet_fec_fin_cont: toInputDate(it.pdet_fec_fin_cont) || null,
+    }))
+  );
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
 
   // Article search state
@@ -197,7 +216,6 @@ export default function PedidoForm({ initial, onSave, isPending, error, tipo = '
   const { data: condData } = useQuery({ queryKey: ['condiciones'], queryFn: getCondiciones });
   const { data: vendData } = useQuery({ queryKey: ['vendedores', { all: true }], queryFn: () => getVendedores({ all: true }) });
   const { data: monData } = useQuery({ queryKey: ['monedas'], queryFn: getMonedas });
-  const { data: depData } = useQuery({ queryKey: ['depositos', { all: true }], queryFn: () => getDepositos({ all: true }) });
 
   const { data: artData } = useQuery({
     queryKey: ['articulos-search', debouncedArtSearch],
@@ -207,7 +225,7 @@ export default function PedidoForm({ initial, onSave, isPending, error, tipo = '
 
   const set = (k: keyof Pedido, v: unknown) => setForm((f) => ({ ...f, [k]: v }));
 
-  const selectCliente = (c: { cli_codigo: number; cli_nom: string; cli_ruc?: string | null; cli_tel?: string | null; cli_dir2?: string | null; cli_pers_contacto?: string | null }) => {
+  const selectCliente = (c: { cli_codigo: number; cli_nom: string; cli_ruc?: string | null; cli_tel?: string | null; cli_dir2?: string | null; cli_pers_contacto?: string | null; cli_vendedor?: number | null; cli_cond_venta?: string | null }) => {
     set('ped_cli', c.cli_codigo);
     set('ped_cli_nom', c.cli_nom);
     set('ped_cli_ruc', c.cli_ruc || null);
@@ -216,6 +234,8 @@ export default function PedidoForm({ initial, onSave, isPending, error, tipo = '
     set('ped_ruc', c.cli_ruc || null);
     set('ped_tel', c.cli_tel || null);
     set('ped_contacto', c.cli_pers_contacto || null);
+    if (c.cli_vendedor) set('ped_vendedor', c.cli_vendedor);
+    if (c.cli_cond_venta) set('ped_cond_venta', c.cli_cond_venta);
     setCliSearch(c.cli_nom);
     setCliDropOpen(false);
   };
@@ -273,7 +293,6 @@ export default function PedidoForm({ initial, onSave, isPending, error, tipo = '
   const vendedores = vendData?.data ?? [];
   const condiciones = condData ?? [];
   const monedas = monData ?? [];
-  const depositos = depData?.data ?? [];
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -353,27 +372,6 @@ export default function PedidoForm({ initial, onSave, isPending, error, tipo = '
             </select>
           </div>
 
-          {/* Deposito */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Dep&oacute;sito</label>
-            <select value={form.ped_dep ?? ''} onChange={(e) => set('ped_dep', e.target.value ? Number(e.target.value) : null)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
-              <option value="">— Sin dep&oacute;sito —</option>
-              {depositos.map((d) => (
-                <option key={d.dep_codigo} value={d.dep_codigo}>{d.dep_desc}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Hab. p/ Facturar */}
-          <div className="flex items-end gap-2">
-            <label className="flex items-center gap-2 text-sm text-gray-700">
-              <input type="checkbox" checked={form.ped_ind_hab_fac === 'S'}
-                onChange={(e) => set('ped_ind_hab_fac', e.target.checked ? 'S' : 'N')}
-                className="rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
-              Hab. p/ Facturar
-            </label>
-          </div>
 
           {/* Cliente */}
           <div className="sm:col-span-2" ref={cliRef}>
@@ -420,6 +418,13 @@ export default function PedidoForm({ initial, onSave, isPending, error, tipo = '
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">RUC</label>
             <input value={form.ped_ruc ?? ''} onChange={(e) => set('ped_ruc', e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
+          </div>
+
+          {/* Marca */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Marca</label>
+            <input type="number" value={form.ped_campanha ?? ''} onChange={(e) => set('ped_campanha', e.target.value ? Number(e.target.value) : null)}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
           </div>
 
@@ -539,8 +544,12 @@ export default function PedidoForm({ initial, onSave, isPending, error, tipo = '
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Formato Imp.</label>
-            <input type="number" value={form.ped_fto_imp ?? ''} onChange={(e) => set('ped_fto_imp', e.target.value ? Number(e.target.value) : null)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
+            <select value={form.ped_fto_imp ?? ''} onChange={(e) => set('ped_fto_imp', e.target.value !== '' ? Number(e.target.value) : null)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
+              <option value="1">1 - Detalle con precio por l&iacute;nea</option>
+              <option value="2">2 - Detalle con precio &uacute;nico final</option>
+              <option value="3">3 - Texto largo a definir al facturar</option>
+            </select>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Lista Precio</label>
@@ -559,8 +568,50 @@ export default function PedidoForm({ initial, onSave, isPending, error, tipo = '
               onChange={(e) => set('ped_porc_rgo', parseFloat(e.target.value) || 0)}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
           </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Ind. Facturación</label>
+            <select value={form.ped_ind_fac ?? ''} onChange={(e) => set('ped_ind_fac', e.target.value || null)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
+              <option value="">—</option>
+              <option value="P">Parcial</option>
+              <option value="T">Total</option>
+              <option value="N">No facturado</option>
+            </select>
+          </div>
         </div>
       </Section>
+
+      {/* ──────────── AUDITORÍA ──────────── */}
+      {initial?.ped_clave && (
+        <Section title="Auditoría" defaultOpen={false}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Operador</label>
+              <input readOnly value={initial.ped_operador ?? ''} className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Login Grabación</label>
+              <input readOnly value={initial.ped_login ?? ''} className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Fecha Grabación</label>
+              <input readOnly value={formatDate(initial.ped_fec_grab)} className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Login Autorización</label>
+              <input readOnly value={initial.ped_login_auto ?? ''} className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Fecha Autorización</label>
+              <input readOnly value={formatDate(initial.ped_fech_auto)} className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Procesado</label>
+              <input readOnly value={initial.ped_procesado === 'S' ? 'Sí' : 'No'} className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600" />
+            </div>
+          </div>
+        </Section>
+      )}
 
       {/* ──────────── ITEMS ──────────── */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-6">
