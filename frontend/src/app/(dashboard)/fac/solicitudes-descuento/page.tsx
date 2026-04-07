@@ -7,6 +7,7 @@ import { getSolicitudesDescuento } from '@/services/fac';
 import { formatDate } from '@/lib/utils';
 import type { SolicitudDescuento } from '@/types/fac';
 import DataTable from '@/components/ui/DataTable';
+import PrimaryAddButton from '@/components/ui/PrimaryAddButton';
 import SearchField from '@/components/ui/SearchField';
 import TablePagination from '@/components/ui/TablePagination';
 
@@ -39,9 +40,12 @@ export default function SolicitudesDescuentoPage() {
 
   return (
     <div className="p-4 sm:p-6">
-      <div className="mb-6">
-        <h1 className="text-xl font-semibold text-gray-800">Solicitudes de descuento</h1>
-        <p className="text-sm text-gray-500 mt-0.5">Solicitudes de descuento sobre pedidos</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+        <div>
+          <h1 className="text-xl font-semibold text-gray-800">Solicitudes de descuento</h1>
+          <p className="text-sm text-gray-500 mt-0.5">Solicitudes de descuento sobre pedidos</p>
+        </div>
+        <PrimaryAddButton label="Nueva solicitud" shortLabel="Nueva" href="/fac/solicitudes-descuento/nuevo" />
       </div>
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
         <div className="p-4 border-b border-gray-100">

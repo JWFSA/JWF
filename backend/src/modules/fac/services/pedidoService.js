@@ -2,16 +2,21 @@ const pool = require('../../../config/db');
 
 // ─── PEDIDOS ─────────────────────────────────────────────────────────────────
 
-const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc', tipo = 'V' } = {}) => {
+const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc', tipo = '', fechaDesde = '', fechaHasta = '', estado = '', vendedor = '' } = {}) => {
   page  = Math.max(1, page);
   limit = Math.max(1, Math.min(1000, limit));
-  const params = [tipo];
-  const conditions = ['p."PED_TIPO" = $1'];
+  const params = [];
+  const conditions = [];
+  if (tipo) { params.push(tipo); conditions.push(`p."PED_TIPO" = $${params.length}`); }
   if (search) {
     params.push(`%${search}%`);
     conditions.push(`(c."CLI_NOM" ILIKE $${params.length} OR CAST(p."PED_NRO" AS TEXT) ILIKE $${params.length} OR p."PED_PRODUCTO" ILIKE $${params.length})`);
   }
-  const where = `WHERE ${conditions.join(' AND ')}`;
+  if (fechaDesde) { params.push(fechaDesde); conditions.push(`p."PED_FECHA" >= $${params.length}`); }
+  if (fechaHasta) { params.push(fechaHasta); conditions.push(`p."PED_FECHA" <= $${params.length}`); }
+  if (estado) { params.push(estado); conditions.push(`p."PED_ESTADO" = $${params.length}`); }
+  if (vendedor) { params.push(vendedor); conditions.push(`p."PED_VENDEDOR" = $${params.length}`); }
+  const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
   const countRes = await pool.query(
     `SELECT COUNT(*) FROM fac_pedido p LEFT JOIN fin_cliente c ON c."CLI_CODIGO" = p."PED_CLI" ${where}`,
     params
@@ -25,6 +30,7 @@ const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortFiel
   const orderBy = allowedSort[sortField] ? `${allowedSort[sortField]} ${dir}` : 'p."PED_CLAVE" DESC';
   const select = `
     SELECT p."PED_CLAVE" AS ped_clave, p."PED_NRO" AS ped_nro, p."PED_FECHA" AS ped_fecha,
+           p."PED_TIPO" AS ped_tipo,
            p."PED_ESTADO" AS ped_estado, p."PED_IMP_TOTAL_MON" AS ped_imp_total_mon,
            p."PED_IMP_DCTO_MON" AS ped_imp_dcto_mon, p."PED_IMP_FACTURADO" AS ped_imp_facturado,
            p."PED_COND_VENTA" AS ped_cond_venta, p."PED_MON" AS ped_mon,
@@ -495,4 +501,95 @@ const convertirAVenta = async (id) => {
   return getById(id);
 };
 
-module.exports = { getAll, getById, create, update, remove, getArticulos, getParaFacturar, convertirAVenta };
+const copiar = async (id, tipoDestino, login = 'SISTEMA') => {
+  const origen = await getById(id);
+  const data = {
+    ped_tipo: tipoDestino || origen.ped_tipo,
+    ped_fecha: new Date().toISOString().split('T')[0],
+    ped_cli: origen.ped_cli,
+    ped_contacto: origen.ped_contacto,
+    ped_tel: origen.ped_tel,
+    ped_ruc: origen.ped_ruc,
+    ped_campanha: origen.ped_campanha,
+    ped_vendedor: origen.ped_vendedor,
+    ped_cond_venta: origen.ped_cond_venta,
+    ped_producto: origen.ped_producto,
+    ped_concepto: origen.ped_concepto,
+    ped_obs: origen.ped_obs,
+    ped_mon: origen.ped_mon,
+    ped_dep: origen.ped_dep,
+    ped_ind_prd: origen.ped_ind_prd,
+    ped_tipo_fac: origen.ped_tipo_fac,
+    ped_ind_req_rem: origen.ped_ind_req_rem,
+    ped_ind_gar_fun: origen.ped_ind_gar_fun,
+    ped_dias_validez: origen.ped_dias_validez,
+    ped_tiempo_realiz: origen.ped_tiempo_realiz,
+    ped_tasa_us: origen.ped_tasa_us,
+    ped_cli_porc_ex: origen.ped_cli_porc_ex,
+    ped_cli_nom: origen.ped_cli_nom,
+    ped_cli_dir: origen.ped_cli_dir,
+    ped_cli_tel: origen.ped_cli_tel,
+    ped_cli_ruc: origen.ped_cli_ruc,
+    ped_porc_dto: origen.ped_porc_dto,
+    ped_porc_rgo: origen.ped_porc_rgo,
+    ped_list_precio: origen.ped_list_precio,
+    ped_estado: 'P',
+    items: (origen.items || []).map((it) => ({
+      pdet_art: it.pdet_art,
+      pdet_um_ped: it.pdet_um_ped,
+      pdet_cant_ped: it.pdet_cant_ped,
+      pdet_precio: it.pdet_precio,
+      pdet_porc_dcto: it.pdet_porc_dcto,
+      pdet_desc_larga: it.pdet_desc_larga,
+      pdet_calid_imp: it.pdet_calid_imp,
+      pdet_ind_med: it.pdet_ind_med,
+      pdet_ind_imp_dig: it.pdet_ind_imp_dig,
+      pdet_tipo_ot: it.pdet_tipo_ot,
+      pdet_tipo_prod: it.pdet_tipo_prod,
+      pdet_resolucion: it.pdet_resolucion,
+      pdet_nro_lados_imp: it.pdet_nro_lados_imp,
+      pdet_ind_pru_color: it.pdet_ind_pru_color,
+      pdet_ind_disenho: it.pdet_ind_disenho,
+      pdet_med_base: it.pdet_med_base,
+      pdet_med_alto: it.pdet_med_alto,
+      pdet_med_total: it.pdet_med_total,
+      pdet_med_base_t: it.pdet_med_base_t,
+      pdet_med_alto_t: it.pdet_med_alto_t,
+      pdet_med_total_t: it.pdet_med_total_t,
+      pdet_costo_ar: it.pdet_costo_ar,
+      pdet_costo_tot: it.pdet_costo_tot,
+      pdet_precio_lista: it.pdet_precio_lista,
+      pdet_duracion: it.pdet_duracion,
+      pdet_fec_ini_cont: it.pdet_fec_ini_cont,
+      pdet_fec_fin_cont: it.pdet_fec_fin_cont,
+      pdet_cod_impu: it.pdet_cod_impu,
+      pdet_obs: it.pdet_obs,
+      pdet_contenido: it.pdet_contenido,
+      pdet_art_bonif: it.pdet_art_bonif,
+    })),
+  };
+  return create(data, login);
+};
+
+const aprobar = async (id, login = 'SISTEMA') => {
+  const hoy = new Date().toISOString().split('T')[0];
+  await pool.query(
+    `UPDATE fac_pedido SET "PED_ESTADO" = 'A', "PED_APROBADO" = $1, "PED_FEC_ESTADO" = $2, "PED_LOGIN_ESTADO" = $3
+     WHERE "PED_CLAVE" = $4`,
+    [login, hoy, login, id]
+  );
+  return getById(id);
+};
+
+const rechazar = async (id, motivo, login = 'SISTEMA') => {
+  const hoy = new Date().toISOString().split('T')[0];
+  await pool.query(
+    `UPDATE fac_pedido SET "PED_ESTADO" = 'C', "PED_OBS_RECHAZO" = $1, "PED_FEC_RECHAZO" = $2, "PED_USER_RECHAZO" = $3,
+     "PED_FEC_ESTADO" = $2, "PED_LOGIN_ESTADO" = $3
+     WHERE "PED_CLAVE" = $4`,
+    [motivo || null, hoy, login, id]
+  );
+  return getById(id);
+};
+
+module.exports = { getAll, getById, create, update, remove, getArticulos, getParaFacturar, convertirAVenta, copiar, aprobar, rechazar };

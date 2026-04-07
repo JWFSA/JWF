@@ -16,7 +16,7 @@ export default function Sidebar({ onClose }: Props) {
   const pathname = usePathname();
 
   const getOpenGroups = () =>
-    menu.filter((item) => item.children?.some((child) => pathname.startsWith(child.href))).map((item) => item.label);
+    menu.filter((item) => item.children?.some((child) => child.href && pathname.startsWith(child.href))).map((item) => item.label);
 
   const [open, setOpen] = useState<string[]>(getOpenGroups);
 
@@ -102,15 +102,15 @@ export default function Sidebar({ onClose }: Props) {
               </button>
               {isOpen && (
                 <div className="ml-4 mt-1 space-y-1">
-                  {item.children.map((child) => (
+                  {item.children.filter((child) => child.href).map((child) => (
                     <Link
                       key={child.href}
-                      href={child.href}
+                      href={child.href!}
                       onClick={handleNavClick}
-                      data-active={pathname.startsWith(child.href) || undefined}
+                      data-active={pathname.startsWith(child.href!) || undefined}
                       className={cn(
                         'flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition',
-                        pathname.startsWith(child.href)
+                        pathname.startsWith(child.href!)
                           ? 'bg-primary-600 text-white'
                           : 'text-gray-400 hover:bg-gray-800 hover:text-gray-100'
                       )}

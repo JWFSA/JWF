@@ -14,6 +14,7 @@ const finRoutes = require('./modules/fin/routes');
 const perRoutes = require('./modules/per/routes');
 const comRoutes = require('./modules/com/routes');
 const cntRoutes = require('./modules/cnt/routes');
+const prdRoutes = require('./modules/prd/routes');
 
 const app = express();
 
@@ -28,6 +29,7 @@ app.use('/api/fin', finRoutes);
 app.use('/api/per', perRoutes);
 app.use('/api/com', comRoutes);
 app.use('/api/cnt', cntRoutes);
+app.use('/api/prd', prdRoutes);
 
 app.get('/api/health', async (req, res) => {
   try {

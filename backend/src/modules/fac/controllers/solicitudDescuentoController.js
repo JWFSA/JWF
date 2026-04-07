@@ -21,4 +21,34 @@ const getById = async (req, res, next) => {
   } catch (e) { next(e); }
 };
 
-module.exports = { getAll, getById };
+const create = async (req, res, next) => {
+  try {
+    if (!req.body.sod_clave_ped) return res.status(400).json({ message: 'El pedido es requerido' });
+    if (!req.body.detalle?.length) return res.status(400).json({ message: 'Debe incluir al menos un ítem' });
+    const login = req.user?.login || 'SISTEMA';
+    res.status(201).json(await s.create(req.body, login));
+  } catch (e) { next(e); }
+};
+
+const procesarItem = async (req, res, next) => {
+  try {
+    const clave = Number(req.params.id);
+    const item = Number(req.params.item);
+    const accion = req.params.accion; // 'aprobar' o 'rechazar'
+    if (!['aprobar', 'rechazar'].includes(accion)) return res.status(400).json({ message: 'Acción inválida' });
+    const login = req.user?.login || 'SISTEMA';
+    res.json(await s.procesarItem(clave, item, accion, req.body, login));
+  } catch (e) { next(e); }
+};
+
+const procesarTodos = async (req, res, next) => {
+  try {
+    const clave = Number(req.params.id);
+    const accion = req.params.accion;
+    if (!['aprobar', 'rechazar'].includes(accion)) return res.status(400).json({ message: 'Acción inválida' });
+    const login = req.user?.login || 'SISTEMA';
+    res.json(await s.procesarTodos(clave, accion, login));
+  } catch (e) { next(e); }
+};
+
+module.exports = { getAll, getById, create, procesarItem, procesarTodos };

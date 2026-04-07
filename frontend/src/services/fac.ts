@@ -60,6 +60,9 @@ export const deletePedido  = (id: number) => api.delete(`/fac/pedidos/${id}`);
 
 // Pedido → Factura
 export const getPedidoParaFacturar = (id: number) => api.get<PedidoParaFacturar>(`/fac/pedidos/${id}/para-facturar`).then((r) => r.data);
+export const copiarPedido          = (id: number) => api.post<Pedido>(`/fac/pedidos/${id}/copiar`).then((r) => r.data);
+export const aprobarPedido         = (id: number) => api.post<Pedido>(`/fac/pedidos/${id}/aprobar`).then((r) => r.data);
+export const rechazarPedido        = (id: number, motivo: string) => api.post<Pedido>(`/fac/pedidos/${id}/rechazar`, { motivo }).then((r) => r.data);
 
 // Presupuestos
 export const getPresupuestos      = (params?: ListParams) => api.get<Paginated<Pedido>>('/fac/presupuestos', { params }).then((r) => r.data);
@@ -68,6 +71,7 @@ export const createPresupuesto    = (data: Partial<Pedido>) => api.post<Pedido>(
 export const updatePresupuesto    = (id: number, data: Partial<Pedido>) => api.put<Pedido>(`/fac/presupuestos/${id}`, data).then((r) => r.data);
 export const deletePresupuesto    = (id: number) => api.delete(`/fac/presupuestos/${id}`);
 export const convertirPresupuesto = (id: number) => api.post<Pedido>(`/fac/presupuestos/${id}/convertir`).then((r) => r.data);
+export const copiarPresupuesto    = (id: number) => api.post<Pedido>(`/fac/presupuestos/${id}/copiar`).then((r) => r.data);
 
 // Facturas
 export const getFacturas   = (params?: ListParams) => api.get<Paginated<Factura>>('/fac/facturas', { params }).then((r) => r.data);
@@ -85,6 +89,11 @@ export const deleteCampanha   = (cli: number, nro: number) => api.delete(`/fac/c
 // Comisiones (solo lectura)
 export const getComisiones    = (params?: ListParams) => api.get<Paginated<ComisionFac>>('/fac/comisiones', { params }).then((r) => r.data);
 
-// Solicitudes de descuento (solo lectura)
+// Solicitudes de descuento
 export const getSolicitudesDescuento = (params?: ListParams) => api.get<Paginated<SolicitudDescuento>>('/fac/solicitudes-descuento', { params }).then((r) => r.data);
 export const getSolicitudDescuento   = (id: number) => api.get<SolicitudDescuento>(`/fac/solicitudes-descuento/${id}`).then((r) => r.data);
+export const createSolicitudDescuento = (data: Record<string, unknown>) => api.post<SolicitudDescuento>('/fac/solicitudes-descuento', data).then((r) => r.data);
+export const aprobarSolicitudItem    = (id: number, item: number, data?: Record<string, unknown>) => api.post<SolicitudDescuento>(`/fac/solicitudes-descuento/${id}/item/${item}/aprobar`, data).then((r) => r.data);
+export const rechazarSolicitudItem   = (id: number, item: number) => api.post<SolicitudDescuento>(`/fac/solicitudes-descuento/${id}/item/${item}/rechazar`).then((r) => r.data);
+export const aprobarSolicitudTodos   = (id: number) => api.post<SolicitudDescuento>(`/fac/solicitudes-descuento/${id}/aprobar`).then((r) => r.data);
+export const rechazarSolicitudTodos  = (id: number) => api.post<SolicitudDescuento>(`/fac/solicitudes-descuento/${id}/rechazar`).then((r) => r.data);

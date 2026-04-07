@@ -77,4 +77,111 @@ const getById = async (clave) => {
   return { ...rows[0], detalle };
 };
 
-module.exports = { getAll, getById };
+// ─── CREAR solicitud desde pedido ───────────────────────────────────────────
+
+const create = async (data, login = 'SISTEMA') => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const { rows: [{ next: clave }] } = await client.query('SELECT COALESCE(MAX("SOD_CLAVE"), 0) + 1 AS next FROM fac_solicitud_descuento');
+    const { rows: [{ next: nro }] } = await client.query('SELECT COALESCE(MAX("SOD_NRO"), 0) + 1 AS next FROM fac_solicitud_descuento');
+    const hoy = new Date().toISOString().split('T')[0];
+
+    await client.query(
+      `INSERT INTO fac_solicitud_descuento ("SOD_CLAVE","SOD_NRO","SOD_CLAVE_PED","SOD_FECHA_SOL","SOD_FEC_GRAB","SOD_LOGIN_SOL")
+       VALUES ($1,$2,$3,$4,$5,$6)`,
+      [clave, nro, data.sod_clave_ped, data.sod_fecha_sol || hoy, hoy, login]
+    );
+
+    for (let i = 0; i < (data.detalle || []).length; i++) {
+      const d = data.detalle[i];
+      const netoAnt = Number(d.sode_imp_neto_ant || 0);
+      const impSol = netoAnt * (Number(d.sode_dcto_sol || 0) / 100);
+      await client.query(
+        `INSERT INTO fac_solicitud_descuento_det
+         ("SODE_CLAVE","SODE_ITEM","SODE_ART","SODE_ITEM_PED","SODE_CLAVE_PED",
+          "SODE_DCTO_SOL","SODE_DCTO_APROB","SODE_ESTADO",
+          "SODE_IMP_SOL","SODE_IMP_APROB","SODE_IMP_NETO_ANT","SODE_IMP_NETO_FINAL")
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+        [
+          clave, i + 1, d.sode_art, d.sode_item_ped, data.sod_clave_ped,
+          d.sode_dcto_sol || 0, null, 'P',
+          impSol, null, netoAnt, netoAnt,
+        ]
+      );
+    }
+
+    await client.query('COMMIT');
+    return getById(clave);
+  } catch (e) {
+    await client.query('ROLLBACK');
+    throw e;
+  } finally {
+    client.release();
+  }
+};
+
+// ─── APROBAR / RECHAZAR items ───────────────────────────────────────────────
+
+const procesarItem = async (clave, item, accion, data, login = 'SISTEMA') => {
+  const estado = accion === 'aprobar' ? 'A' : 'R';
+  const hoy = new Date().toISOString().split('T')[0];
+
+  if (accion === 'aprobar') {
+    // Calcular neto final con dcto aprobado
+    const { rows } = await pool.query(
+      `SELECT "SODE_IMP_NETO_ANT", "SODE_DCTO_SOL" FROM fac_solicitud_descuento_det WHERE "SODE_CLAVE" = $1 AND "SODE_ITEM" = $2`,
+      [clave, item]
+    );
+    if (!rows.length) throw { status: 404, message: 'Item no encontrado' };
+    const netoAnt = Number(rows[0].SODE_IMP_NETO_ANT || 0);
+    const dctoAprob = data.sode_dcto_aprob ?? Number(rows[0].SODE_DCTO_SOL);
+    const impAprob = netoAnt * (dctoAprob / 100);
+    const netoFinal = netoAnt - impAprob;
+
+    await pool.query(
+      `UPDATE fac_solicitud_descuento_det
+       SET "SODE_ESTADO" = $1, "SODE_FEC_EST" = $2, "SODE_USER_EST" = $3,
+           "SODE_DCTO_APROB" = $4, "SODE_IMP_APROB" = $5, "SODE_IMP_NETO_FINAL" = $6
+       WHERE "SODE_CLAVE" = $7 AND "SODE_ITEM" = $8`,
+      [estado, hoy, login, dctoAprob, impAprob, netoFinal, clave, item]
+    );
+
+    // Actualizar descuento en el pedido_det correspondiente
+    const { rows: detRows } = await pool.query(
+      `SELECT "SODE_CLAVE_PED", "SODE_ITEM_PED" FROM fac_solicitud_descuento_det WHERE "SODE_CLAVE" = $1 AND "SODE_ITEM" = $2`,
+      [clave, item]
+    );
+    if (detRows.length && detRows[0].SODE_CLAVE_PED && detRows[0].SODE_ITEM_PED) {
+      await pool.query(
+        `UPDATE fac_pedido_det SET "PDET_PORC_DCTO" = $1, "PDET_IND_DTO_AUTORIZADO" = 'S', "PDET_DTO_LOGIN" = $2
+         WHERE "PDET_CLAVE_PED" = $3 AND "PDET_NRO_ITEM" = $4`,
+        [dctoAprob, login, detRows[0].SODE_CLAVE_PED, detRows[0].SODE_ITEM_PED]
+      );
+    }
+  } else {
+    await pool.query(
+      `UPDATE fac_solicitud_descuento_det
+       SET "SODE_ESTADO" = $1, "SODE_FEC_EST" = $2, "SODE_USER_EST" = $3,
+           "SODE_DCTO_APROB" = 0, "SODE_IMP_APROB" = 0
+       WHERE "SODE_CLAVE" = $4 AND "SODE_ITEM" = $5`,
+      [estado, hoy, login, clave, item]
+    );
+  }
+
+  return getById(clave);
+};
+
+// ─── APROBAR/RECHAZAR TODOS ─────────────────────────────────────────────────
+
+const procesarTodos = async (clave, accion, login = 'SISTEMA') => {
+  const sol = await getById(clave);
+  for (const d of (sol.detalle || [])) {
+    if (d.sode_estado === 'P') {
+      await procesarItem(clave, d.sode_item, accion, { sode_dcto_aprob: d.sode_dcto_sol }, login);
+    }
+  }
+  return getById(clave);
+};
+
+module.exports = { getAll, getById, create, procesarItem, procesarTodos };

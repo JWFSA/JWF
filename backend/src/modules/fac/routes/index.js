@@ -63,6 +63,9 @@ router.post('/pedidos',       verifyToken, pedidoController.create);
 router.put('/pedidos/:id',    verifyToken, pedidoController.update);
 router.delete('/pedidos/:id', verifyToken, pedidoController.remove);
 router.get('/pedidos/:id/para-facturar', verifyToken, pedidoController.getParaFacturar);
+router.post('/pedidos/:id/copiar', verifyToken, pedidoController.copiar);
+router.post('/pedidos/:id/aprobar', verifyToken, pedidoController.aprobar);
+router.post('/pedidos/:id/rechazar', verifyToken, pedidoController.rechazar);
 
 // Presupuestos (misma tabla, tipo='P')
 router.get('/presupuestos', verifyToken, (req, res, next) => { req.query.tipo = 'P'; pedidoController.getAll(req, res, next); });
@@ -71,6 +74,7 @@ router.post('/presupuestos', verifyToken, (req, res, next) => { req.body.ped_tip
 router.put('/presupuestos/:id', verifyToken, pedidoController.update);
 router.delete('/presupuestos/:id', verifyToken, pedidoController.remove);
 router.post('/presupuestos/:id/convertir', verifyToken, pedidoController.convertir);
+router.post('/presupuestos/:id/copiar', verifyToken, pedidoController.copiar);
 
 const facturaController  = require('../controllers/facturaController');
 
@@ -90,8 +94,11 @@ router.delete('/campanhas/:cli/:nro',       verifyToken, campanhaController.remo
 // Comisiones (solo lectura)
 router.get('/comisiones',                   verifyToken, comisionController.getAll);
 
-// Solicitudes de descuento (solo lectura)
-router.get('/solicitudes-descuento',        verifyToken, solicitudDescuentoController.getAll);
-router.get('/solicitudes-descuento/:id',    verifyToken, solicitudDescuentoController.getById);
+// Solicitudes de descuento
+router.get('/solicitudes-descuento',                          verifyToken, solicitudDescuentoController.getAll);
+router.get('/solicitudes-descuento/:id',                      verifyToken, solicitudDescuentoController.getById);
+router.post('/solicitudes-descuento',                         verifyToken, solicitudDescuentoController.create);
+router.post('/solicitudes-descuento/:id/:accion',             verifyToken, solicitudDescuentoController.procesarTodos);
+router.post('/solicitudes-descuento/:id/item/:item/:accion',  verifyToken, solicitudDescuentoController.procesarItem);
 
 module.exports = router;

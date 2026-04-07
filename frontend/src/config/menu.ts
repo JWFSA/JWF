@@ -40,9 +40,8 @@ export const menu: MenuItem[] = [
     label: 'Facturación',
     icon: ShoppingCart,
     children: [
-      { label: 'Facturas',          href: '/fac/facturas',      icon: Receipt },
-      { label: 'Pedidos',          href: '/fac/pedidos',       icon: ClipboardList },
-      { label: 'Presupuestos',    href: '/fac/presupuestos',  icon: FileText },
+      { label: 'Facturas',              href: '/fac/facturas',      icon: Receipt },
+      { label: 'Pedidos / Presupuestos', href: '/fac/pedidos',       icon: ClipboardList },
       { label: 'Clientes',         href: '/fac/clientes',      icon: UserCheck },
       { label: 'Vendedores',       href: '/fac/vendedores',    icon: Handshake },
       { label: 'Campañas',         href: '/fac/campanhas',     icon: BarChart3 },
@@ -97,6 +96,14 @@ export const menu: MenuItem[] = [
       { label: 'Ocupaciones',        href: '/stk/ocupaciones',     icon: Grid3x3 },
       { label: 'Inserciones',        href: '/stk/inserciones',     icon: Signal },
       { label: 'Cotizaciones',      href: '/stk/cotizaciones',    icon: ArrowLeftRight },
+    ],
+  },
+  {
+    label: 'Producci\u00f3n',
+    icon: HardHat,
+    children: [
+      { label: '\u00d3rdenes de trabajo', href: '/prd/ordenes-trabajo',      icon: Wrench },
+      { label: 'Pedidos producci\u00f3n', href: '/prd/pedidos-produccion',   icon: ClipboardList },
     ],
   },
   {

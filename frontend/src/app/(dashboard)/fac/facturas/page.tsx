@@ -56,7 +56,7 @@ export default function FacturasPage() {
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
-  const [sortField, setSortField] = useState('fecha');
+  const [sortField, setSortField] = useState('nro');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
   const activeFilters = [filters.fechaDesde, filters.fechaHasta, filters.moneda, filters.soloConSaldo, filters.tipoMov, filters.nroDoc].filter(Boolean).length;

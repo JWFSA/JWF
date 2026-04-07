@@ -6,7 +6,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getPresupuesto, updatePresupuesto, convertirPresupuesto } from '@/services/fac';
 import type { Pedido } from '@/types/fac';
 import PedidoForm from '@/components/fac/PedidoForm';
-import { ArrowRightLeft } from 'lucide-react';
+import { ArrowRightLeft, Printer } from 'lucide-react';
 
 export default function EditarPresupuestoPage() {
   const { id } = useParams<{ id: string }>();
@@ -63,19 +63,29 @@ export default function EditarPresupuestoPage() {
           <h1 className="text-xl font-semibold text-gray-800">Presupuesto #{presupuesto.ped_nro}</h1>
           <p className="text-sm text-gray-500 mt-0.5">{presupuesto.cli_nom}</p>
         </div>
-        <button
-          type="button"
-          onClick={() => {
-            if (confirm('¿Convertir este presupuesto en pedido de venta?')) {
-              convertirMut.mutate();
-            }
-          }}
-          disabled={convertirMut.isPending}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 disabled:opacity-50 transition"
-        >
-          <ArrowRightLeft size={16} />
-          {convertirMut.isPending ? 'Convirtiendo…' : 'Convertir a pedido'}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => router.push(`/fac/presupuestos/${presupuesto.ped_clave}/imprimir`)}
+            className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition"
+          >
+            <Printer size={16} />
+            Imprimir
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (confirm('\u00BFConvertir este presupuesto en pedido de venta?')) {
+                convertirMut.mutate();
+              }
+            }}
+            disabled={convertirMut.isPending}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 disabled:opacity-50 transition"
+          >
+            <ArrowRightLeft size={16} />
+            {convertirMut.isPending ? 'Convirtiendo\u2026' : 'Convertir a pedido'}
+          </button>
+        </div>
       </div>
       <PedidoForm
         tipo="P"

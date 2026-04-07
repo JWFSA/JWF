@@ -2,7 +2,7 @@ const s = require('../services/pedidoService');
 
 const getAll = async (req, res, next) => {
   try {
-    const { all, page, limit, search, sortField, sortDir, tipo } = req.query;
+    const { all, page, limit, search, sortField, sortDir, tipo, fechaDesde, fechaHasta, estado, vendedor } = req.query;
     res.json(await s.getAll({
       all: all === 'true',
       page: parseInt(page) || 1,
@@ -10,7 +10,11 @@ const getAll = async (req, res, next) => {
       search: search || '',
       sortField: sortField || '',
       sortDir: sortDir || 'asc',
-      tipo: tipo || 'V',
+      tipo: tipo || '',
+      fechaDesde: fechaDesde || '',
+      fechaHasta: fechaHasta || '',
+      estado: estado || '',
+      vendedor: vendedor || '',
     }));
   } catch (e) { next(e); }
 };
@@ -55,4 +59,26 @@ const convertir = async (req, res, next) => {
   try { res.json(await s.convertirAVenta(Number(req.params.id))); } catch (e) { next(e); }
 };
 
-module.exports = { getAll, getById, create, update, remove, getArticulos, getParaFacturar, convertir };
+const copiar = async (req, res, next) => {
+  try {
+    const login = req.user?.login || 'SISTEMA';
+    const tipoDestino = req.body.ped_tipo || null;
+    res.status(201).json(await s.copiar(Number(req.params.id), tipoDestino, login));
+  } catch (e) { next(e); }
+};
+
+const aprobar = async (req, res, next) => {
+  try {
+    const login = req.user?.login || 'SISTEMA';
+    res.json(await s.aprobar(Number(req.params.id), login));
+  } catch (e) { next(e); }
+};
+
+const rechazar = async (req, res, next) => {
+  try {
+    const login = req.user?.login || 'SISTEMA';
+    res.json(await s.rechazar(Number(req.params.id), req.body.motivo || '', login));
+  } catch (e) { next(e); }
+};
+
+module.exports = { getAll, getById, create, update, remove, getArticulos, getParaFacturar, convertir, copiar, aprobar, rechazar };
