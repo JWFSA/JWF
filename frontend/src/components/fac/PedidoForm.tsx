@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { getClientes, getVendedores, getCondiciones, getArticulos } from '@/services/fac';
+import { getClientes, getVendedores, getCondiciones, getArticulos, getMarcasCliente } from '@/services/fac';
 import { getMonedas } from '@/services/gen';
 import type { Pedido, PedidoDet, Articulo } from '@/types/fac';
 import { Search, Plus, Trash2, ChevronDown, ChevronRight } from 'lucide-react';
@@ -217,6 +217,13 @@ export default function PedidoForm({ initial, onSave, isPending, error, tipo = '
   const { data: vendData } = useQuery({ queryKey: ['vendedores', { all: true }], queryFn: () => getVendedores({ all: true }) });
   const { data: monData } = useQuery({ queryKey: ['monedas'], queryFn: getMonedas });
 
+  const clienteId = form.ped_cli as number | undefined;
+  const { data: marcasData } = useQuery({
+    queryKey: ['marcas-cliente', clienteId],
+    queryFn: () => getMarcasCliente(clienteId!),
+    enabled: !!clienteId,
+  });
+
   const { data: artData } = useQuery({
     queryKey: ['articulos-search', debouncedArtSearch],
     queryFn: () => getArticulos({ search: debouncedArtSearch, limit: 10 }),
@@ -293,6 +300,7 @@ export default function PedidoForm({ initial, onSave, isPending, error, tipo = '
   const vendedores = vendData?.data ?? [];
   const condiciones = condData ?? [];
   const monedas = monData ?? [];
+  const marcas = marcasData ?? [];
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -424,8 +432,13 @@ export default function PedidoForm({ initial, onSave, isPending, error, tipo = '
           {/* Marca */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Marca</label>
-            <input type="number" value={form.ped_campanha ?? ''} onChange={(e) => set('ped_campanha', e.target.value ? Number(e.target.value) : null)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
+            <select value={form.ped_campanha ?? ''} onChange={(e) => set('ped_campanha', e.target.value ? Number(e.target.value) : null)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
+              <option value="">{'\u2014'} Sin marca {'\u2014'}</option>
+              {marcas.map((m) => (
+                <option key={m.camp_nro} value={m.camp_nro}>{m.camp_nombre}</option>
+              ))}
+            </select>
           </div>
 
           {/* %Exoneración */}

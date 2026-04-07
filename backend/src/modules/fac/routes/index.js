@@ -87,6 +87,7 @@ router.delete('/facturas/:id', verifyToken, facturaController.remove);
 
 // Campañas
 router.get('/campanhas',                    verifyToken, campanhaController.getAll);
+router.get('/campanhas/cliente/:cli',       verifyToken, campanhaController.getByCliente);
 router.post('/campanhas',                   verifyToken, campanhaController.create);
 router.put('/campanhas/:cli/:nro',          verifyToken, campanhaController.update);
 router.delete('/campanhas/:cli/:nro',       verifyToken, campanhaController.remove);

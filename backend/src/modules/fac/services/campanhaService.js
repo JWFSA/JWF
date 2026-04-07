@@ -83,4 +83,12 @@ const remove = async (cli, nro) => {
   await pool.query('DELETE FROM fac_campanha WHERE "CAMP_CLI" = $1 AND "CAMP_NRO" = $2', [cli, nro]);
 };
 
-module.exports = { getAll, create, update, remove };
+const getByCliente = async (cli) => {
+  const { rows } = await pool.query(
+    `SELECT "CAMP_CLI" AS camp_cli, "CAMP_NRO" AS camp_nro, "CAMP_NOMBRE" AS camp_nombre, "CAMP_IND_VIGENTE" AS camp_ind_vigente
+     FROM fac_campanha WHERE "CAMP_CLI" = $1 ORDER BY "CAMP_NRO"`, [cli]
+  );
+  return rows;
+};
+
+module.exports = { getAll, getByCliente, create, update, remove };

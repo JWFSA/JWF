@@ -40,4 +40,8 @@ const remove = async (req, res, next) => {
   } catch (e) { next(e); }
 };
 
-module.exports = { getAll, create, update, remove };
+const getByCliente = async (req, res, next) => {
+  try { res.json(await s.getByCliente(Number(req.params.cli))); } catch (e) { next(e); }
+};
+
+module.exports = { getAll, getByCliente, create, update, remove };
