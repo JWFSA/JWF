@@ -77,11 +77,101 @@ export interface PedidoDet {
   art_desc?: string;
   art_unid_med?: string;
   pdet_um_ped: string;
+  pdet_um_art?: string | null;
+  pdet_tipo_f?: string | null;
+  pdet_factor?: number | null;
   pdet_cant_ped: number;
   pdet_precio: number;
   pdet_porc_dcto: number;
+  pdet_imp_dcto_det?: number | null;
   pdet_imp_neto_det?: number;
+  pdet_cant_um_art?: number | null;
+  pdet_precio_um_art?: number | null;
+  pdet_imp_neto_final?: number | null;
   pdet_desc_larga?: string | null;
+  // Producción
+  pdet_calid_imp?: number | null;
+  pdet_ind_med?: string | null;
+  pdet_ind_imp_dig?: string | null;
+  pdet_tipo_ot?: number | null;
+  pdet_tipo_prod?: string | null;
+  pdet_resolucion?: string | null;
+  pdet_nro_lados_imp?: number | null;
+  pdet_ind_pru_color?: string | null;
+  pdet_ind_disenho?: string | null;
+  // Dimensiones
+  pdet_med_base?: number | null;
+  pdet_med_alto?: number | null;
+  pdet_med_total?: number | null;
+  pdet_med_base_t?: number | null;
+  pdet_med_alto_t?: number | null;
+  pdet_med_total_t?: number | null;
+  // Costos
+  pdet_costo_ar?: number | null;
+  pdet_costo_tot?: number | null;
+  pdet_precio_lista?: number | null;
+  pdet_list_precio?: number | null;
+  pdet_lista_precio?: number | null;
+  // Cantidades
+  pdet_cant_prod?: number | null;
+  pdet_contenido?: number | null;
+  pdet_cant_fraccion?: number | null;
+  pdet_cant_caja?: number | null;
+  pdet_cant?: number | null;
+  // Facturación
+  pdet_cant_fact?: number | null;
+  pdet_cant_fact_um_ar?: number | null;
+  pdet_cant_doc_fa?: number | null;
+  pdet_cant_doc_nc?: number | null;
+  pdet_imp_factu?: number | null;
+  pdet_imp_neto_mon?: number | null;
+  pdet_iva_mon?: number | null;
+  pdet_cod_impu?: number | null;
+  pdet_total_mon?: number | null;
+  pdet_imp_tot_net_gs?: number | null;
+  pdet_imp_tot_net_us?: number | null;
+  pdet_imp_iva_gs?: number | null;
+  pdet_imp_iva_us?: number | null;
+  // Descuentos
+  pdet_imp_dcto_cab?: number | null;
+  pdet_imp_dcto_cab_ap?: number | null;
+  pdet_imp_dctod_aplic?: number | null;
+  pdet_porc_dto?: number | null;
+  pdet_ind_dto_autorizado?: string | null;
+  pdet_dto_login?: string | null;
+  pdet_ind_modif_det_autorizado?: string | null;
+  pdet_modif_det_login?: string | null;
+  // Conversión
+  pdet_art_factor_conversion?: number | null;
+  pdet_art_bonif?: string | null;
+  pdet_codigo_barra?: string | null;
+  // Contratos / Fechas
+  pdet_fec_ini_cont?: string | null;
+  pdet_fec_fin_cont?: string | null;
+  pdet_duracion?: number | null;
+  pdet_segundos?: number | null;
+  pdet_inserciones?: number | null;
+  pdet_tot_seg_dia?: number | null;
+  // Referencias
+  pdet_clave_co?: number | null;
+  pdet_nro_item_co?: number | null;
+  pdet_clave_ped_ini?: number | null;
+  pdet_nro_item_p_ini?: number | null;
+  pdet_clave_pedido?: number | null;
+  pdet_clave_pro?: number | null;
+  pdet_item_pro?: number | null;
+  pdet_cod_inser?: number | null;
+  pdet_prov?: number | null;
+  // Indicadores
+  pdet_ind_terc?: string | null;
+  pdet_ind_pre_det?: string | null;
+  pdet_ind_stk?: string | null;
+  pdet_ind_aut?: string | null;
+  pdet_ind_vc?: string | null;
+  // Observación
+  pdet_obs?: string | null;
+  // Migración
+  pdet_clave_migra?: number | null;
 }
 
 export interface Pedido {
@@ -91,12 +181,17 @@ export interface Pedido {
   ped_empr?: number;
   ped_suc?: number;
   ped_tipo?: string;
+  ped_ind_prd?: string | null;
   ped_estado: string;
   ped_mon?: number | null;
   mon_desc?: string;
   ped_cli: number;
   cli_nom?: string;
   cli_ruc?: string;
+  ped_contacto?: string | null;
+  ped_tel?: string | null;
+  ped_ruc?: string | null;
+  ped_campanha?: number | null;
   ped_vendedor?: number | null;
   vend_nombre?: string;
   vend_apellido?: string;
@@ -104,8 +199,63 @@ export interface Pedido {
   ped_producto?: string | null;
   ped_concepto?: string | null;
   ped_obs?: string | null;
-  ped_imp_total_mon?: number;
+  ped_nro_orco?: number | null;
+  ped_fec_orco?: string | null;
+  ped_fec_entreg_req?: string | null;
+  ped_fec_entreg_prd?: string | null;
+  ped_tipo_fac?: string | null;
+  ped_dep?: number | null;
+  ped_ind_fab_adel?: string | null;
+  ped_ind_hab_fac?: string | null;
+  ped_fto_imp?: number | null;
   ped_imp_dcto_mon?: number;
+  ped_imp_total_mon?: number;
+  ped_ind_req_rem?: string | null;
+  ped_dias_validez?: number | null;
+  ped_tiempo_realiz?: string | null;
+  ped_ind_gar_fun?: string | null;
+  ped_imp_facturado?: number | null;
+  ped_imp_dcto_aplic?: number | null;
+  ped_nro_ant?: number | null;
+  ped_cli_porc_ex?: number | null;
+  ped_fec_cierre?: string | null;
+  ped_tasa_us?: number | null;
+  ped_ruta_contrato?: string | null;
+  ped_cli_obs?: string | null;
+  ped_ind_fac?: string | null;
+  ped_cli_nom?: string | null;
+  ped_cli_dir?: string | null;
+  ped_cli_tel?: string | null;
+  ped_cli_ruc?: string | null;
+  ped_fec_envio?: string | null;
+  ped_aprobado?: string | null;
+  ped_list_precio?: number | null;
+  ped_plan_finan?: number | null;
+  ped_tipo_factura?: number | null;
+  ped_doc_clave?: number | null;
+  ped_operador?: number | null;
+  ped_tipo_deposito?: string | null;
+  ped_porc_dto?: number | null;
+  ped_porc_rgo?: number | null;
+  ped_fech_auto?: string | null;
+  ped_login_auto?: string | null;
+  ped_fec_estado?: string | null;
+  ped_login_estado?: string | null;
+  ped_cli_suc?: number | null;
+  ped_nro_ot?: string | null;
+  ped_forma_pago?: number | null;
+  ped_ind_estado?: string | null;
+  ped_ind_tipo?: string | null;
+  ped_fec_pedido?: string | null;
+  ped_obs_rechazo?: string | null;
+  ped_fec_rechazo?: string | null;
+  ped_user_rechazo?: string | null;
+  ped_clave_proyecto?: number | null;
+  ped_clave_padre?: number | null;
+  ped_nro_proyecto?: number | null;
+  ped_procesado?: string | null;
+  ped_clave_migra?: number | null;
+  ped_ind_canje?: string | null;
   ped_login?: string;
   ped_fec_grab?: string;
   items?: PedidoDet[];

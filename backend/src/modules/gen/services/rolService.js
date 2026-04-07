@@ -87,12 +87,22 @@ const remove = async (codigo) => {
 };
 
 const assignProgramas = async (codigo, programas) => {
-  await pool.query('DELETE FROM gen_rol_programa WHERE "ROPR_ROL" = $1', [codigo]);
-  for (const prog of programas) {
-    await pool.query(
-      'INSERT INTO gen_rol_programa ("ROPR_ROL", "ROPR_PROGRAMA") VALUES ($1, $2)',
-      [codigo, prog]
-    );
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query('DELETE FROM gen_rol_programa WHERE "ROPR_ROL" = $1', [codigo]);
+    for (const prog of programas) {
+      await client.query(
+        'INSERT INTO gen_rol_programa ("ROPR_ROL", "ROPR_PROGRAMA") VALUES ($1, $2)',
+        [codigo, prog]
+      );
+    }
+    await client.query('COMMIT');
+  } catch (e) {
+    await client.query('ROLLBACK');
+    throw e;
+  } finally {
+    client.release();
   }
   return getById(codigo);
 };

@@ -13,7 +13,7 @@ const getAll = async (req, res, next) => {
 };
 
 const getById = async (req, res, next) => {
-  try { res.json(await clienteService.getById(req.params.id)); } catch (err) { next(err); }
+  try { res.json(await clienteService.getById(Number(req.params.id))); } catch (err) { next(err); }
 };
 
 const create = async (req, res, next) => {
@@ -24,11 +24,11 @@ const create = async (req, res, next) => {
 };
 
 const update = async (req, res, next) => {
-  try { res.json(await clienteService.update(req.params.id, req.body)); } catch (err) { next(err); }
+  try { res.json(await clienteService.update(Number(req.params.id), req.body)); } catch (err) { next(err); }
 };
 
 const remove = async (req, res, next) => {
-  try { await clienteService.remove(req.params.id); res.status(204).end(); } catch (err) { next(err); }
+  try { await clienteService.remove(Number(req.params.id)); res.status(204).end(); } catch (err) { next(err); }
 };
 
 module.exports = { getAll, getById, create, update, remove };

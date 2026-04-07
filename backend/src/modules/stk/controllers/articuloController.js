@@ -18,7 +18,7 @@ const getAll = async (req, res, next) => {
 
 const getById = async (req, res, next) => {
   try {
-    res.json(await articuloService.getById(req.params.id));
+    res.json(await articuloService.getById(Number(req.params.id)));
   } catch (err) { next(err); }
 };
 
@@ -32,13 +32,13 @@ const create = async (req, res, next) => {
 
 const update = async (req, res, next) => {
   try {
-    res.json(await articuloService.update(req.params.id, req.body));
+    res.json(await articuloService.update(Number(req.params.id), req.body));
   } catch (err) { next(err); }
 };
 
 const remove = async (req, res, next) => {
   try {
-    await articuloService.remove(req.params.id);
+    await articuloService.remove(Number(req.params.id));
     res.status(204).end();
   } catch (err) { next(err); }
 };

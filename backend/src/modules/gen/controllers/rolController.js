@@ -13,7 +13,7 @@ const getAll = async (req, res, next) => {
 };
 
 const getById = async (req, res, next) => {
-  try { res.json(await rolService.getById(req.params.id)); } catch (err) { next(err); }
+  try { res.json(await rolService.getById(Number(req.params.id))); } catch (err) { next(err); }
 };
 
 const create = async (req, res, next) => {
@@ -21,15 +21,15 @@ const create = async (req, res, next) => {
 };
 
 const update = async (req, res, next) => {
-  try { res.json(await rolService.update(req.params.id, req.body)); } catch (err) { next(err); }
+  try { res.json(await rolService.update(Number(req.params.id), req.body)); } catch (err) { next(err); }
 };
 
 const remove = async (req, res, next) => {
-  try { await rolService.remove(req.params.id); res.status(204).send(); } catch (err) { next(err); }
+  try { await rolService.remove(Number(req.params.id)); res.status(204).send(); } catch (err) { next(err); }
 };
 
 const assignProgramas = async (req, res, next) => {
-  try { res.json(await rolService.assignProgramas(req.params.id, req.body.programas)); } catch (err) { next(err); }
+  try { res.json(await rolService.assignProgramas(Number(req.params.id), req.body.programas)); } catch (err) { next(err); }
 };
 
 module.exports = { getAll, getById, create, update, remove, assignProgramas };

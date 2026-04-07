@@ -16,7 +16,7 @@ const getAll = async (req, res, next) => {
 };
 
 const getById = async (req, res, next) => {
-  try { res.json(await s.getById(req.params.id)); } catch (e) { next(e); }
+  try { res.json(await s.getById(Number(req.params.id))); } catch (e) { next(e); }
 };
 
 const create = async (req, res, next) => {
@@ -29,11 +29,11 @@ const create = async (req, res, next) => {
 };
 
 const update = async (req, res, next) => {
-  try { res.json(await s.update(req.params.id, req.body)); } catch (e) { next(e); }
+  try { res.json(await s.update(Number(req.params.id), req.body)); } catch (e) { next(e); }
 };
 
 const remove = async (req, res, next) => {
-  try { await s.remove(req.params.id); res.status(204).end(); } catch (e) { next(e); }
+  try { await s.remove(Number(req.params.id)); res.status(204).end(); } catch (e) { next(e); }
 };
 
 const getArticulos = async (req, res, next) => {
@@ -48,11 +48,11 @@ const getArticulos = async (req, res, next) => {
 };
 
 const getParaFacturar = async (req, res, next) => {
-  try { res.json(await s.getParaFacturar(req.params.id)); } catch (e) { next(e); }
+  try { res.json(await s.getParaFacturar(Number(req.params.id))); } catch (e) { next(e); }
 };
 
 const convertir = async (req, res, next) => {
-  try { res.json(await s.convertirAVenta(req.params.id)); } catch (e) { next(e); }
+  try { res.json(await s.convertirAVenta(Number(req.params.id))); } catch (e) { next(e); }
 };
 
 module.exports = { getAll, getById, create, update, remove, getArticulos, getParaFacturar, convertir };

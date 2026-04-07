@@ -14,7 +14,7 @@ const getAll = async (req, res, next) => {
 
 const getById = async (req, res, next) => {
   try {
-    res.json(await operadorService.getById(req.params.id));
+    res.json(await operadorService.getById(Number(req.params.id)));
   } catch (err) { next(err); }
 };
 
@@ -26,13 +26,13 @@ const create = async (req, res, next) => {
 
 const update = async (req, res, next) => {
   try {
-    res.json(await operadorService.update(req.params.id, req.body));
+    res.json(await operadorService.update(Number(req.params.id), req.body));
   } catch (err) { next(err); }
 };
 
 const assignRoles = async (req, res, next) => {
   try {
-    res.json(await operadorService.assignRoles(req.params.id, req.body.roles));
+    res.json(await operadorService.assignRoles(Number(req.params.id), req.body.roles));
   } catch (err) { next(err); }
 };
 

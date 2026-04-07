@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { LogOut, User, Menu } from 'lucide-react';
+import MenuSearch from './MenuSearch';
 
 interface Props {
   onMenuClick?: () => void;
@@ -32,7 +33,9 @@ export default function Header({ onMenuClick }: Props) {
       >
         <Menu size={22} />
       </button>
-      <div className="hidden md:block" />
+      <div className="hidden md:block">
+        <MenuSearch />
+      </div>
 
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2 text-sm text-gray-600">

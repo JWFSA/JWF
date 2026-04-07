@@ -22,11 +22,11 @@ const create = async (req, res, next) => {
 };
 
 const update = async (req, res, next) => {
-  try { res.json(await s.updateFamiliar(req.params.id, req.params.empleado, req.body)); } catch (e) { next(e); }
+  try { res.json(await s.updateFamiliar(Number(req.params.id), Number(req.params.empleado), req.body)); } catch (e) { next(e); }
 };
 
 const remove = async (req, res, next) => {
-  try { await s.deleteFamiliar(req.params.id, req.params.empleado); res.status(204).end(); } catch (e) { next(e); }
+  try { await s.deleteFamiliar(Number(req.params.id), Number(req.params.empleado)); res.status(204).end(); } catch (e) { next(e); }
 };
 
 module.exports = { getAll, create, update, remove };

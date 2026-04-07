@@ -160,15 +160,23 @@ const update = async (codigo, data) => {
 };
 
 const assignRoles = async (codigo, roles) => {
-  await pool.query('DELETE FROM gen_operador_rol WHERE "OPRO_OPERADOR" = $1', [codigo]);
-
-  for (const rol of roles) {
-    await pool.query(
-      'INSERT INTO gen_operador_rol ("OPRO_OPERADOR", "OPRO_ROL") VALUES ($1, $2)',
-      [codigo, rol]
-    );
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query('DELETE FROM gen_operador_rol WHERE "OPRO_OPERADOR" = $1', [codigo]);
+    for (const rol of roles) {
+      await client.query(
+        'INSERT INTO gen_operador_rol ("OPRO_OPERADOR", "OPRO_ROL") VALUES ($1, $2)',
+        [codigo, rol]
+      );
+    }
+    await client.query('COMMIT');
+  } catch (e) {
+    await client.query('ROLLBACK');
+    throw e;
+  } finally {
+    client.release();
   }
-
   return getById(codigo);
 };
 

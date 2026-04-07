@@ -17,7 +17,9 @@ module.exports = {
   },
   create: async (req, res, next) => {
     try {
-      if (!req.body.empl_nombre) return res.status(400).json({ message: 'El nombre es requerido' });
+      const { empl_nombre, empl_ape } = req.body;
+      if (!empl_nombre) return res.status(400).json({ message: 'El nombre es requerido' });
+      if (!empl_ape) return res.status(400).json({ message: 'El apellido es requerido' });
       res.status(201).json(await s.create(req.body));
     } catch (e) { next(e); }
   },

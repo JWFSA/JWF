@@ -193,6 +193,7 @@ export interface Familiar {
 
 export interface Empleado {
   empl_legajo: number;
+  // Personal
   empl_nombre: string;
   empl_ape: string | null;
   empl_doc_ident: number | null;
@@ -200,7 +201,11 @@ export interface Empleado {
   empl_sexo: string | null;
   empl_est_civil: string | null;
   empl_fec_nac: string | null;
-  empl_nacionalidad: string | null;
+  empl_nacionalidad: number | null;
+  pais_nacionalidad?: string;
+  empl_nro_seg_social: string | null;
+  empl_foto: string | null;
+  // Laboral
   empl_situacion: string | null;
   empl_cargo: number | null;
   car_desc?: string;
@@ -212,16 +217,67 @@ export interface Empleado {
   secc_desc?: string;
   empl_turno: number | null;
   tur_desc?: string;
+  empl_sucursal: number | null;
+  suc_desc?: string;
+  empl_ccosto: number | null;
+  cco_desc?: string;
+  empl_cod_jefe: number | null;
+  jefe_nombre?: string;
+  jefe_ape?: string;
+  empl_departamento: number | null;
   empl_fec_ingreso: string | null;
   empl_fec_salida: string | null;
   empl_motivo_salida: string | null;
+  // Salario y compensación
   empl_salario_base: number | null;
-  empl_nro_seg_social: string | null;
+  empl_tipo_salario: number | null;
+  tipo_sal_desc?: string;
+  empl_diurno: number | null;
+  empl_nocturno: number | null;
+  empl_mixto1: number | null;
+  empl_mixto2: number | null;
+  empl_plus_objetivo: number | null;
+  empl_obj_hmes: number | null;
+  empl_cobra_comision: string | null;
+  empl_bonif_fliar: string | null;
+  empl_ind_anticipos: string | null;
+  // Tarifas hora
+  empl_imp_hora_n_d: number | null;
+  empl_imp_hora_n_n: number | null;
+  empl_imp_hora_e_d: number | null;
+  empl_imp_hora_e_n: number | null;
+  empl_imp_hora_df_d: number | null;
+  empl_imp_lleg_hora: number | null;
+  // Horario
+  empl_tipo_horar: string | null;
+  empl_tiempo_alm: number | null;
+  empl_desc_tiemp_alm: string | null;
+  empl_calc_hr_ext: string | null;
+  empl_lim_lleg_temp: number | null;
+  empl_ind_trab_sab: string | null;
+  // Banco
+  empl_cta_bco: number | null;
+  cta_desc?: string;
+  empl_cta_cte: string | null;
+  // Contacto
   empl_dir: string | null;
+  empl_dir2: string | null;
+  empl_dir3: string | null;
+  empl_localidad: number | null;
+  loc_desc?: string;
+  empl_barrio: number | null;
+  barr_desc?: string;
+  empl_nro_casa: number | null;
   empl_tel: string | null;
   empl_tel_celular: string | null;
+  empl_tel_corporat: string | null;
   empl_mail_particular: string | null;
   empl_mail_laboral: string | null;
+  empl_nombre_emergencia: string | null;
+  // IPS
+  empl_fec_ingreso_ips: string | null;
+  empl_situacion_ips: string | null;
+  // Observaciones
   empl_observa: string | null;
 }
 
