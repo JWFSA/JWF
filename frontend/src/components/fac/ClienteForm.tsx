@@ -25,6 +25,7 @@ export interface ClienteFormData {
   cli_pers_contacto: string;
   cli_vendedor: number | '';
   cli_tipo_vta: 'C' | 'R' | '';
+  cli_mod_venta: 'D' | 'I';
   cli_cond_venta: string;
 }
 
@@ -35,6 +36,7 @@ export const emptyCliente: ClienteFormData = {
   cli_max_dias_atraso: 0, cli_ind_potencial: 'N', cli_obs: '', cli_pers_contacto: '',
   cli_vendedor: '',
   cli_tipo_vta: 'C',
+  cli_mod_venta: 'D',
   cli_cond_venta: 'CONTADO',
 };
 
@@ -183,6 +185,13 @@ export default function ClienteForm({ form, onChange, error, isPending, onSubmit
             <select value={form.cli_categ} onChange={(e) => set({ cli_categ: e.target.value ? Number(e.target.value) : '' })} className={sel}>
               <option value="">Sin categoría</option>
               {cats.map((c) => <option key={c.fcat_codigo} value={c.fcat_codigo}>{c.fcat_desc}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Modalidad de venta</label>
+            <select value={form.cli_mod_venta} onChange={(e) => set({ cli_mod_venta: e.target.value as 'D' | 'I' })} className={sel}>
+              <option value="D">Directa</option>
+              <option value="I">Indirecta</option>
             </select>
           </div>
           <div>

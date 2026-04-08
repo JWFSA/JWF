@@ -372,14 +372,19 @@ export default function PedidoForm({ initial, onSave, isPending, error, tipo = '
                   {(cliData?.data ?? []).length === 0 ? (
                     <p className="px-3 py-2 text-sm text-gray-400">Sin resultados</p>
                   ) : (
-                    (cliData?.data ?? []).map((c) => (
-                      <button key={c.cli_codigo} type="button"
-                        onClick={() => selectCliente(c)}
-                        className="w-full text-left px-3 py-2 text-sm hover:bg-primary-50 hover:text-primary-700">
-                        <span className="font-medium">{c.cli_nom}</span>
-                        {c.cli_ruc && <span className="text-gray-400 ml-2 text-xs">{c.cli_ruc}</span>}
-                      </button>
-                    ))
+                    (cliData?.data ?? []).map((c) => {
+                      const inactivo = c.cli_est_cli === 'I';
+                      return (
+                        <button key={c.cli_codigo} type="button"
+                          onClick={() => { if (!inactivo) selectCliente(c); }}
+                          disabled={inactivo}
+                          className={`w-full text-left px-3 py-2 text-sm ${inactivo ? 'text-gray-300 cursor-not-allowed bg-gray-50' : 'hover:bg-primary-50 hover:text-primary-700'}`}>
+                          <span className={inactivo ? 'font-medium line-through' : 'font-medium'}>{c.cli_nom}</span>
+                          {c.cli_ruc && <span className={`ml-2 text-xs ${inactivo ? 'text-gray-300' : 'text-gray-400'}`}>{c.cli_ruc}</span>}
+                          {inactivo && <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-red-50 text-red-400">Inactivo</span>}
+                        </button>
+                      );
+                    })
                   )}
                 </div>
               )}
