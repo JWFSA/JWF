@@ -55,6 +55,12 @@ export interface Cliente {
   cli_email4: string | null;
   cli_dir2: string | null;
   cli_localidad: string | null;
+  cli_departamento: number | null;
+  dpto_desc?: string;
+  cli_cod_localidad: number | null;
+  loc_desc?: string;
+  cli_cod_barrio: number | null;
+  barr_desc?: string;
   cli_zona: number | null;
   zona_desc?: string;
   cli_categ: number | null;

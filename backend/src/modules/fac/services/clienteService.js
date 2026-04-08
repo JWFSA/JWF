@@ -45,6 +45,9 @@ const getById = async (id) => {
      c."CLI_TEL" AS cli_tel, c."CLI_FAX" AS cli_fax, c."CLI_EMAIL" AS cli_email,
      c."CLI_EMAIL2" AS cli_email2, c."CLI_EMAIL3" AS cli_email3, c."CLI_EMAIL4" AS cli_email4,
      c."CLI_DIR2" AS cli_dir2, c."CLI_LOCALIDAD" AS cli_localidad,
+     c."CLI_DEPARTAMENTO" AS cli_departamento, dep."DPTO_DESC" AS dpto_desc,
+     c."CLI_COD_LOCALIDAD" AS cli_cod_localidad, loc."LOC_DESC" AS loc_desc,
+     c."CLI_COD_BARRIO" AS cli_cod_barrio, bar."BARR_DESC" AS barr_desc,
      c."CLI_ZONA" AS cli_zona, z."ZONA_DESC" AS zona_desc,
      c."CLI_CATEG" AS cli_categ, cat."FCAT_DESC" AS fcat_desc,
      c."CLI_PAIS" AS cli_pais, p."PAIS_DESC" AS pais_desc,
@@ -66,6 +69,9 @@ const getById = async (id) => {
      LEFT JOIN fac_vendedor v ON v."VEND_LEGAJO" = c."CLI_VENDEDOR"
      LEFT JOIN gen_operador o ON o."OPER_CODIGO" = v."VEND_OPER"
      LEFT JOIN fac_agencia ag ON ag."AGEN_CODIGO" = c."CLI_AGENCIA"
+     LEFT JOIN gen_departamento dep ON dep."DPTO_CODIGO" = c."CLI_DEPARTAMENTO"
+     LEFT JOIN gen_localidad loc ON loc."LOC_CODIGO" = c."CLI_COD_LOCALIDAD"
+     LEFT JOIN gen_barrio bar ON bar."BARR_CODIGO" = c."CLI_COD_BARRIO"
      WHERE c."CLI_CODIGO" = $1`, [id]);
   if (!rows.length) throw { status: 404, message: 'Cliente no encontrado' };
   return rows[0];
@@ -77,15 +83,17 @@ const create = async (data) => {
   await pool.query(
     `INSERT INTO fin_cliente
        ("CLI_CODIGO","CLI_NOM","CLI_RUC","CLI_TEL","CLI_FAX","CLI_EMAIL","CLI_EMAIL2","CLI_EMAIL3","CLI_EMAIL4","CLI_DIR2",
-        "CLI_LOCALIDAD","CLI_ZONA","CLI_CATEG","CLI_PAIS","CLI_MON","CLI_EST_CLI",
+        "CLI_LOCALIDAD","CLI_DEPARTAMENTO","CLI_COD_LOCALIDAD","CLI_COD_BARRIO",
+        "CLI_ZONA","CLI_CATEG","CLI_PAIS","CLI_MON","CLI_EST_CLI",
         "CLI_IMP_LIM_CR","CLI_BLOQ_LIM_CR","CLI_MAX_DIAS_ATRASO","CLI_IND_POTENCIAL",
         "CLI_OBS","CLI_PERS_CONTACTO","CLI_VENDEDOR","CLI_COND_VENTA","CLI_TIPO_VTA","CLI_MOD_VENTA","CLI_AGENCIA","CLI_COMISION_AGEN")
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28)`,
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31)`,
     [
       codigo, data.cli_nom, data.cli_ruc || null, data.cli_tel || null,
       data.cli_fax || null, data.cli_email || null, data.cli_email2 || null, data.cli_email3 || null, data.cli_email4 || null,
       data.cli_dir2 || null,
-      data.cli_localidad || null, data.cli_zona || null, data.cli_categ || null,
+      data.cli_localidad || null, data.cli_departamento || null, data.cli_cod_localidad || null, data.cli_cod_barrio || null,
+      data.cli_zona || null, data.cli_categ || null,
       data.cli_pais || null, data.cli_mon || null, data.cli_est_cli || 'A',
       data.cli_imp_lim_cr || 0, data.cli_bloq_lim_cr || 'N', data.cli_max_dias_atraso || 0,
       data.cli_ind_potencial || 'N', data.cli_obs || null, data.cli_pers_contacto || null,
@@ -102,6 +110,7 @@ const update = async (id, data) => {
     cli_nom: '"CLI_NOM"', cli_ruc: '"CLI_RUC"', cli_tel: '"CLI_TEL"', cli_fax: '"CLI_FAX"',
     cli_email: '"CLI_EMAIL"', cli_email2: '"CLI_EMAIL2"', cli_email3: '"CLI_EMAIL3"', cli_email4: '"CLI_EMAIL4"',
     cli_dir2: '"CLI_DIR2"', cli_localidad: '"CLI_LOCALIDAD"',
+    cli_departamento: '"CLI_DEPARTAMENTO"', cli_cod_localidad: '"CLI_COD_LOCALIDAD"', cli_cod_barrio: '"CLI_COD_BARRIO"',
     cli_zona: '"CLI_ZONA"', cli_categ: '"CLI_CATEG"', cli_pais: '"CLI_PAIS"', cli_mon: '"CLI_MON"',
     cli_est_cli: '"CLI_EST_CLI"', cli_imp_lim_cr: '"CLI_IMP_LIM_CR"',
     cli_bloq_lim_cr: '"CLI_BLOQ_LIM_CR"', cli_max_dias_atraso: '"CLI_MAX_DIAS_ATRASO"',

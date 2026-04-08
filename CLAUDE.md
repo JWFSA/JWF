@@ -686,6 +686,23 @@ Los campos no editables nunca deben recibir focus ni interacción por teclado:
 - **CSS global** (`globals.css`): ya aplica `pointer-events: none` y anula focus/ring en `input[readonly]`, `select[disabled]`, `textarea[readonly]`
 - **Nunca** usar clases de focus (`focus:ring-*`, `focus:outline-*`) en campos readonly/disabled
 
+### Frontend — Campos de monto/importe (OBLIGATORIO)
+Los campos que muestran importes monetarios deben formatearse con separador de miles. Usar el componente `MoneyInput` de `@/components/ui/MoneyInput`:
+
+- **Comportamiento:** muestra formateado con separador de miles cuando no tiene focus; al enfocar cambia a `type="number"` para editar normalmente; al salir del campo formatea y aplica el valor
+- **Utilidades:** `formatMoney(value, decimals)` y `parseMoney(string)` en `@/lib/utils`
+- **Uso:** para campos de cabecera/formulario (límite de crédito, totales, importes). En líneas de detalle dentro de tablas editables, evaluar caso a caso
+
+```tsx
+import MoneyInput from '@/components/ui/MoneyInput';
+
+<MoneyInput value={form.importe} onChange={(v) => set({ importe: v })} className={input} />
+// Con decimales:
+<MoneyInput value={form.total} onChange={(v) => set({ total: v })} decimals={2} className={input} />
+```
+
+- **No usar** `type="number"` directo para campos de monto visibles al usuario — el número sin formato es difícil de leer con valores grandes
+
 ### Frontend — Registros inactivos en selectores (OBLIGATORIO)
 Cuando un selector (dropdown o listado de búsqueda) muestra registros que pueden estar activos o inactivos:
 

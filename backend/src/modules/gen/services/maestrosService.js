@@ -518,11 +518,14 @@ const deleteMotivoAnulacion = async (id) => {
 
 // ─── LOCALIDADES ────────────────────────────────────────────────────────────
 
-const getLocalidades = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+const getLocalidades = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc', dep = null } = {}) => {
   page  = Math.max(1, page);
   limit = Math.max(1, Math.min(1000, limit));
-  const params = search ? [`%${search}%`] : [];
-  const where  = search ? `WHERE l."LOC_DESC" ILIKE $1` : '';
+  const params = [];
+  const conditions = [];
+  if (search) { params.push(`%${search}%`); conditions.push(`l."LOC_DESC" ILIKE $${params.length}`); }
+  if (dep) { params.push(dep); conditions.push(`l."LOC_DEP_CODIGO" = $${params.length}`); }
+  const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
   const { rows: [{ count }] } = await pool.query(`SELECT COUNT(*) FROM gen_localidad l ${where}`, params);
   const total = parseInt(count);
   const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
@@ -563,11 +566,14 @@ const deleteLocalidad = async (id) => {
 
 // ─── BARRIOS ────────────────────────────────────────────────────────────────
 
-const getBarrios = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+const getBarrios = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc', loc = null } = {}) => {
   page  = Math.max(1, page);
   limit = Math.max(1, Math.min(1000, limit));
-  const params = search ? [`%${search}%`] : [];
-  const where  = search ? `WHERE b."BARR_DESC" ILIKE $1` : '';
+  const params = [];
+  const conditions = [];
+  if (search) { params.push(`%${search}%`); conditions.push(`b."BARR_DESC" ILIKE $${params.length}`); }
+  if (loc) { params.push(loc); conditions.push(`b."BARR_CODIGO_LOC" = $${params.length}`); }
+  const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
   const { rows: [{ count }] } = await pool.query(`SELECT COUNT(*) FROM gen_barrio b ${where}`, params);
   const total = parseInt(count);
   const dir = sortDir === 'desc' ? 'DESC' : 'ASC';

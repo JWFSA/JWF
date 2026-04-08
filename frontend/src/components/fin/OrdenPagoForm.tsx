@@ -8,6 +8,7 @@ import { getMonedas } from '@/services/gen';
 import type { OrdenPago, Proveedor } from '@/types/fin';
 import { Search } from 'lucide-react';
 import { toInputDate } from '@/lib/utils';
+import MoneyInput from '@/components/ui/MoneyInput';
 
 interface Props {
   initialData?: OrdenPago;
@@ -220,14 +221,14 @@ export default function OrdenPagoForm({ initialData, isPending, error, onSubmit,
         {/* Importe cheque */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Importe cheque</label>
-          <input type="number" min="0" step="0.01" value={form.ordp_cheq_importe} onChange={(e) => set('ordp_cheq_importe', e.target.value)}
+          <MoneyInput value={Number(form.ordp_cheq_importe) || 0} onChange={(v) => set('ordp_cheq_importe', v)}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
         </div>
 
         {/* Total a pagar */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Total a pagar</label>
-          <input type="number" min="0" step="0.01" value={form.ordp_tot_pago} onChange={(e) => set('ordp_tot_pago', e.target.value)}
+          <MoneyInput value={Number(form.ordp_tot_pago) || 0} onChange={(v) => set('ordp_tot_pago', v)}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
         </div>
 

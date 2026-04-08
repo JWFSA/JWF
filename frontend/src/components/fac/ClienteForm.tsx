@@ -3,8 +3,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getZonas, getCategorias, getVendedores, getCondiciones, getAgencias } from '@/services/fac';
-import { getPaises } from '@/services/gen';
+import { getPaises, getDepartamentos, getLocalidades, getBarrios } from '@/services/gen';
 import { Plus, X, Search } from 'lucide-react';
+import MoneyInput from '@/components/ui/MoneyInput';
 
 export interface ClienteFormData {
   cli_nom: string;
@@ -14,6 +15,9 @@ export interface ClienteFormData {
   cli_emails: string[];
   cli_dir2: string;
   cli_localidad: string;
+  cli_departamento: number | '';
+  cli_cod_localidad: number | '';
+  cli_cod_barrio: number | '';
   cli_zona: number | '';
   cli_categ: number | '';
   cli_pais: number | '';
@@ -34,7 +38,8 @@ export interface ClienteFormData {
 
 export const emptyCliente: ClienteFormData = {
   cli_nom: '', cli_ruc: '', cli_tel: '', cli_fax: '', cli_emails: [''],
-  cli_dir2: '', cli_localidad: '', cli_zona: '', cli_categ: '', cli_pais: '',
+  cli_dir2: '', cli_localidad: '', cli_departamento: '', cli_cod_localidad: '', cli_cod_barrio: '',
+  cli_zona: '', cli_categ: '', cli_pais: '',
   cli_est_cli: 'A', cli_imp_lim_cr: 0, cli_bloq_lim_cr: 'N',
   cli_max_dias_atraso: 0, cli_ind_potencial: 'N', cli_obs: '', cli_pers_contacto: '',
   cli_vendedor: '',
@@ -73,6 +78,17 @@ export default function ClienteForm({ form, onChange, error, isPending, onSubmit
   const { data: vendData } = useQuery({ queryKey: ['vendedores', { all: true }], queryFn: () => getVendedores({ all: true }) });
   const { data: condData } = useQuery({ queryKey: ['condiciones'], queryFn: getCondiciones });
   const { data: agenciasData } = useQuery({ queryKey: ['agencias', { all: true }], queryFn: () => getAgencias({ all: true }) });
+  const { data: deptosData } = useQuery({ queryKey: ['departamentos'], queryFn: getDepartamentos });
+  const { data: locsData } = useQuery({
+    queryKey: ['localidades', { all: true, dep: form.cli_departamento }],
+    queryFn: () => getLocalidades({ all: true, dep: form.cli_departamento || undefined } as any),
+    enabled: !!form.cli_departamento,
+  });
+  const { data: barriosData } = useQuery({
+    queryKey: ['barrios-gen', { all: true, loc: form.cli_cod_localidad }],
+    queryFn: () => getBarrios({ all: true, loc: form.cli_cod_localidad || undefined } as any),
+    enabled: !!form.cli_cod_localidad,
+  });
 
   const zonas       = zonasData?.data ?? [];
   const cats        = catsData?.data ?? [];
@@ -80,6 +96,9 @@ export default function ClienteForm({ form, onChange, error, isPending, onSubmit
   const vendedores  = vendData?.data ?? [];
   const condiciones = condData ?? [];
   const agencias    = agenciasData?.data ?? [];
+  const deptos      = Array.isArray(deptosData) ? deptosData : [];
+  const localidades = locsData?.data ?? [];
+  const barrios     = barriosData?.data ?? [];
 
   // Sync search text con agencia seleccionada
   useEffect(() => {
@@ -181,20 +200,43 @@ export default function ClienteForm({ form, onChange, error, isPending, onSubmit
       <section>
         <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Dirección</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="sm:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
-            <input value={form.cli_dir2} onChange={(e) => set({ cli_dir2: e.target.value })} className={input} />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Localidad</label>
-            <input value={form.cli_localidad} onChange={(e) => set({ cli_localidad: e.target.value })} className={input} />
-          </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">País</label>
             <select value={form.cli_pais} onChange={(e) => set({ cli_pais: e.target.value ? Number(e.target.value) : '' })} className={sel}>
               <option value="">Sin especificar</option>
               {paises.map((p: any) => <option key={p.pais_codigo} value={p.pais_codigo}>{p.pais_desc}</option>)}
             </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Departamento</label>
+            <select value={form.cli_departamento} onChange={(e) => {
+              const val = e.target.value ? Number(e.target.value) : '' as const;
+              set({ cli_departamento: val, cli_cod_localidad: '', cli_cod_barrio: '' });
+            }} className={sel}>
+              <option value="">Sin especificar</option>
+              {deptos.map((d: any) => <option key={d.dpto_codigo} value={d.dpto_codigo}>{d.dpto_desc}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Localidad</label>
+            <select value={form.cli_cod_localidad} onChange={(e) => {
+              const val = e.target.value ? Number(e.target.value) : '' as const;
+              set({ cli_cod_localidad: val, cli_cod_barrio: '' });
+            }} disabled={!form.cli_departamento} className={sel}>
+              <option value="">Sin especificar</option>
+              {localidades.map((l: any) => <option key={l.loc_codigo} value={l.loc_codigo}>{l.loc_desc}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Barrio</label>
+            <select value={form.cli_cod_barrio} onChange={(e) => set({ cli_cod_barrio: e.target.value ? Number(e.target.value) : '' })} disabled={!form.cli_cod_localidad} className={sel}>
+              <option value="">Sin especificar</option>
+              {barrios.map((b: any) => <option key={b.barr_codigo} value={b.barr_codigo}>{b.barr_desc}</option>)}
+            </select>
+          </div>
+          <div className="sm:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
+            <input value={form.cli_dir2} onChange={(e) => set({ cli_dir2: e.target.value })} className={input} />
           </div>
         </div>
       </section>
@@ -255,56 +297,54 @@ export default function ClienteForm({ form, onChange, error, isPending, onSubmit
             <select value={form.cli_mod_venta} onChange={(e) => {
               const mod = e.target.value as 'D' | 'I';
               const patch: Partial<ClienteFormData> = { cli_mod_venta: mod };
-              if (mod === 'D') { patch.cli_agencia = ''; patch.cli_comision_agen = 0; }
+              if (mod === 'D') { patch.cli_agencia = ''; }
               set(patch);
             }} className={sel}>
               <option value="D">Directa</option>
-              <option value="I">Indirecta</option>
+              <option value="I">Agencia</option>
             </select>
           </div>
           {form.cli_mod_venta === 'I' && (
-            <>
-              <div ref={agenRef}>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Agencia</label>
-                <div className="relative">
-                  <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                  <input
-                    value={agenSearch}
-                    onChange={(e) => { setAgenSearch(e.target.value); setAgenDropOpen(true); if (!e.target.value) set({ cli_agencia: '' }); }}
-                    onFocus={() => setAgenDropOpen(true)}
-                    placeholder="Buscar agencia..."
-                    className={`${input} pl-9`}
-                  />
-                  {agenDropOpen && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                      {filteredAgencias.length === 0 ? (
-                        <p className="px-3 py-2 text-sm text-gray-400">Sin resultados</p>
-                      ) : (
-                        filteredAgencias.map((a) => {
-                          const inactiva = a.agen_est === 'I';
-                          return (
-                            <button key={a.agen_codigo} type="button"
-                              onClick={() => { if (!inactiva) { set({ cli_agencia: a.agen_codigo }); setAgenSearch(a.agen_desc); setAgenDropOpen(false); } }}
-                              disabled={inactiva}
-                              className={`w-full text-left px-3 py-2 text-sm ${inactiva ? 'text-gray-300 cursor-not-allowed bg-gray-50' : 'hover:bg-primary-50 hover:text-primary-700'}`}>
-                              <span className={inactiva ? 'line-through' : 'font-medium'}>{a.agen_desc}</span>
-                              {inactiva && <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-red-50 text-red-400">Inactiva</span>}
-                            </button>
-                          );
-                        })
-                      )}
-                    </div>
-                  )}
-                </div>
+            <div ref={agenRef}>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Agencia</label>
+              <div className="relative">
+                <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                <input
+                  value={agenSearch}
+                  onChange={(e) => { setAgenSearch(e.target.value); setAgenDropOpen(true); if (!e.target.value) set({ cli_agencia: '' }); }}
+                  onFocus={() => setAgenDropOpen(true)}
+                  placeholder="Buscar agencia..."
+                  className={`${input} pl-9`}
+                />
+                {agenDropOpen && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                    {filteredAgencias.length === 0 ? (
+                      <p className="px-3 py-2 text-sm text-gray-400">Sin resultados</p>
+                    ) : (
+                      filteredAgencias.map((a) => {
+                        const inactiva = a.agen_est === 'I';
+                        return (
+                          <button key={a.agen_codigo} type="button"
+                            onClick={() => { if (!inactiva) { set({ cli_agencia: a.agen_codigo }); setAgenSearch(a.agen_desc); setAgenDropOpen(false); } }}
+                            disabled={inactiva}
+                            className={`w-full text-left px-3 py-2 text-sm ${inactiva ? 'text-gray-300 cursor-not-allowed bg-gray-50' : 'hover:bg-primary-50 hover:text-primary-700'}`}>
+                            <span className={inactiva ? 'line-through' : 'font-medium'}>{a.agen_desc}</span>
+                            {inactiva && <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-red-50 text-red-400">Inactiva</span>}
+                          </button>
+                        );
+                      })
+                    )}
+                  </div>
+                )}
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Comisión agencia (%)</label>
-                <input type="number" min="0" max="100" step="0.01" value={form.cli_comision_agen || ''}
-                  onChange={(e) => set({ cli_comision_agen: e.target.value === '' ? 0 : parseFloat(e.target.value) })}
-                  className={input} />
-              </div>
-            </>
+            </div>
           )}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Comisión (%)</label>
+            <input type="number" min="0" max="100" step="0.01" value={form.cli_comision_agen || ''}
+              onChange={(e) => set({ cli_comision_agen: e.target.value === '' ? 0 : parseFloat(e.target.value) })}
+              className={input} />
+          </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
             <select value={form.cli_est_cli} onChange={(e) => set({ cli_est_cli: e.target.value as 'A' | 'I' })} className={sel}>
@@ -321,7 +361,7 @@ export default function ClienteForm({ form, onChange, error, isPending, onSubmit
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Límite de crédito</label>
-            <input type="number" step="0.01" value={form.cli_imp_lim_cr} onChange={(e) => set({ cli_imp_lim_cr: Number(e.target.value) })} className={input} />
+            <MoneyInput value={form.cli_imp_lim_cr} onChange={(v) => set({ cli_imp_lim_cr: v })} decimals={4} className={input} />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Días máx. de atraso</label>

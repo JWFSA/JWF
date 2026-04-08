@@ -95,13 +95,13 @@ const updateMotivoAnulacion = async (req, res, next) => { try { res.json(await s
 const deleteMotivoAnulacion = async (req, res, next) => { try { await s.deleteMotivoAnulacion(Number(req.params.id)); res.status(204).end(); } catch (e) { next(e); } };
 
 // ─── LOCALIDADES ────────────────────────────────────────────────────────────
-const getLocalidades       = async (req, res, next) => { try { res.json(await s.getLocalidades({ all: req.query.all === 'true', page: parseInt(req.query.page) || 1, limit: parseInt(req.query.limit) || 20, search: req.query.search || '', sortField: req.query.sortField || '', sortDir: req.query.sortDir || 'asc' })); } catch (e) { next(e); } };
+const getLocalidades       = async (req, res, next) => { try { res.json(await s.getLocalidades({ all: req.query.all === 'true', page: parseInt(req.query.page) || 1, limit: parseInt(req.query.limit) || 20, search: req.query.search || '', sortField: req.query.sortField || '', sortDir: req.query.sortDir || 'asc', dep: req.query.dep ? Number(req.query.dep) : null })); } catch (e) { next(e); } };
 const createLocalidad      = async (req, res, next) => { try { if (!req.body.loc_desc) return res.status(400).json({ message: 'La descripción es requerida' }); res.status(201).json(await s.createLocalidad(req.body)); } catch (e) { next(e); } };
 const updateLocalidad      = async (req, res, next) => { try { res.json(await s.updateLocalidad(Number(req.params.id), req.body)); } catch (e) { next(e); } };
 const deleteLocalidad      = async (req, res, next) => { try { await s.deleteLocalidad(Number(req.params.id)); res.status(204).end(); } catch (e) { next(e); } };
 
 // ─── BARRIOS ────────────────────────────────────────────────────────────────
-const getBarrios           = async (req, res, next) => { try { res.json(await s.getBarrios({ all: req.query.all === 'true', page: parseInt(req.query.page) || 1, limit: parseInt(req.query.limit) || 20, search: req.query.search || '', sortField: req.query.sortField || '', sortDir: req.query.sortDir || 'asc' })); } catch (e) { next(e); } };
+const getBarrios           = async (req, res, next) => { try { res.json(await s.getBarrios({ all: req.query.all === 'true', page: parseInt(req.query.page) || 1, limit: parseInt(req.query.limit) || 20, search: req.query.search || '', sortField: req.query.sortField || '', sortDir: req.query.sortDir || 'asc', loc: req.query.loc ? Number(req.query.loc) : null })); } catch (e) { next(e); } };
 const createBarrio         = async (req, res, next) => { try { if (!req.body.barr_desc) return res.status(400).json({ message: 'La descripción es requerida' }); res.status(201).json(await s.createBarrio(req.body)); } catch (e) { next(e); } };
 const updateBarrio         = async (req, res, next) => { try { res.json(await s.updateBarrio(Number(req.params.id), req.body)); } catch (e) { next(e); } };
 const deleteBarrio         = async (req, res, next) => { try { await s.deleteBarrio(Number(req.params.id)); res.status(204).end(); } catch (e) { next(e); } };

@@ -6,6 +6,7 @@ import { getCategorias, createCategoria, updateCategoria, deleteCategoria } from
 import type { Categoria } from '@/types/fac';
 import DataTable from '@/components/ui/DataTable';
 import FormModal from '@/components/ui/FormModal';
+import MoneyInput from '@/components/ui/MoneyInput';
 import PrimaryAddButton from '@/components/ui/PrimaryAddButton';
 import SearchField from '@/components/ui/SearchField';
 import TablePagination from '@/components/ui/TablePagination';
@@ -95,11 +96,11 @@ export default function CategoriasPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Venta mínima</label>
-              <input type="number" step="0.01" value={form.fcat_vent_ini} onChange={(e) => setForm({ ...form, fcat_vent_ini: Number(e.target.value) })} className={inp} />
+              <MoneyInput value={form.fcat_vent_ini} onChange={(v) => setForm({ ...form, fcat_vent_ini: v })} className={inp} />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Venta máxima</label>
-              <input type="number" step="0.01" value={form.fcat_vent_fin} onChange={(e) => setForm({ ...form, fcat_vent_fin: Number(e.target.value) })} className={inp} />
+              <MoneyInput value={form.fcat_vent_fin} onChange={(v) => setForm({ ...form, fcat_vent_fin: v })} className={inp} />
             </div>
           </div>
           <div>
