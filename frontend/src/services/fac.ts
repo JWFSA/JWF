@@ -1,6 +1,12 @@
 import api from '@/lib/api';
-import type { Barrio, Zona, Categoria, Condicion, Vendedor, Cliente, Articulo, Pedido, ListaPrecio, ListaPrecioDetalle, Factura, FacturaDet, PedidoParaFacturar, Campanha, ComisionFac, SolicitudDescuento, Paginated } from '@/types/fac';
+import type { Agencia, Barrio, Zona, Categoria, Condicion, Vendedor, Cliente, Articulo, Pedido, ListaPrecio, ListaPrecioDetalle, Factura, FacturaDet, PedidoParaFacturar, Campanha, ComisionFac, SolicitudDescuento, Paginated } from '@/types/fac';
 import type { ListParams } from '@/services/gen';
+
+// Agencias
+export const getAgencias    = (params?: ListParams) => api.get<Paginated<Agencia>>('/fac/maestros/agencias', { params }).then((r) => r.data);
+export const createAgencia  = (data: Partial<Agencia>) => api.post<Agencia>('/fac/maestros/agencias', data).then((r) => r.data);
+export const updateAgencia  = (id: number, data: Partial<Agencia>) => api.put<Agencia>(`/fac/maestros/agencias/${id}`, data).then((r) => r.data);
+export const deleteAgencia  = (id: number) => api.delete(`/fac/maestros/agencias/${id}`);
 
 // Barrios
 export const getBarrios    = (params?: ListParams) => api.get<Paginated<Barrio>>('/fac/maestros/barrios', { params }).then((r) => r.data);

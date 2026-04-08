@@ -40,6 +40,11 @@ const createBarrio  = async (req, res, next) => { try { if (!req.body.ba_desc) r
 const updateBarrio  = async (req, res, next) => { try { res.json(await s.updateBarrio(Number(req.params.id), req.body)); } catch (e) { next(e); } };
 const deleteBarrio  = async (req, res, next) => { try { await s.deleteBarrio(Number(req.params.id)); res.status(204).end(); } catch (e) { next(e); } };
 
+const getAgencias    = async (req, res, next) => { try { res.json(await s.getAgencias({ all: req.query.all === 'true', page: parseInt(req.query.page) || 1, limit: parseInt(req.query.limit) || 20, search: req.query.search || '', sortField: req.query.sortField || '', sortDir: req.query.sortDir || 'asc' })); } catch (e) { next(e); } };
+const createAgencia  = async (req, res, next) => { try { if (!req.body.agen_desc) return res.status(400).json({ message: 'La descripción es requerida' }); res.status(201).json(await s.createAgencia(req.body)); } catch (e) { next(e); } };
+const updateAgencia  = async (req, res, next) => { try { res.json(await s.updateAgencia(Number(req.params.id), req.body)); } catch (e) { next(e); } };
+const deleteAgencia  = async (req, res, next) => { try { await s.deleteAgencia(Number(req.params.id)); res.status(204).end(); } catch (e) { next(e); } };
+
 module.exports = {
   getZonas, createZona, updateZona, deleteZona,
   getCategorias, createCategoria, updateCategoria, deleteCategoria,
@@ -48,4 +53,5 @@ module.exports = {
   getListasPrecio, createListaPrecio, updateListaPrecio, deleteListaPrecio,
   getListaPrecioItems, upsertListaPrecioItem, deleteListaPrecioItem,
   getBarrios, createBarrio, updateBarrio, deleteBarrio,
+  getAgencias, createAgencia, updateAgencia, deleteAgencia,
 };

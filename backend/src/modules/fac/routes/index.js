@@ -40,6 +40,12 @@ router.post('/maestros/barrios',        verifyToken, maestrosController.createBa
 router.put('/maestros/barrios/:id',     verifyToken, maestrosController.updateBarrio);
 router.delete('/maestros/barrios/:id',  verifyToken, maestrosController.deleteBarrio);
 
+// Agencias
+router.get('/maestros/agencias',         verifyToken, maestrosController.getAgencias);
+router.post('/maestros/agencias',        verifyToken, maestrosController.createAgencia);
+router.put('/maestros/agencias/:id',     verifyToken, maestrosController.updateAgencia);
+router.delete('/maestros/agencias/:id',  verifyToken, maestrosController.deleteAgencia);
+
 // Vendedores
 router.get('/vendedores',         verifyToken, maestrosController.getVendedores);
 router.post('/vendedores',        verifyToken, maestrosController.createVendedor);

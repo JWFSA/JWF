@@ -382,6 +382,55 @@ const deleteBarrio = async (codigo) => {
   await pool.query('DELETE FROM fac_barrio WHERE "BA_CODIGO" = $1', [codigo]);
 };
 
+// ─── Agencias ──────────────────────────────────────────────────────────────
+const getAgencias = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+  page  = Math.max(1, page);
+  limit = Math.max(1, Math.min(1000, limit));
+  const params = search ? [`%${search}%`] : [];
+  const where  = search ? `WHERE "AGEN_DESC" ILIKE $1` : '';
+  const countRes = await pool.query(`SELECT COUNT(*) FROM fac_agencia ${where}`, params);
+  const total = parseInt(countRes.rows[0].count);
+  const allowedSort = { cod: '"AGEN_CODIGO"', desc: '"AGEN_DESC"' };
+  const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+  const orderBy = Object.hasOwn(allowedSort, sortField) ? `${allowedSort[sortField]} ${dir}` : '"AGEN_DESC" ASC';
+  const select = `SELECT "AGEN_CODIGO" AS agen_codigo, "AGEN_DESC" AS agen_desc, "AGEN_EST" AS agen_est FROM fac_agencia ${where} ORDER BY ${orderBy}`;
+  if (all) {
+    const { rows } = await pool.query(select, params);
+    return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
+  }
+  const offset = (page - 1) * limit;
+  const { rows } = await pool.query(`${select} LIMIT $${params.length + 1} OFFSET $${params.length + 2}`, [...params, limit, offset]);
+  return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+};
+
+const getAgencia = async (codigo) => {
+  const { rows } = await pool.query(`SELECT "AGEN_CODIGO" AS agen_codigo, "AGEN_DESC" AS agen_desc, "AGEN_EST" AS agen_est FROM fac_agencia WHERE "AGEN_CODIGO" = $1`, [codigo]);
+  if (!rows.length) throw { status: 404, message: 'Agencia no encontrada' };
+  return rows[0];
+};
+
+const createAgencia = async (data) => {
+  const { rows } = await pool.query('SELECT COALESCE(MAX("AGEN_CODIGO"), 0) + 1 AS next FROM fac_agencia');
+  const codigo = rows[0].next;
+  await pool.query(`INSERT INTO fac_agencia ("AGEN_CODIGO","AGEN_DESC","AGEN_EST") VALUES ($1,$2,$3)`, [codigo, data.agen_desc, data.agen_est || 'A']);
+  return getAgencia(codigo);
+};
+
+const updateAgencia = async (codigo, data) => {
+  const fields = []; const params = [];
+  if (data.agen_desc !== undefined) { params.push(data.agen_desc); fields.push(`"AGEN_DESC" = $${params.length}`); }
+  if (data.agen_est !== undefined) { params.push(data.agen_est); fields.push(`"AGEN_EST" = $${params.length}`); }
+  if (fields.length) {
+    params.push(codigo);
+    await pool.query(`UPDATE fac_agencia SET ${fields.join(', ')} WHERE "AGEN_CODIGO" = $${params.length}`, params);
+  }
+  return getAgencia(codigo);
+};
+
+const deleteAgencia = async (codigo) => {
+  await pool.query('DELETE FROM fac_agencia WHERE "AGEN_CODIGO" = $1', [codigo]);
+};
+
 module.exports = {
   getZonas, getZona, createZona, updateZona, deleteZona,
   getCategorias, getCategoria, createCategoria, updateCategoria, deleteCategoria,
@@ -390,4 +439,5 @@ module.exports = {
   getListasPrecio, getListaPrecio, createListaPrecio, updateListaPrecio, deleteListaPrecio,
   getListaPrecioItems, upsertListaPrecioItem, deleteListaPrecioItem,
   getBarrios, getBarrio, createBarrio, updateBarrio, deleteBarrio,
+  getAgencias, getAgencia, createAgencia, updateAgencia, deleteAgencia,
 };

@@ -1,9 +1,10 @@
 'use client';
 
+import { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getZonas, getCategorias, getVendedores, getCondiciones } from '@/services/fac';
+import { getZonas, getCategorias, getVendedores, getCondiciones, getAgencias } from '@/services/fac';
 import { getPaises } from '@/services/gen';
-import { Plus, X } from 'lucide-react';
+import { Plus, X, Search } from 'lucide-react';
 
 export interface ClienteFormData {
   cli_nom: string;
@@ -26,6 +27,8 @@ export interface ClienteFormData {
   cli_vendedor: number | '';
   cli_tipo_vta: 'C' | 'R' | '';
   cli_mod_venta: 'D' | 'I';
+  cli_agencia: number | '';
+  cli_comision_agen: number;
   cli_cond_venta: string;
 }
 
@@ -37,6 +40,8 @@ export const emptyCliente: ClienteFormData = {
   cli_vendedor: '',
   cli_tipo_vta: 'C',
   cli_mod_venta: 'D',
+  cli_agencia: '',
+  cli_comision_agen: 0,
   cli_cond_venta: 'CONTADO',
 };
 
@@ -52,18 +57,43 @@ interface Props {
 
 export default function ClienteForm({ form, onChange, error, isPending, onSubmit, onCancel, isEdit }: Props) {
   const set = (patch: Partial<ClienteFormData>) => onChange({ ...form, ...patch });
+  const [agenSearch, setAgenSearch] = useState('');
+  const [agenDropOpen, setAgenDropOpen] = useState(false);
+  const agenRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => { if (agenRef.current && !agenRef.current.contains(e.target as Node)) setAgenDropOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   const { data: zonasData } = useQuery({ queryKey: ['zonas', { all: true }], queryFn: () => getZonas({ all: true }) });
   const { data: catsData }  = useQuery({ queryKey: ['categorias', { all: true }], queryFn: () => getCategorias({ all: true }) });
   const { data: paisesData } = useQuery({ queryKey: ['paises'], queryFn: getPaises });
   const { data: vendData } = useQuery({ queryKey: ['vendedores', { all: true }], queryFn: () => getVendedores({ all: true }) });
   const { data: condData } = useQuery({ queryKey: ['condiciones'], queryFn: getCondiciones });
+  const { data: agenciasData } = useQuery({ queryKey: ['agencias', { all: true }], queryFn: () => getAgencias({ all: true }) });
 
   const zonas       = zonasData?.data ?? [];
   const cats        = catsData?.data ?? [];
   const paises      = Array.isArray(paisesData) ? paisesData : [];
   const vendedores  = vendData?.data ?? [];
   const condiciones = condData ?? [];
+  const agencias    = agenciasData?.data ?? [];
+
+  // Sync search text con agencia seleccionada
+  useEffect(() => {
+    if (form.cli_agencia) {
+      const a = agencias.find((ag) => ag.agen_codigo === form.cli_agencia);
+      if (a) setAgenSearch(a.agen_desc);
+    } else {
+      setAgenSearch('');
+    }
+  }, [form.cli_agencia, agencias]);
+
+  const filteredAgencias = agencias.filter((a) =>
+    !agenSearch || a.agen_desc.toLowerCase().includes(agenSearch.toLowerCase())
+  );
 
   const condContado = ['CONTADO', 'CANJE'];
   const condCredito = ['30 DIAS', '60 DIAS', '90 DIAS', '120 DIAS', 'CANJE'];
@@ -188,13 +218,6 @@ export default function ClienteForm({ form, onChange, error, isPending, onSubmit
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Modalidad de venta</label>
-            <select value={form.cli_mod_venta} onChange={(e) => set({ cli_mod_venta: e.target.value as 'D' | 'I' })} className={sel}>
-              <option value="D">Directa</option>
-              <option value="I">Indirecta</option>
-            </select>
-          </div>
-          <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de venta</label>
             <select value={form.cli_tipo_vta} onChange={(e) => {
               const tipo = e.target.value as 'C' | 'R' | '';
@@ -227,6 +250,61 @@ export default function ClienteForm({ form, onChange, error, isPending, onSubmit
               ))}
             </select>
           </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Modalidad de venta</label>
+            <select value={form.cli_mod_venta} onChange={(e) => {
+              const mod = e.target.value as 'D' | 'I';
+              const patch: Partial<ClienteFormData> = { cli_mod_venta: mod };
+              if (mod === 'D') { patch.cli_agencia = ''; patch.cli_comision_agen = 0; }
+              set(patch);
+            }} className={sel}>
+              <option value="D">Directa</option>
+              <option value="I">Indirecta</option>
+            </select>
+          </div>
+          {form.cli_mod_venta === 'I' && (
+            <>
+              <div ref={agenRef}>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Agencia</label>
+                <div className="relative">
+                  <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                  <input
+                    value={agenSearch}
+                    onChange={(e) => { setAgenSearch(e.target.value); setAgenDropOpen(true); if (!e.target.value) set({ cli_agencia: '' }); }}
+                    onFocus={() => setAgenDropOpen(true)}
+                    placeholder="Buscar agencia..."
+                    className={`${input} pl-9`}
+                  />
+                  {agenDropOpen && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                      {filteredAgencias.length === 0 ? (
+                        <p className="px-3 py-2 text-sm text-gray-400">Sin resultados</p>
+                      ) : (
+                        filteredAgencias.map((a) => {
+                          const inactiva = a.agen_est === 'I';
+                          return (
+                            <button key={a.agen_codigo} type="button"
+                              onClick={() => { if (!inactiva) { set({ cli_agencia: a.agen_codigo }); setAgenSearch(a.agen_desc); setAgenDropOpen(false); } }}
+                              disabled={inactiva}
+                              className={`w-full text-left px-3 py-2 text-sm ${inactiva ? 'text-gray-300 cursor-not-allowed bg-gray-50' : 'hover:bg-primary-50 hover:text-primary-700'}`}>
+                              <span className={inactiva ? 'line-through' : 'font-medium'}>{a.agen_desc}</span>
+                              {inactiva && <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-red-50 text-red-400">Inactiva</span>}
+                            </button>
+                          );
+                        })
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Comisión agencia (%)</label>
+                <input type="number" min="0" max="100" step="0.01" value={form.cli_comision_agen || ''}
+                  onChange={(e) => set({ cli_comision_agen: e.target.value === '' ? 0 : parseFloat(e.target.value) })}
+                  className={input} />
+              </div>
+            </>
+          )}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
             <select value={form.cli_est_cli} onChange={(e) => set({ cli_est_cli: e.target.value as 'A' | 'I' })} className={sel}>

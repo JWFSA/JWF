@@ -1,6 +1,12 @@
 import { Paginated } from './gen';
 export type { Paginated };
 
+export interface Agencia {
+  agen_codigo: number;
+  agen_desc: string;
+  agen_est: string | null;
+}
+
 export interface Barrio {
   ba_codigo: number;
   ba_desc: string;
@@ -69,6 +75,9 @@ export interface Cliente {
   vend_apellido?: string;
   cli_tipo_vta: string | null;
   cli_mod_venta: string | null;
+  cli_agencia: number | null;
+  agen_desc?: string;
+  cli_comision_agen: number | null;
   cli_cond_venta: string | null;
 }
 

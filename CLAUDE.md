@@ -686,6 +686,50 @@ Los campos no editables nunca deben recibir focus ni interacción por teclado:
 - **CSS global** (`globals.css`): ya aplica `pointer-events: none` y anula focus/ring en `input[readonly]`, `select[disabled]`, `textarea[readonly]`
 - **Nunca** usar clases de focus (`focus:ring-*`, `focus:outline-*`) en campos readonly/disabled
 
+### Frontend — Registros inactivos en selectores (OBLIGATORIO)
+Cuando un selector (dropdown o listado de búsqueda) muestra registros que pueden estar activos o inactivos:
+
+- **Siempre mostrar los inactivos** — no ocultarlos, el usuario debe saber que existen
+- **No permitir seleccionarlos** — usar `disabled` en `<option>` o `disabled` en botones de dropdown
+- **Diferenciar visualmente** — texto gris claro, etiqueta "(Inactiva)" o badge "Inactivo", o `line-through` según el contexto
+
+**En `<select>` (formularios):**
+```tsx
+{items.map((item) => (
+  <option key={item.id} value={item.id} disabled={item.estado === 'I'}
+    className={item.estado === 'I' ? 'text-gray-300' : ''}>
+    {item.desc}{item.estado === 'I' ? ' (Inactivo)' : ''}
+  </option>
+))}
+```
+
+**En dropdowns custom (búsqueda con listado):**
+```tsx
+<button disabled={inactivo}
+  className={inactivo ? 'text-gray-300 cursor-not-allowed bg-gray-50' : 'hover:bg-primary-50'}>
+  <span className={inactivo ? 'line-through' : ''}>{nombre}</span>
+  {inactivo && <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-50 text-red-400">Inactivo</span>}
+</button>
+```
+
+### Frontend — Campos uppercase (OBLIGATORIO)
+Cuando un campo debe mostrarse en mayúsculas:
+
+- **Nunca** usar `toUpperCase()` en el `onChange` — mueve el cursor al final y rompe la edición en medio del texto
+- **Usar CSS** `uppercase` en el className del input para mostrar visualmente en mayúsculas
+- **Convertir a mayúsculas al enviar** (en el `handleSubmit` o antes del `mutate`), no al escribir
+
+```tsx
+// ✅ Correcto
+<input value={form.desc} onChange={(e) => setForm({ ...form, desc: e.target.value })}
+  className="... uppercase" />
+// Al guardar:
+const data = { ...form, desc: form.desc.toUpperCase() };
+
+// ❌ Incorrecto — mueve el cursor
+<input onChange={(e) => setForm({ ...form, desc: e.target.value.toUpperCase() })} />
+```
+
 ### Frontend — Responsive (OBLIGATORIO)
 Todos los componentes deben ser responsive. Reglas:
 

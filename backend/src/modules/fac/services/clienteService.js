@@ -24,6 +24,7 @@ const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortFiel
            c."CLI_CATEG" AS cli_categ, cat."FCAT_DESC" AS fcat_desc,
            c."CLI_VENDEDOR" AS cli_vendedor, c."CLI_TIPO_VTA" AS cli_tipo_vta, c."CLI_COND_VENTA" AS cli_cond_venta,
            c."CLI_MOD_VENTA" AS cli_mod_venta,
+           c."CLI_AGENCIA" AS cli_agencia, c."CLI_COMISION_AGEN" AS cli_comision_agen,
            c."CLI_MON" AS cli_mon, c."CLI_DIR2" AS cli_dir2, c."CLI_PERS_CONTACTO" AS cli_pers_contacto
     FROM fin_cliente c
     LEFT JOIN fac_zona z ON z."ZONA_CODIGO" = c."CLI_ZONA"
@@ -54,6 +55,7 @@ const getById = async (id) => {
      c."CLI_PERS_CONTACTO" AS cli_pers_contacto,
      c."CLI_COND_VENTA" AS cli_cond_venta,
      c."CLI_TIPO_VTA" AS cli_tipo_vta, c."CLI_MOD_VENTA" AS cli_mod_venta,
+     c."CLI_AGENCIA" AS cli_agencia, ag."AGEN_DESC" AS agen_desc, c."CLI_COMISION_AGEN" AS cli_comision_agen,
      c."CLI_VENDEDOR" AS cli_vendedor,
      o."OPER_NOMBRE" AS vend_nombre, o."OPER_APELLIDO" AS vend_apellido
      FROM fin_cliente c
@@ -63,6 +65,7 @@ const getById = async (id) => {
      LEFT JOIN gen_moneda m ON m."MON_CODIGO" = c."CLI_MON"
      LEFT JOIN fac_vendedor v ON v."VEND_LEGAJO" = c."CLI_VENDEDOR"
      LEFT JOIN gen_operador o ON o."OPER_CODIGO" = v."VEND_OPER"
+     LEFT JOIN fac_agencia ag ON ag."AGEN_CODIGO" = c."CLI_AGENCIA"
      WHERE c."CLI_CODIGO" = $1`, [id]);
   if (!rows.length) throw { status: 404, message: 'Cliente no encontrado' };
   return rows[0];
@@ -76,8 +79,8 @@ const create = async (data) => {
        ("CLI_CODIGO","CLI_NOM","CLI_RUC","CLI_TEL","CLI_FAX","CLI_EMAIL","CLI_EMAIL2","CLI_EMAIL3","CLI_EMAIL4","CLI_DIR2",
         "CLI_LOCALIDAD","CLI_ZONA","CLI_CATEG","CLI_PAIS","CLI_MON","CLI_EST_CLI",
         "CLI_IMP_LIM_CR","CLI_BLOQ_LIM_CR","CLI_MAX_DIAS_ATRASO","CLI_IND_POTENCIAL",
-        "CLI_OBS","CLI_PERS_CONTACTO","CLI_VENDEDOR","CLI_COND_VENTA","CLI_TIPO_VTA","CLI_MOD_VENTA")
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26)`,
+        "CLI_OBS","CLI_PERS_CONTACTO","CLI_VENDEDOR","CLI_COND_VENTA","CLI_TIPO_VTA","CLI_MOD_VENTA","CLI_AGENCIA","CLI_COMISION_AGEN")
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28)`,
     [
       codigo, data.cli_nom, data.cli_ruc || null, data.cli_tel || null,
       data.cli_fax || null, data.cli_email || null, data.cli_email2 || null, data.cli_email3 || null, data.cli_email4 || null,
@@ -87,6 +90,7 @@ const create = async (data) => {
       data.cli_imp_lim_cr || 0, data.cli_bloq_lim_cr || 'N', data.cli_max_dias_atraso || 0,
       data.cli_ind_potencial || 'N', data.cli_obs || null, data.cli_pers_contacto || null,
       data.cli_vendedor || null, data.cli_cond_venta || null, data.cli_tipo_vta || null, data.cli_mod_venta || 'D',
+      data.cli_agencia || null, data.cli_comision_agen || 0,
     ]
   );
   return getById(codigo);
@@ -103,6 +107,7 @@ const update = async (id, data) => {
     cli_bloq_lim_cr: '"CLI_BLOQ_LIM_CR"', cli_max_dias_atraso: '"CLI_MAX_DIAS_ATRASO"',
     cli_ind_potencial: '"CLI_IND_POTENCIAL"', cli_obs: '"CLI_OBS"', cli_pers_contacto: '"CLI_PERS_CONTACTO"',
     cli_vendedor: '"CLI_VENDEDOR"', cli_cond_venta: '"CLI_COND_VENTA"', cli_tipo_vta: '"CLI_TIPO_VTA"', cli_mod_venta: '"CLI_MOD_VENTA"',
+    cli_agencia: '"CLI_AGENCIA"', cli_comision_agen: '"CLI_COMISION_AGEN"',
   };
   for (const [k, col] of Object.entries(map)) {
     if (data[k] !== undefined) { params.push(data[k]); fields.push(`${col} = $${params.length}`); }

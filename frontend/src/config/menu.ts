@@ -52,6 +52,7 @@ export const menu: MenuItem[] = [
       { label: 'Categorías',       href: '/fac/categorias',    icon: LayoutList },
       { label: 'Condiciones',      href: '/fac/condiciones',   icon: BookOpen },
       { label: 'Barrios',          href: '/fac/barrios',       icon: MapPin },
+      { label: 'Agencias',         href: '/fac/agencias',      icon: Building },
     ],
   },
   {
