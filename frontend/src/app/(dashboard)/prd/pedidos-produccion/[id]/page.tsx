@@ -26,7 +26,7 @@ export default function DetallePedidoProduccionPage() {
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-6">
-        <h2 className="text-sm font-semibold text-primary-600 uppercase tracking-wide mb-4">Datos generales</h2>
+        <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Datos generales</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 text-sm">
           <div><span className="text-gray-500">Fecha:</span> <span className="font-medium">{formatDate(pp.pp_fec_emis)}</span></div>
           <div><span className="text-gray-500">Cliente:</span> <span className="font-medium">{pp.pp_cli_nom}</span></div>
@@ -41,7 +41,7 @@ export default function DetallePedidoProduccionPage() {
 
       {(pp.items ?? []).length > 0 && (
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-6">
-          <h2 className="text-sm font-semibold text-primary-600 uppercase tracking-wide mb-3">&Iacute;tems</h2>
+          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">&Iacute;tems</h2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm min-w-[600px]">
               <thead><tr className="text-left text-xs text-gray-500 uppercase border-b border-gray-200">

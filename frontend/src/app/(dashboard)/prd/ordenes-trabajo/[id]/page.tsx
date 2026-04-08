@@ -28,8 +28,8 @@ function Section({ title, defaultOpen = true, children }: { title: string; defau
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
       <button type="button" onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between p-4 sm:px-6 text-left hover:bg-gray-50 transition-colors rounded-t-xl">
-        <h2 className="text-sm font-semibold text-primary-600 uppercase tracking-wide">{title}</h2>
-        {open ? <ChevronDown size={16} className="text-primary-400" /> : <ChevronRight size={16} className="text-primary-400" />}
+        <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">{title}</h2>
+        {open ? <ChevronDown size={16} className="text-gray-400" /> : <ChevronRight size={16} className="text-gray-400" />}
       </button>
       {open && <div className="px-4 sm:px-6 pb-4 sm:pb-6">{children}</div>}
     </div>
@@ -209,7 +209,7 @@ export default function DetalleOTPage() {
       {/* Observaciones */}
       {ot.ot_obs && (
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-6">
-          <h2 className="text-sm font-semibold text-primary-600 uppercase tracking-wide mb-2">Observaciones</h2>
+          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-2">Observaciones</h2>
           <p className="text-sm text-gray-700 whitespace-pre-line">{ot.ot_obs}</p>
         </div>
       )}

@@ -105,7 +105,7 @@ export default function EditarClientePage() {
 
       {/* Marcas del cliente */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-6">
-        <h2 className="text-sm font-semibold text-primary-600 uppercase tracking-wide mb-3">Marcas del cliente</h2>
+        <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Marcas del cliente</h2>
 
         <div className="flex items-center gap-2 mb-3">
           <input

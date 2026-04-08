@@ -177,7 +177,7 @@ export default function EditarPedidoPage() {
       {/* OTs vinculadas */}
       {(pedido.ordenes_trabajo ?? []).length > 0 && (
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-6 mb-4">
-          <h2 className="text-sm font-semibold text-primary-600 uppercase tracking-wide mb-3">{'\u00d3'}rdenes de trabajo vinculadas</h2>
+          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">{'\u00d3'}rdenes de trabajo vinculadas</h2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm min-w-[500px]">
               <thead>
