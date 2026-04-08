@@ -24,6 +24,7 @@ export interface ClienteFormData {
   cli_obs: string;
   cli_pers_contacto: string;
   cli_vendedor: number | '';
+  cli_tipo_vta: 'C' | 'R' | '';
   cli_cond_venta: string;
 }
 
@@ -33,7 +34,8 @@ export const emptyCliente: ClienteFormData = {
   cli_est_cli: 'A', cli_imp_lim_cr: 0, cli_bloq_lim_cr: 'N',
   cli_max_dias_atraso: 0, cli_ind_potencial: 'N', cli_obs: '', cli_pers_contacto: '',
   cli_vendedor: '',
-  cli_cond_venta: '',
+  cli_tipo_vta: 'C',
+  cli_cond_venta: 'CONTADO',
 };
 
 interface Props {
@@ -60,6 +62,14 @@ export default function ClienteForm({ form, onChange, error, isPending, onSubmit
   const paises      = Array.isArray(paisesData) ? paisesData : [];
   const vendedores  = vendData?.data ?? [];
   const condiciones = condData ?? [];
+
+  const condContado = ['CONTADO', 'CANJE'];
+  const condCredito = ['30 DIAS', '60 DIAS', '90 DIAS', '120 DIAS', 'CANJE'];
+  const condicionesFiltradas = form.cli_tipo_vta === 'C'
+    ? condiciones.filter((c) => condContado.includes(c.con_desc))
+    : form.cli_tipo_vta === 'R'
+      ? condiciones.filter((c) => condCredito.includes(c.con_desc))
+      : condiciones;
 
   const input = 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500';
   const sel   = `${input}`;
@@ -176,20 +186,35 @@ export default function ClienteForm({ form, onChange, error, isPending, onSubmit
             </select>
           </div>
           <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de venta</label>
+            <select value={form.cli_tipo_vta} onChange={(e) => {
+              const tipo = e.target.value as 'C' | 'R' | '';
+              const patch: Partial<ClienteFormData> = { cli_tipo_vta: tipo };
+              const allowed = tipo === 'C' ? condContado : tipo === 'R' ? condCredito : [];
+              if (!allowed.includes(form.cli_cond_venta)) {
+                const first = condiciones.find((c) => allowed.includes(c.con_desc));
+                patch.cli_cond_venta = first?.con_desc ?? '';
+              }
+              set(patch);
+            }} className={sel}>
+              <option value="C">Contado</option>
+              <option value="R">Crédito</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Cond. de venta</label>
+            <select value={form.cli_cond_venta} onChange={(e) => set({ cli_cond_venta: e.target.value })} disabled={!form.cli_tipo_vta} className={sel}>
+              {condicionesFiltradas.map((c) => (
+                <option key={c.con_desc} value={c.con_desc}>{c.con_desc}</option>
+              ))}
+            </select>
+          </div>
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Vendedor</label>
             <select value={form.cli_vendedor} onChange={(e) => set({ cli_vendedor: e.target.value ? Number(e.target.value) : '' })} className={sel}>
               <option value="">Sin vendedor</option>
               {vendedores.map((v) => (
                 <option key={v.vend_legajo} value={v.vend_legajo}>{v.oper_nombre} {v.oper_apellido}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Cond. de venta</label>
-            <select value={form.cli_cond_venta} onChange={(e) => set({ cli_cond_venta: e.target.value })} className={sel}>
-              <option value="">Sin condici&oacute;n</option>
-              {condiciones.map((c) => (
-                <option key={c.con_desc} value={c.con_desc}>{c.con_desc}</option>
               ))}
             </select>
           </div>

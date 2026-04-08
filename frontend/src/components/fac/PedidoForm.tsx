@@ -232,7 +232,7 @@ export default function PedidoForm({ initial, onSave, isPending, error, tipo = '
 
   const set = (k: keyof Pedido, v: unknown) => setForm((f) => ({ ...f, [k]: v }));
 
-  const selectCliente = (c: { cli_codigo: number; cli_nom: string; cli_ruc?: string | null; cli_tel?: string | null; cli_dir2?: string | null; cli_pers_contacto?: string | null; cli_vendedor?: number | null; cli_cond_venta?: string | null }) => {
+  const selectCliente = (c: { cli_codigo: number; cli_nom: string; cli_ruc?: string | null; cli_tel?: string | null; cli_dir2?: string | null; cli_pers_contacto?: string | null; cli_vendedor?: number | null; cli_tipo_vta?: string | null; cli_cond_venta?: string | null }) => {
     set('ped_cli', c.cli_codigo);
     set('ped_cli_nom', c.cli_nom);
     set('ped_cli_ruc', c.cli_ruc || null);
@@ -242,7 +242,8 @@ export default function PedidoForm({ initial, onSave, isPending, error, tipo = '
     set('ped_tel', c.cli_tel || null);
     set('ped_contacto', c.cli_pers_contacto || null);
     if (c.cli_vendedor) set('ped_vendedor', c.cli_vendedor);
-    if (c.cli_cond_venta) set('ped_cond_venta', c.cli_cond_venta);
+    set('ped_ind_tipo', c.cli_tipo_vta || 'C');
+    set('ped_cond_venta', c.cli_cond_venta || 'CONTADO');
     setCliSearch(c.cli_nom);
     setCliDropOpen(false);
   };
@@ -310,7 +311,7 @@ export default function PedidoForm({ initial, onSave, isPending, error, tipo = '
           {/* Nro (readonly) */}
           {initial?.ped_nro && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">N&uacute;mero</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Número</label>
               <input readOnly value={initial.ped_nro} className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600" />
             </div>
           )}
@@ -335,11 +336,11 @@ export default function PedidoForm({ initial, onSave, isPending, error, tipo = '
 
           {/* De Produccion */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">De Producci&oacute;n</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">De Producción</label>
             <select value={form.ped_ind_prd ?? 'N'} onChange={(e) => set('ped_ind_prd', e.target.value)}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
               <option value="N">No</option>
-              <option value="S">S&iacute;</option>
+              <option value="S">Sí</option>
             </select>
           </div>
 
@@ -353,33 +354,6 @@ export default function PedidoForm({ initial, onSave, isPending, error, tipo = '
               ))}
             </select>
           </div>
-
-          {/* Condicion de venta */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Cond. de Venta</label>
-            <select value={form.ped_cond_venta ?? ''} onChange={(e) => set('ped_cond_venta', e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
-              <option value="">— Sin condici&oacute;n —</option>
-              {condiciones.map((c) => (
-                <option key={c.con_desc} value={c.con_desc}>{c.con_desc}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Vendedor */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Vendedor</label>
-            <select value={form.ped_vendedor ?? ''} onChange={(e) => set('ped_vendedor', e.target.value ? Number(e.target.value) : null)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
-              <option value="">— Sin vendedor —</option>
-              {vendedores.map((v) => (
-                <option key={v.vend_legajo} value={v.vend_legajo}>
-                  {v.oper_nombre} {v.oper_apellido}
-                </option>
-              ))}
-            </select>
-          </div>
-
 
           {/* Cliente */}
           <div className="sm:col-span-2" ref={cliRef}>
@@ -412,21 +386,49 @@ export default function PedidoForm({ initial, onSave, isPending, error, tipo = '
             </div>
           </div>
 
-          {/* Datos del cliente (auto-filled) */}
+          {/* Tipo de venta (readonly, viene del cliente) */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de venta</label>
+            <input readOnly value={form.ped_ind_tipo === 'C' ? 'Contado' : form.ped_ind_tipo === 'R' ? 'Crédito' : ''}
+              className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600" />
+          </div>
+
+          {/* Cond. de venta (readonly, viene del cliente) */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Cond. de venta</label>
+            <input readOnly value={form.ped_cond_venta ?? ''}
+              className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600" />
+          </div>
+
+          {/* Vendedor (readonly, viene del cliente) */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Vendedor</label>
+            <select value={form.ped_vendedor ?? ''} disabled
+              className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600">
+              <option value="">— Sin vendedor —</option>
+              {vendedores.map((v) => (
+                <option key={v.vend_legajo} value={v.vend_legajo}>
+                  {v.oper_nombre} {v.oper_apellido}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Contacto (readonly, viene del cliente) */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Contacto</label>
-            <input value={form.ped_contacto ?? ''} onChange={(e) => set('ped_contacto', e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
+            <input readOnly value={form.ped_contacto ?? ''}
+              className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Tel&eacute;fono</label>
-            <input value={form.ped_tel ?? ''} onChange={(e) => set('ped_tel', e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+            <input readOnly value={form.ped_tel ?? ''}
+              className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">RUC</label>
-            <input value={form.ped_ruc ?? ''} onChange={(e) => set('ped_ruc', e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
+            <input readOnly value={form.ped_ruc ?? ''}
+              className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600" />
           </div>
 
           {/* Marca */}

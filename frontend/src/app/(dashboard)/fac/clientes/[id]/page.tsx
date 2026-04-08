@@ -61,7 +61,8 @@ export default function EditarClientePage() {
       cli_obs: cliente.cli_obs ?? '',
       cli_pers_contacto: cliente.cli_pers_contacto ?? '',
       cli_vendedor: cliente.cli_vendedor ?? '',
-      cli_cond_venta: cliente.cli_cond_venta ?? '',
+      cli_tipo_vta: (cliente.cli_tipo_vta || 'C') as 'C' | 'R',
+      cli_cond_venta: cliente.cli_cond_venta || 'CONTADO',
     });
   }, [cliente]);
 

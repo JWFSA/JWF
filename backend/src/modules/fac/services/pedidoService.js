@@ -324,7 +324,7 @@ const create = async (data, login = 'SISTEMA') => {
        ("PED_CLAVE","PED_EMPR","PED_SUC","PED_NRO","PED_TIPO","PED_IND_PRD",
         "PED_ESTADO","PED_FECHA","PED_MON","PED_CLI",
         "PED_CONTACTO","PED_TEL","PED_RUC","PED_CAMPANHA",
-        "PED_VENDEDOR","PED_COND_VENTA",
+        "PED_VENDEDOR","PED_IND_TIPO","PED_COND_VENTA",
         "PED_PRODUCTO","PED_CONCEPTO","PED_OBS",
         "PED_NRO_ORCO","PED_FEC_ORCO","PED_FEC_ENTREG_REQ","PED_FEC_ENTREG_PRD",
         "PED_TIPO_FAC","PED_DEP","PED_IND_FAC_ADEL","PED_IND_HAB_FAC","PED_FTO_IMP",
@@ -340,13 +340,13 @@ const create = async (data, login = 'SISTEMA') => {
         "PED_IND_CANJE")
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,
                $21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,
-               $39,$40,$41,$42,$43,$44,$45,$46,$47,$48,$49,$50,$51,$52,$53)`,
+               $39,$40,$41,$42,$43,$44,$45,$46,$47,$48,$49,$50,$51,$52,$53,$54)`,
       [
         clave, 1, 1, nro, data.ped_tipo || 'V', data.ped_ind_prd || 'N',
         data.ped_estado || 'P', data.ped_fecha, data.ped_mon || 1, data.ped_cli || null,
         data.ped_contacto || null, data.ped_tel || null, data.ped_ruc || null,
         data.ped_campanha || null,
-        data.ped_vendedor || null, data.ped_cond_venta || null,
+        data.ped_vendedor || null, data.ped_ind_tipo || null, data.ped_cond_venta || null,
         data.ped_producto || null, data.ped_concepto || null, data.ped_obs || null,
         data.ped_nro_orco || null, data.ped_fec_orco || null,
         data.ped_fec_entreg_req || null, data.ped_fec_entreg_prd || null,
@@ -387,7 +387,7 @@ const update = async (id, data) => {
     const map = {
       ped_tipo: '"PED_TIPO"', ped_ind_prd: '"PED_IND_PRD"',
       ped_fecha: '"PED_FECHA"', ped_cli: '"PED_CLI"', ped_vendedor: '"PED_VENDEDOR"',
-      ped_cond_venta: '"PED_COND_VENTA"', ped_mon: '"PED_MON"',
+      ped_ind_tipo: '"PED_IND_TIPO"', ped_cond_venta: '"PED_COND_VENTA"', ped_mon: '"PED_MON"',
       ped_producto: '"PED_PRODUCTO"', ped_concepto: '"PED_CONCEPTO"',
       ped_obs: '"PED_OBS"', ped_estado: '"PED_ESTADO"',
       ped_contacto: '"PED_CONTACTO"', ped_tel: '"PED_TEL"', ped_ruc: '"PED_RUC"',

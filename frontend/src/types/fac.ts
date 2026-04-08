@@ -67,6 +67,7 @@ export interface Cliente {
   cli_vendedor: number | null;
   vend_nombre?: string;
   vend_apellido?: string;
+  cli_tipo_vta: string | null;
   cli_cond_venta: string | null;
 }
 
