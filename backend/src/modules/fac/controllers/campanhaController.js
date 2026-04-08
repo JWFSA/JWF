@@ -44,4 +44,8 @@ const getByCliente = async (req, res, next) => {
   try { res.json(await s.getByCliente(Number(req.params.cli))); } catch (e) { next(e); }
 };
 
-module.exports = { getAll, getByCliente, create, update, remove };
+const getDistinctNames = async (req, res, next) => {
+  try { res.json(await s.getDistinctNames({ search: req.query.search || '' })); } catch (e) { next(e); }
+};
+
+module.exports = { getAll, getByCliente, getDistinctNames, create, update, remove };

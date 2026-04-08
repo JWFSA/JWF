@@ -83,6 +83,7 @@ export const deleteFactura = (id: number) => api.delete(`/fac/facturas/${id}`);
 // Campañas
 export const getCampanhas     = (params?: ListParams) => api.get<Paginated<Campanha>>('/fac/campanhas', { params }).then((r) => r.data);
 export const getMarcasCliente = (cli: number) => api.get<Campanha[]>(`/fac/campanhas/cliente/${cli}`).then((r) => r.data);
+export const getCampanhaNombres = (search?: string) => api.get<string[]>('/fac/campanhas/nombres', { params: { search } }).then((r) => r.data);
 export const createCampanha   = (data: Partial<Campanha>) => api.post<Campanha>('/fac/campanhas', data).then((r) => r.data);
 export const updateCampanha   = (cli: number, nro: number, data: Partial<Campanha>) => api.put(`/fac/campanhas/${cli}/${nro}`, data).then((r) => r.data);
 export const deleteCampanha   = (cli: number, nro: number) => api.delete(`/fac/campanhas/${cli}/${nro}`);

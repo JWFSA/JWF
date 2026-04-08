@@ -91,4 +91,14 @@ const getByCliente = async (cli) => {
   return rows;
 };
 
-module.exports = { getAll, getByCliente, create, update, remove };
+const getDistinctNames = async ({ search = '' } = {}) => {
+  const params = search ? [`%${search}%`] : [];
+  const where = search ? 'WHERE "CAMP_NOMBRE" ILIKE $1' : '';
+  const { rows } = await pool.query(
+    `SELECT DISTINCT "CAMP_NOMBRE" AS camp_nombre FROM fac_campanha ${where} ORDER BY "CAMP_NOMBRE" LIMIT 50`,
+    params
+  );
+  return rows.map((r) => r.camp_nombre);
+};
+
+module.exports = { getAll, getByCliente, getDistinctNames, create, update, remove };

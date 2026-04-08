@@ -44,6 +44,9 @@ export interface Cliente {
   cli_tel: string | null;
   cli_fax: string | null;
   cli_email: string | null;
+  cli_email2: string | null;
+  cli_email3: string | null;
+  cli_email4: string | null;
   cli_dir2: string | null;
   cli_localidad: string | null;
   cli_zona: number | null;

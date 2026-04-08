@@ -17,7 +17,9 @@ const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortFiel
   const orderBy = allowedSort[sortField] ? `${allowedSort[sortField]} ${dir}` : 'c."CLI_NOM" ASC';
   const select = `
     SELECT c."CLI_CODIGO" AS cli_codigo, c."CLI_NOM" AS cli_nom, c."CLI_RUC" AS cli_ruc,
-           c."CLI_TEL" AS cli_tel, c."CLI_EMAIL" AS cli_email, c."CLI_EST_CLI" AS cli_est_cli,
+           c."CLI_TEL" AS cli_tel, c."CLI_EMAIL" AS cli_email,
+           c."CLI_EMAIL2" AS cli_email2, c."CLI_EMAIL3" AS cli_email3, c."CLI_EMAIL4" AS cli_email4,
+           c."CLI_EST_CLI" AS cli_est_cli,
            c."CLI_ZONA" AS cli_zona, z."ZONA_DESC" AS zona_desc,
            c."CLI_CATEG" AS cli_categ, cat."FCAT_DESC" AS fcat_desc,
            c."CLI_VENDEDOR" AS cli_vendedor, c."CLI_COND_VENTA" AS cli_cond_venta,
@@ -39,6 +41,7 @@ const getById = async (id) => {
   const { rows } = await pool.query(
     `SELECT c."CLI_CODIGO" AS cli_codigo, c."CLI_NOM" AS cli_nom, c."CLI_RUC" AS cli_ruc,
      c."CLI_TEL" AS cli_tel, c."CLI_FAX" AS cli_fax, c."CLI_EMAIL" AS cli_email,
+     c."CLI_EMAIL2" AS cli_email2, c."CLI_EMAIL3" AS cli_email3, c."CLI_EMAIL4" AS cli_email4,
      c."CLI_DIR2" AS cli_dir2, c."CLI_LOCALIDAD" AS cli_localidad,
      c."CLI_ZONA" AS cli_zona, z."ZONA_DESC" AS zona_desc,
      c."CLI_CATEG" AS cli_categ, cat."FCAT_DESC" AS fcat_desc,
@@ -68,14 +71,15 @@ const create = async (data) => {
   const codigo = codeRows[0].next;
   await pool.query(
     `INSERT INTO fin_cliente
-       ("CLI_CODIGO","CLI_NOM","CLI_RUC","CLI_TEL","CLI_FAX","CLI_EMAIL","CLI_DIR2",
+       ("CLI_CODIGO","CLI_NOM","CLI_RUC","CLI_TEL","CLI_FAX","CLI_EMAIL","CLI_EMAIL2","CLI_EMAIL3","CLI_EMAIL4","CLI_DIR2",
         "CLI_LOCALIDAD","CLI_ZONA","CLI_CATEG","CLI_PAIS","CLI_MON","CLI_EST_CLI",
         "CLI_IMP_LIM_CR","CLI_BLOQ_LIM_CR","CLI_MAX_DIAS_ATRASO","CLI_IND_POTENCIAL",
         "CLI_OBS","CLI_PERS_CONTACTO","CLI_VENDEDOR","CLI_COND_VENTA")
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21)`,
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24)`,
     [
       codigo, data.cli_nom, data.cli_ruc || null, data.cli_tel || null,
-      data.cli_fax || null, data.cli_email || null, data.cli_dir2 || null,
+      data.cli_fax || null, data.cli_email || null, data.cli_email2 || null, data.cli_email3 || null, data.cli_email4 || null,
+      data.cli_dir2 || null,
       data.cli_localidad || null, data.cli_zona || null, data.cli_categ || null,
       data.cli_pais || null, data.cli_mon || null, data.cli_est_cli || 'A',
       data.cli_imp_lim_cr || 0, data.cli_bloq_lim_cr || 'N', data.cli_max_dias_atraso || 0,
@@ -90,7 +94,8 @@ const update = async (id, data) => {
   const fields = []; const params = [];
   const map = {
     cli_nom: '"CLI_NOM"', cli_ruc: '"CLI_RUC"', cli_tel: '"CLI_TEL"', cli_fax: '"CLI_FAX"',
-    cli_email: '"CLI_EMAIL"', cli_dir2: '"CLI_DIR2"', cli_localidad: '"CLI_LOCALIDAD"',
+    cli_email: '"CLI_EMAIL"', cli_email2: '"CLI_EMAIL2"', cli_email3: '"CLI_EMAIL3"', cli_email4: '"CLI_EMAIL4"',
+    cli_dir2: '"CLI_DIR2"', cli_localidad: '"CLI_LOCALIDAD"',
     cli_zona: '"CLI_ZONA"', cli_categ: '"CLI_CATEG"', cli_pais: '"CLI_PAIS"', cli_mon: '"CLI_MON"',
     cli_est_cli: '"CLI_EST_CLI"', cli_imp_lim_cr: '"CLI_IMP_LIM_CR"',
     cli_bloq_lim_cr: '"CLI_BLOQ_LIM_CR"', cli_max_dias_atraso: '"CLI_MAX_DIAS_ATRASO"',

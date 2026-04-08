@@ -3,13 +3,14 @@
 import { useQuery } from '@tanstack/react-query';
 import { getZonas, getCategorias, getVendedores, getCondiciones } from '@/services/fac';
 import { getPaises } from '@/services/gen';
+import { Plus, X } from 'lucide-react';
 
 export interface ClienteFormData {
   cli_nom: string;
   cli_ruc: string;
   cli_tel: string;
   cli_fax: string;
-  cli_email: string;
+  cli_emails: string[];
   cli_dir2: string;
   cli_localidad: string;
   cli_zona: number | '';
@@ -27,7 +28,7 @@ export interface ClienteFormData {
 }
 
 export const emptyCliente: ClienteFormData = {
-  cli_nom: '', cli_ruc: '', cli_tel: '', cli_fax: '', cli_email: '',
+  cli_nom: '', cli_ruc: '', cli_tel: '', cli_fax: '', cli_emails: [''],
   cli_dir2: '', cli_localidad: '', cli_zona: '', cli_categ: '', cli_pais: '',
   cli_est_cli: 'A', cli_imp_lim_cr: 0, cli_bloq_lim_cr: 'N',
   cli_max_dias_atraso: 0, cli_ind_potencial: 'N', cli_obs: '', cli_pers_contacto: '',
@@ -91,9 +92,45 @@ export default function ClienteForm({ form, onChange, error, isPending, onSubmit
             <label className="block text-sm font-medium text-gray-700 mb-1">Fax</label>
             <input value={form.cli_fax} onChange={(e) => set({ cli_fax: e.target.value })} className={input} />
           </div>
-          <div className="sm:col-span-2">
+          <div className="sm:col-span-2 space-y-2">
             <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input type="email" value={form.cli_email} onChange={(e) => set({ cli_email: e.target.value })} className={input} />
+            {form.cli_emails.map((email, idx) => (
+              <div key={idx} className="flex items-center gap-2">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => {
+                    const updated = [...form.cli_emails];
+                    updated[idx] = e.target.value;
+                    onChange({ ...form, cli_emails: updated });
+                  }}
+                  placeholder={idx === 0 ? 'Email principal' : `Email ${idx + 1}`}
+                  className={`${input} flex-1`}
+                />
+                {idx > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const updated = form.cli_emails.filter((_, i) => i !== idx);
+                      onChange({ ...form, cli_emails: updated });
+                    }}
+                    className="p-2 text-gray-400 hover:text-red-500 transition"
+                    title="Quitar email"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
+            ))}
+            {form.cli_emails.length < 4 && (
+              <button
+                type="button"
+                onClick={() => onChange({ ...form, cli_emails: [...form.cli_emails, ''] })}
+                className="inline-flex items-center gap-1 text-sm text-primary-600 hover:text-primary-700 font-medium transition"
+              >
+                <Plus size={14} /> Agregar email
+              </button>
+            )}
           </div>
         </div>
       </section>

@@ -24,8 +24,13 @@ export default function NuevoClientePage() {
   const handleSubmit = () => {
     if (!form.cli_nom.trim()) { setError('El nombre es requerido'); return; }
     setError('');
+    const { cli_emails, ...rest } = form;
     createMut.mutate({
-      ...form,
+      ...rest,
+      cli_email:  cli_emails[0]?.trim() || null,
+      cli_email2: cli_emails[1]?.trim() || null,
+      cli_email3: cli_emails[2]?.trim() || null,
+      cli_email4: cli_emails[3]?.trim() || null,
       cli_zona:     form.cli_zona     || null,
       cli_categ:    form.cli_categ    || null,
       cli_pais:     form.cli_pais     || null,

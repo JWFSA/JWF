@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter, useParams } from 'next/navigation';
-import { getCliente, updateCliente, getMarcasCliente, createCampanha, deleteCampanha } from '@/services/fac';
+import { getCliente, updateCliente, getMarcasCliente, createCampanha, deleteCampanha, getCampanhaNombres } from '@/services/fac';
 import ClienteForm, { type ClienteFormData } from '@/components/fac/ClienteForm';
 import { Plus, Trash2 } from 'lucide-react';
+import Swal from 'sweetalert2';
 
 export default function EditarClientePage() {
   const { id } = useParams<{ id: string }>();
@@ -14,6 +15,8 @@ export default function EditarClientePage() {
   const [form, setForm] = useState<ClienteFormData | null>(null);
   const [error, setError] = useState('');
   const [nuevaMarca, setNuevaMarca] = useState('');
+  const [buscarMarca, setBuscarMarca] = useState('');
+  const [debouncedBuscar, setDebouncedBuscar] = useState('');
 
   const { data: cliente, isLoading } = useQuery({
     queryKey: ['cliente', id],
@@ -27,13 +30,24 @@ export default function EditarClientePage() {
   });
 
   useEffect(() => {
+    const t = setTimeout(() => setDebouncedBuscar(buscarMarca), 300);
+    return () => clearTimeout(t);
+  }, [buscarMarca]);
+
+  const { data: nombresMarcas } = useQuery({
+    queryKey: ['campanha-nombres', debouncedBuscar],
+    queryFn: () => getCampanhaNombres(debouncedBuscar),
+    enabled: buscarMarca.length >= 1,
+  });
+
+  useEffect(() => {
     if (!cliente) return;
     setForm({
       cli_nom: cliente.cli_nom ?? '',
       cli_ruc: cliente.cli_ruc ?? '',
       cli_tel: cliente.cli_tel ?? '',
       cli_fax: cliente.cli_fax ?? '',
-      cli_email: cliente.cli_email ?? '',
+      cli_emails: (() => { const e = [cliente.cli_email, cliente.cli_email2, cliente.cli_email3, cliente.cli_email4].filter((v): v is string => !!v); return e.length > 0 ? e : ['']; })(),
       cli_dir2: cliente.cli_dir2 ?? '',
       cli_localidad: cliente.cli_localidad ?? '',
       cli_zona: cliente.cli_zona ?? '',
@@ -56,9 +70,13 @@ export default function EditarClientePage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['clientes'] });
       qc.invalidateQueries({ queryKey: ['cliente', id] });
-      router.push('/fac/clientes');
+      Swal.fire({ icon: 'success', title: 'Guardado', text: 'Los cambios se guardaron correctamente.', timer: 2000, showConfirmButton: false });
     },
-    onError: (e: any) => setError(e?.response?.data?.message ?? 'Error al guardar'),
+    onError: (e: any) => {
+      const msg = e?.response?.data?.message ?? 'Error al guardar';
+      setError(msg);
+      Swal.fire({ icon: 'error', title: 'Error', text: msg });
+    },
   });
 
   const addMarcaMut = useMutation({
@@ -74,12 +92,16 @@ export default function EditarClientePage() {
   const handleSubmit = () => {
     if (!form?.cli_nom.trim()) { setError('El nombre es requerido'); return; }
     setError('');
-    updateMut.mutate({
-      ...form,
-      cli_zona:  form.cli_zona  || undefined,
-      cli_categ: form.cli_categ || undefined,
-      cli_pais:  form.cli_pais  || undefined,
-    } as any);
+    const { cli_emails, ...rest } = form;
+    const clean: Record<string, unknown> = { ...rest };
+    for (const k of Object.keys(clean)) {
+      if (clean[k] === '') clean[k] = null;
+    }
+    clean.cli_email  = cli_emails[0]?.trim() || null;
+    clean.cli_email2 = cli_emails[1]?.trim() || null;
+    clean.cli_email3 = cli_emails[2]?.trim() || null;
+    clean.cli_email4 = cli_emails[3]?.trim() || null;
+    updateMut.mutate(clean as any);
   };
 
   if (isLoading || !form) {
@@ -107,16 +129,32 @@ export default function EditarClientePage() {
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-6">
         <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Marcas del cliente</h2>
 
-        <div className="flex items-center gap-2 mb-3">
-          <input
-            value={nuevaMarca}
-            onChange={(e) => setNuevaMarca(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter' && nuevaMarca.trim()) addMarcaMut.mutate(nuevaMarca.trim()); }}
-            placeholder="Nombre de la marca..."
-            className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-          />
+        <div className="relative flex items-center gap-2 mb-3">
+          <div className="relative flex-1">
+            <input
+              value={buscarMarca}
+              onChange={(e) => { setBuscarMarca(e.target.value); setNuevaMarca(''); }}
+              placeholder="Buscar marca existente..."
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            />
+            {buscarMarca.length >= 1 && nombresMarcas && nombresMarcas.length > 0 && !nuevaMarca && (
+              <ul className="absolute z-10 mt-1 w-full max-h-48 overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-lg">
+                {nombresMarcas
+                  .filter((n) => !marcasList.some((m) => m.camp_nombre === n))
+                  .map((nombre) => (
+                    <li
+                      key={nombre}
+                      onClick={() => { setNuevaMarca(nombre); setBuscarMarca(nombre); }}
+                      className="px-3 py-2 text-sm hover:bg-primary-50 cursor-pointer"
+                    >
+                      {nombre}
+                    </li>
+                  ))}
+              </ul>
+            )}
+          </div>
           <button
-            onClick={() => { if (nuevaMarca.trim()) addMarcaMut.mutate(nuevaMarca.trim()); }}
+            onClick={() => { if (nuevaMarca.trim()) { addMarcaMut.mutate(nuevaMarca.trim()); setBuscarMarca(''); } }}
             disabled={!nuevaMarca.trim() || addMarcaMut.isPending}
             className="inline-flex items-center gap-1 px-3 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 disabled:opacity-50 transition"
           >
