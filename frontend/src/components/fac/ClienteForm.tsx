@@ -31,6 +31,7 @@ export interface ClienteFormData {
   cli_vendedor: number | '';
   cli_tipo_vta: 'C' | 'R' | '';
   cli_mod_venta: 'D' | 'I';
+  cli_fec_aniv: string;
   cli_agencia: number | '';
   cli_comision_agen: number;
   cli_cond_venta: string;
@@ -45,6 +46,7 @@ export const emptyCliente: ClienteFormData = {
   cli_vendedor: '',
   cli_tipo_vta: 'C',
   cli_mod_venta: 'D',
+  cli_fec_aniv: '',
   cli_agencia: '',
   cli_comision_agen: 0,
   cli_cond_venta: 'CONTADO',
@@ -152,6 +154,10 @@ export default function ClienteForm({ form, onChange, error, isPending, onSubmit
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Fax</label>
             <input value={form.cli_fax} onChange={(e) => set({ cli_fax: e.target.value })} className={input} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de aniversario</label>
+            <input type="date" value={form.cli_fec_aniv} onChange={(e) => set({ cli_fec_aniv: e.target.value })} className={input} />
           </div>
           <div className="sm:col-span-2 space-y-2">
             <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>

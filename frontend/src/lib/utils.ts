@@ -19,7 +19,7 @@ export function formatMoney(value: number | string | null | undefined, decimals 
   if (value == null || value === '') return '';
   const n = typeof value === 'string' ? parseFloat(value) : value;
   if (!isFinite(n)) return '';
-  return n.toLocaleString('es-PY', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+  return n.toLocaleString('es-PY', { minimumFractionDigits: 0, maximumFractionDigits: decimals });
 }
 
 /** Parsea un string con separadores de miles (punto) y decimal (coma) a número. Ej: "1.500.000" → 1500000 */

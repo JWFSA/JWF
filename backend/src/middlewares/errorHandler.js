@@ -6,7 +6,12 @@ const errorHandler = (err, req, res, next) => {
   }
 
   if (err.code === '23503') {
-    return res.status(409).json({ message: 'Violación de clave foránea' });
+    const detail = err.detail || '';
+    const isDelete = detail.includes('still referenced');
+    const message = isDelete
+      ? 'No se puede eliminar porque tiene registros asociados en otras tablas'
+      : 'El registro referenciado no existe';
+    return res.status(409).json({ message });
   }
 
   res.status(err.status || 500).json({

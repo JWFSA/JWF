@@ -7,6 +7,7 @@ import { getCliente, updateCliente, getMarcasCliente, createCampanha, deleteCamp
 import ClienteForm, { type ClienteFormData } from '@/components/fac/ClienteForm';
 import { Plus, Trash2 } from 'lucide-react';
 import { confirmDelete, showSuccess, showError } from '@/lib/swal';
+import { toInputDate } from '@/lib/utils';
 
 export default function EditarClientePage() {
   const { id } = useParams<{ id: string }>();
@@ -66,6 +67,7 @@ export default function EditarClientePage() {
       cli_vendedor: cliente.cli_vendedor ?? '',
       cli_tipo_vta: (cliente.cli_tipo_vta || 'C') as 'C' | 'R',
       cli_mod_venta: (cliente.cli_mod_venta || 'D') as 'D' | 'I',
+      cli_fec_aniv: toInputDate(cliente.cli_fec_aniv),
       cli_agencia: cliente.cli_agencia ?? '',
       cli_comision_agen: cliente.cli_comision_agen ?? 0,
       cli_cond_venta: cliente.cli_cond_venta || 'CONTADO',

@@ -81,6 +81,7 @@ export interface Cliente {
   vend_apellido?: string;
   cli_tipo_vta: string | null;
   cli_mod_venta: string | null;
+  cli_fec_aniv: string | null;
   cli_agencia: number | null;
   agen_desc?: string;
   cli_comision_agen: number | null;
