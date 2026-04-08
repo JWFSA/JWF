@@ -11,6 +11,9 @@ export interface Barrio {
   ba_codigo: number;
   ba_desc: string;
   ba_localidad: number | null;
+  loc_desc?: string;
+  loc_distrito?: number | null;
+  dist_desc?: string;
 }
 
 export interface Zona {
@@ -55,8 +58,8 @@ export interface Cliente {
   cli_email4: string | null;
   cli_dir2: string | null;
   cli_localidad: string | null;
-  cli_departamento: number | null;
-  dpto_desc?: string;
+  cli_distrito: number | null;
+  dist_desc?: string;
   cli_cod_localidad: number | null;
   loc_desc?: string;
   cli_cod_barrio: number | null;

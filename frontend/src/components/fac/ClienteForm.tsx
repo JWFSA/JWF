@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getZonas, getCategorias, getVendedores, getCondiciones, getAgencias } from '@/services/fac';
-import { getPaises, getDepartamentos, getLocalidades, getBarrios } from '@/services/gen';
+import { getPaises, getDistritos, getLocalidades, getBarrios } from '@/services/gen';
 import { Plus, X, Search } from 'lucide-react';
 import MoneyInput from '@/components/ui/MoneyInput';
 
@@ -15,7 +15,7 @@ export interface ClienteFormData {
   cli_emails: string[];
   cli_dir2: string;
   cli_localidad: string;
-  cli_departamento: number | '';
+  cli_distrito: number | '';
   cli_cod_localidad: number | '';
   cli_cod_barrio: number | '';
   cli_zona: number | '';
@@ -39,7 +39,7 @@ export interface ClienteFormData {
 
 export const emptyCliente: ClienteFormData = {
   cli_nom: '', cli_ruc: '', cli_tel: '', cli_fax: '', cli_emails: [''],
-  cli_dir2: '', cli_localidad: '', cli_departamento: '', cli_cod_localidad: '', cli_cod_barrio: '',
+  cli_dir2: '', cli_localidad: '', cli_distrito: '', cli_cod_localidad: '', cli_cod_barrio: '',
   cli_zona: '', cli_categ: '', cli_pais: '',
   cli_est_cli: 'A', cli_imp_lim_cr: 0, cli_bloq_lim_cr: 'N',
   cli_max_dias_atraso: 0, cli_ind_potencial: 'N', cli_obs: '', cli_pers_contacto: '',
@@ -80,11 +80,15 @@ export default function ClienteForm({ form, onChange, error, isPending, onSubmit
   const { data: vendData } = useQuery({ queryKey: ['vendedores', { all: true }], queryFn: () => getVendedores({ all: true }) });
   const { data: condData } = useQuery({ queryKey: ['condiciones'], queryFn: getCondiciones });
   const { data: agenciasData } = useQuery({ queryKey: ['agencias', { all: true }], queryFn: () => getAgencias({ all: true }) });
-  const { data: deptosData } = useQuery({ queryKey: ['departamentos'], queryFn: getDepartamentos });
+  const { data: distritosData } = useQuery({
+    queryKey: ['distritos', { all: true, pais: form.cli_pais }],
+    queryFn: () => getDistritos({ all: true, pais: form.cli_pais || undefined } as any),
+    enabled: !!form.cli_pais,
+  });
   const { data: locsData } = useQuery({
-    queryKey: ['localidades', { all: true, dep: form.cli_departamento }],
-    queryFn: () => getLocalidades({ all: true, dep: form.cli_departamento || undefined } as any),
-    enabled: !!form.cli_departamento,
+    queryKey: ['localidades', { all: true, distrito: form.cli_distrito }],
+    queryFn: () => getLocalidades({ all: true, distrito: form.cli_distrito || undefined } as any),
+    enabled: !!form.cli_distrito,
   });
   const { data: barriosData } = useQuery({
     queryKey: ['barrios-gen', { all: true, loc: form.cli_cod_localidad }],
@@ -98,7 +102,7 @@ export default function ClienteForm({ form, onChange, error, isPending, onSubmit
   const vendedores  = vendData?.data ?? [];
   const condiciones = condData ?? [];
   const agencias    = agenciasData?.data ?? [];
-  const deptos      = Array.isArray(deptosData) ? deptosData : [];
+  const distritos   = distritosData?.data ?? [];
   const localidades = locsData?.data ?? [];
   const barrios     = barriosData?.data ?? [];
 
@@ -208,19 +212,19 @@ export default function ClienteForm({ form, onChange, error, isPending, onSubmit
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">País</label>
-            <select value={form.cli_pais} onChange={(e) => set({ cli_pais: e.target.value ? Number(e.target.value) : '' })} className={sel}>
+            <select value={form.cli_pais} onChange={(e) => set({ cli_pais: e.target.value ? Number(e.target.value) : '', cli_distrito: '', cli_cod_localidad: '', cli_cod_barrio: '' })} className={sel}>
               <option value="">Sin especificar</option>
               {paises.map((p: any) => <option key={p.pais_codigo} value={p.pais_codigo}>{p.pais_desc}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Departamento</label>
-            <select value={form.cli_departamento} onChange={(e) => {
+            <label className="block text-sm font-medium text-gray-700 mb-1">Distrito</label>
+            <select value={form.cli_distrito} onChange={(e) => {
               const val = e.target.value ? Number(e.target.value) : '' as const;
-              set({ cli_departamento: val, cli_cod_localidad: '', cli_cod_barrio: '' });
-            }} className={sel}>
+              set({ cli_distrito: val, cli_cod_localidad: '', cli_cod_barrio: '' });
+            }} disabled={!form.cli_pais} className={sel}>
               <option value="">Sin especificar</option>
-              {deptos.map((d: any) => <option key={d.dpto_codigo} value={d.dpto_codigo}>{d.dpto_desc}</option>)}
+              {distritos.map((d: any) => <option key={d.dist_codigo} value={d.dist_codigo}>{d.dist_desc}</option>)}
             </select>
           </div>
           <div>
@@ -228,7 +232,7 @@ export default function ClienteForm({ form, onChange, error, isPending, onSubmit
             <select value={form.cli_cod_localidad} onChange={(e) => {
               const val = e.target.value ? Number(e.target.value) : '' as const;
               set({ cli_cod_localidad: val, cli_cod_barrio: '' });
-            }} disabled={!form.cli_departamento} className={sel}>
+            }} disabled={!form.cli_distrito} className={sel}>
               <option value="">Sin especificar</option>
               {localidades.map((l: any) => <option key={l.loc_codigo} value={l.loc_codigo}>{l.loc_desc}</option>)}
             </select>

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getBarrios, createBarrio, updateBarrio, deleteBarrio } from '@/services/fac';
+import { getDistritos, getLocalidades } from '@/services/gen';
 import type { Barrio } from '@/types/fac';
 import DataTable from '@/components/ui/DataTable';
 import FormModal from '@/components/ui/FormModal';
@@ -10,12 +11,12 @@ import PrimaryAddButton from '@/components/ui/PrimaryAddButton';
 import SearchField from '@/components/ui/SearchField';
 import TablePagination from '@/components/ui/TablePagination';
 
-const emptyForm = { ba_desc: '', ba_localidad: '' };
+const emptyForm = { ba_desc: '', ba_distrito: '', ba_localidad: '' };
 
 const COLUMNS = [
   { key: 'cod',  header: 'Cód.',        sortKey: 'cod',  headerClassName: 'w-16', cell: (r: Barrio) => r.ba_codigo,    cellClassName: 'font-mono text-xs text-gray-500' },
   { key: 'desc', header: 'Descripción', sortKey: 'desc',                          cell: (r: Barrio) => r.ba_desc,      cellClassName: 'font-medium text-gray-800' },
-  { key: 'loc',  header: 'Localidad',                    headerClassName: 'hidden md:table-cell', cell: (r: Barrio) => r.ba_localidad ?? '—', cellClassName: 'hidden md:table-cell text-gray-500' },
+  { key: 'loc',  header: 'Localidad',                    headerClassName: 'hidden md:table-cell', cell: (r: Barrio) => r.loc_desc ?? '—', cellClassName: 'hidden md:table-cell text-gray-500' },
 ];
 
 export default function BarriosPage() {
@@ -41,6 +42,15 @@ export default function BarriosPage() {
     queryFn: () => getBarrios({ page, limit, search: debouncedSearch, sortField, sortDir }),
   });
 
+  const { data: distData } = useQuery({ queryKey: ['distritos', { all: true }], queryFn: () => getDistritos({ all: true }) });
+  const distritos = distData?.data ?? [];
+  const { data: locData } = useQuery({
+    queryKey: ['localidades', { all: true, distrito: form.ba_distrito }],
+    queryFn: () => getLocalidades({ all: true, distrito: form.ba_distrito || undefined } as any),
+    enabled: !!form.ba_distrito,
+  });
+  const localidades = locData?.data ?? [];
+
   const barrios    = data?.data ?? [];
   const pagination = data?.pagination;
   const handleSortChange = (field: string, dir: 'asc' | 'desc') => { setSortField(field); setSortDir(dir); setPage(1); };
@@ -51,12 +61,12 @@ export default function BarriosPage() {
   const deleteMut = useMutation({ mutationFn: deleteBarrio, onSuccess: inv });
 
   const openNew  = () => { setEditing(null); setForm(emptyForm); setError(''); setModal(true); };
-  const openEdit = (r: Barrio) => { setEditing(r); setForm({ ba_desc: r.ba_desc, ba_localidad: r.ba_localidad?.toString() ?? '' }); setError(''); setModal(true); };
+  const openEdit = (r: Barrio) => { setEditing(r); setForm({ ba_desc: r.ba_desc, ba_distrito: r.loc_distrito?.toString() ?? '', ba_localidad: r.ba_localidad?.toString() ?? '' }); setError(''); setModal(true); };
   const closeModal = () => { setModal(false); setEditing(null); };
 
   const handleSubmit = () => {
     if (!form.ba_desc.trim()) { setError('La descripción es requerida'); return; }
-    const payload = { ba_desc: form.ba_desc, ba_localidad: form.ba_localidad ? Number(form.ba_localidad) : null };
+    const payload = { ba_desc: form.ba_desc.toUpperCase(), ba_localidad: form.ba_localidad ? Number(form.ba_localidad) : null };
     if (editing) updateMut.mutate({ id: editing.ba_codigo, data: payload });
     else createMut.mutate(payload);
   };
@@ -88,11 +98,23 @@ export default function BarriosPage() {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Descripción <span className="text-red-500">*</span></label>
-              <input value={form.ba_desc} onChange={(e) => setForm((f) => ({ ...f, ba_desc: e.target.value }))} placeholder="Ej: Centro, Villa Morra" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
+              <input value={form.ba_desc} onChange={(e) => setForm((f) => ({ ...f, ba_desc: e.target.value }))} placeholder="Ej: Centro, Villa Morra" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm uppercase focus:outline-none focus:ring-2 focus:ring-primary-500" />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Localidad</label>
-              <input type="number" value={form.ba_localidad} onChange={(e) => setForm((f) => ({ ...f, ba_localidad: e.target.value }))} placeholder="Código de localidad" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Distrito</label>
+                <select value={form.ba_distrito} onChange={(e) => setForm((f) => ({ ...f, ba_distrito: e.target.value, ba_localidad: '' }))} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
+                  <option value="">— Seleccione —</option>
+                  {distritos.map((d: any) => <option key={d.dist_codigo} value={d.dist_codigo}>{d.dist_desc}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Localidad</label>
+                <select value={form.ba_localidad} onChange={(e) => setForm((f) => ({ ...f, ba_localidad: e.target.value }))} disabled={!form.ba_distrito} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
+                  <option value="">— Seleccione —</option>
+                  {localidades.map((l: any) => <option key={l.loc_codigo} value={l.loc_codigo}>{l.loc_desc}</option>)}
+                </select>
+              </div>
             </div>
           </div>
         </FormModal>

@@ -51,7 +51,7 @@ export default function EditarClientePage() {
       cli_emails: (() => { const e = [cliente.cli_email, cliente.cli_email2, cliente.cli_email3, cliente.cli_email4].filter((v): v is string => !!v); return e.length > 0 ? e : ['']; })(),
       cli_dir2: cliente.cli_dir2 ?? '',
       cli_localidad: cliente.cli_localidad ?? '',
-      cli_departamento: cliente.cli_departamento ?? '',
+      cli_distrito: cliente.cli_distrito ?? '',
       cli_cod_localidad: cliente.cli_cod_localidad ?? '',
       cli_cod_barrio: cliente.cli_cod_barrio ?? '',
       cli_zona: cliente.cli_zona ?? '',

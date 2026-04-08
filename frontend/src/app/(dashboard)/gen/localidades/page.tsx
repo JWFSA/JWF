@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getLocalidades, createLocalidad, updateLocalidad, deleteLocalidad, getDepartamentos, getDistritos } from '@/services/gen';
+import { getLocalidades, createLocalidad, updateLocalidad, deleteLocalidad, getDistritos } from '@/services/gen';
 import type { Localidad } from '@/types/gen';
 import DataTable from '@/components/ui/DataTable';
 import FormModal from '@/components/ui/FormModal';
@@ -13,8 +13,7 @@ import TablePagination from '@/components/ui/TablePagination';
 const COLUMNS = [
   { key: 'cod',  header: 'Cód.',         sortKey: 'cod',  headerClassName: 'w-16', cell: (r: Localidad) => r.loc_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
   { key: 'desc', header: 'Descripción',  sortKey: 'desc',                           cell: (r: Localidad) => r.loc_desc, cellClassName: 'font-medium text-gray-800' },
-  { key: 'dep',  header: 'Departamento', sortKey: 'dep',  headerClassName: 'hidden sm:table-cell', cell: (r: Localidad) => r.dpto_desc || '—', cellClassName: 'hidden sm:table-cell text-sm text-gray-500' },
-  { key: 'dist', header: 'Distrito',     headerClassName: 'hidden md:table-cell',   cell: (r: Localidad) => r.dist_desc || '—', cellClassName: 'hidden md:table-cell text-sm text-gray-500' },
+  { key: 'dist', header: 'Distrito',     sortKey: 'dist', headerClassName: 'hidden sm:table-cell', cell: (r: Localidad) => r.dist_desc || '—', cellClassName: 'hidden sm:table-cell text-sm text-gray-500' },
 ];
 
 export default function LocalidadesPage() {
@@ -27,7 +26,7 @@ export default function LocalidadesPage() {
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [modal, setModal] = useState(false);
   const [editing, setEditing] = useState<Localidad | null>(null);
-  const [form, setForm] = useState({ loc_desc: '', loc_dep_codigo: '', loc_distrito: '' });
+  const [form, setForm] = useState({ loc_desc: '', loc_distrito: '' });
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -40,7 +39,6 @@ export default function LocalidadesPage() {
     queryFn: () => getLocalidades({ page, limit, search: debouncedSearch, sortField, sortDir }),
   });
 
-  const { data: deptos } = useQuery({ queryKey: ['departamentos'], queryFn: getDepartamentos });
   const { data: distData } = useQuery({ queryKey: ['distritos', { all: true }], queryFn: () => getDistritos({ all: true }) });
   const distritos = distData?.data ?? [];
 
@@ -53,13 +51,13 @@ export default function LocalidadesPage() {
   const updateMut = useMutation({ mutationFn: ({ id, data }: { id: number; data: Partial<Localidad> }) => updateLocalidad(id, data), onSuccess: () => { inv(); closeModal(); }, onError: (e: any) => setError(e?.response?.data?.message ?? 'Error') });
   const deleteMut = useMutation({ mutationFn: deleteLocalidad, onSuccess: inv });
 
-  const openNew  = () => { setEditing(null); setForm({ loc_desc: '', loc_dep_codigo: '', loc_distrito: '' }); setError(''); setModal(true); };
-  const openEdit = (r: Localidad) => { setEditing(r); setForm({ loc_desc: r.loc_desc, loc_dep_codigo: r.loc_dep_codigo?.toString() ?? '', loc_distrito: r.loc_distrito?.toString() ?? '' }); setError(''); setModal(true); };
+  const openNew  = () => { setEditing(null); setForm({ loc_desc: '', loc_distrito: '' }); setError(''); setModal(true); };
+  const openEdit = (r: Localidad) => { setEditing(r); setForm({ loc_desc: r.loc_desc, loc_distrito: r.loc_distrito?.toString() ?? '' }); setError(''); setModal(true); };
   const closeModal = () => { setModal(false); setEditing(null); };
 
   const handleSubmit = () => {
     if (!form.loc_desc.trim()) { setError('La descripción es requerida'); return; }
-    const payload = { loc_desc: form.loc_desc, loc_dep_codigo: form.loc_dep_codigo ? Number(form.loc_dep_codigo) : null, loc_distrito: form.loc_distrito ? Number(form.loc_distrito) : null };
+    const payload = { loc_desc: form.loc_desc.toUpperCase(), loc_distrito: form.loc_distrito ? Number(form.loc_distrito) : null };
     if (editing) updateMut.mutate({ id: editing.loc_codigo, data: payload });
     else createMut.mutate(payload);
   };
@@ -91,23 +89,14 @@ export default function LocalidadesPage() {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Descripción <span className="text-red-500">*</span></label>
-              <input value={form.loc_desc} onChange={(e) => setForm((f) => ({ ...f, loc_desc: e.target.value }))} placeholder="Ej: Fernando de la Mora" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
+              <input value={form.loc_desc} onChange={(e) => setForm((f) => ({ ...f, loc_desc: e.target.value }))} placeholder="Ej: Fernando de la Mora" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm uppercase focus:outline-none focus:ring-2 focus:ring-primary-500" />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Departamento</label>
-                <select value={form.loc_dep_codigo} onChange={(e) => setForm((f) => ({ ...f, loc_dep_codigo: e.target.value }))} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
-                  <option value="">— Sin departamento —</option>
-                  {(deptos ?? []).map((d: any) => <option key={d.dpto_codigo} value={d.dpto_codigo}>{d.dpto_desc}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Distrito</label>
-                <select value={form.loc_distrito} onChange={(e) => setForm((f) => ({ ...f, loc_distrito: e.target.value }))} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
-                  <option value="">— Sin distrito —</option>
-                  {distritos.map((d: any) => <option key={d.dist_codigo} value={d.dist_codigo}>{d.dist_desc}</option>)}
-                </select>
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Distrito</label>
+              <select value={form.loc_distrito} onChange={(e) => setForm((f) => ({ ...f, loc_distrito: e.target.value }))} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
+                <option value="">— Seleccione —</option>
+                {distritos.map((d: any) => <option key={d.dist_codigo} value={d.dist_codigo}>{d.dist_desc}</option>)}
+              </select>
             </div>
           </div>
         </FormModal>

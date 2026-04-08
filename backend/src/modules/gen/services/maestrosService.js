@@ -446,16 +446,24 @@ const deleteProfesion = async (id) => {
 
 // ─── DISTRITOS ──────────────────────────────────────────────────────────────
 
-const getDistritos = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+const getDistritos = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc', pais = null } = {}) => {
   page  = Math.max(1, page);
   limit = Math.max(1, Math.min(1000, limit));
-  const params = search ? [`%${search}%`] : [];
-  const where  = search ? `WHERE "DIST_DESC" ILIKE $1` : '';
-  const { rows: [{ count }] } = await pool.query(`SELECT COUNT(*) FROM gen_distrito ${where}`, params);
+  const params = [];
+  const conditions = [];
+  if (search) { params.push(`%${search}%`); conditions.push(`d."DIST_DESC" ILIKE $${params.length}`); }
+  if (pais) { params.push(pais); conditions.push(`d."DIST_PAIS" = $${params.length}`); }
+  const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+  const { rows: [{ count }] } = await pool.query(`SELECT COUNT(*) FROM gen_distrito d ${where}`, params);
   const total = parseInt(count);
   const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
-  const orderBy = sortField === 'desc' ? `"DIST_DESC" ${dir}` : `"DIST_CODIGO" ${dir}`;
-  const select = `SELECT "DIST_CODIGO" AS dist_codigo, "DIST_DESC" AS dist_desc FROM gen_distrito ${where} ORDER BY ${orderBy}`;
+  const allowedSort = { desc: 'd."DIST_DESC"', pais: 'p."PAIS_DESC"' };
+  const orderBy = Object.hasOwn(allowedSort, sortField) ? `${allowedSort[sortField]} ${dir}` : `d."DIST_DESC" ${dir}`;
+  const select = `SELECT d."DIST_CODIGO" AS dist_codigo, d."DIST_DESC" AS dist_desc,
+    d."DIST_PAIS" AS dist_pais, p."PAIS_DESC" AS pais_desc
+    FROM gen_distrito d
+    LEFT JOIN gen_pais p ON p."PAIS_CODIGO" = d."DIST_PAIS"
+    ${where} ORDER BY ${orderBy}`;
   if (all) {
     const { rows } = await pool.query(select, params);
     return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };
@@ -465,15 +473,18 @@ const getDistritos = async ({ page = 1, limit = 20, search = '', all = false, so
   return { data: rows, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
 };
 
-const createDistrito = async ({ dist_desc }) => {
+const createDistrito = async (data) => {
   const { rows: [{ next }] } = await pool.query(`SELECT COALESCE(MAX("DIST_CODIGO"), 0) + 1 AS next FROM gen_distrito`);
-  await pool.query(`INSERT INTO gen_distrito ("DIST_CODIGO","DIST_DESC") VALUES ($1,$2)`, [next, dist_desc]);
-  return { dist_codigo: next, dist_desc };
+  await pool.query(`INSERT INTO gen_distrito ("DIST_CODIGO","DIST_DESC","DIST_PAIS") VALUES ($1,$2,$3)`, [next, data.dist_desc, data.dist_pais || null]);
+  return { dist_codigo: next, dist_desc: data.dist_desc, dist_pais: data.dist_pais || null };
 };
 
-const updateDistrito = async (id, { dist_desc }) => {
-  await pool.query(`UPDATE gen_distrito SET "DIST_DESC" = $1 WHERE "DIST_CODIGO" = $2`, [dist_desc, id]);
-  return { dist_codigo: id, dist_desc };
+const updateDistrito = async (id, data) => {
+  const fields = []; const params = [];
+  if (data.dist_desc !== undefined) { params.push(data.dist_desc); fields.push(`"DIST_DESC" = $${params.length}`); }
+  if (data.dist_pais !== undefined) { params.push(data.dist_pais); fields.push(`"DIST_PAIS" = $${params.length}`); }
+  if (fields.length) { params.push(id); await pool.query(`UPDATE gen_distrito SET ${fields.join(', ')} WHERE "DIST_CODIGO" = $${params.length}`, params); }
+  return { dist_codigo: id, ...data };
 };
 
 const deleteDistrito = async (id) => {
@@ -518,13 +529,14 @@ const deleteMotivoAnulacion = async (id) => {
 
 // ─── LOCALIDADES ────────────────────────────────────────────────────────────
 
-const getLocalidades = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc', dep = null } = {}) => {
+const getLocalidades = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc', dep = null, distrito = null } = {}) => {
   page  = Math.max(1, page);
   limit = Math.max(1, Math.min(1000, limit));
   const params = [];
   const conditions = [];
   if (search) { params.push(`%${search}%`); conditions.push(`l."LOC_DESC" ILIKE $${params.length}`); }
-  if (dep) { params.push(dep); conditions.push(`l."LOC_DEP_CODIGO" = $${params.length}`); }
+  if (distrito) { params.push(distrito); conditions.push(`l."LOC_DISTRITO" = $${params.length}`); }
+  else if (dep) { params.push(dep); conditions.push(`l."LOC_DEP_CODIGO" = $${params.length}`); }
   const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
   const { rows: [{ count }] } = await pool.query(`SELECT COUNT(*) FROM gen_localidad l ${where}`, params);
   const total = parseInt(count);
@@ -581,10 +593,10 @@ const getBarrios = async ({ page = 1, limit = 20, search = '', all = false, sort
   const orderCol = allowedSort[sortField] || `b."BARR_CODIGO"`;
   const select = `SELECT b."BARR_CODIGO" AS barr_codigo, b."BARR_DESC" AS barr_desc,
     b."BARR_CODIGO_LOC" AS barr_codigo_loc, l."LOC_DESC" AS loc_desc,
-    b."BARR_CODIGO_DEP" AS barr_codigo_dep, d."DPTO_DESC" AS dpto_desc
+    l."LOC_DISTRITO" AS barr_distrito, dist."DIST_DESC" AS dist_desc
     FROM gen_barrio b
     LEFT JOIN gen_localidad l ON l."LOC_CODIGO" = b."BARR_CODIGO_LOC"
-    LEFT JOIN gen_departamento d ON d."DPTO_CODIGO" = b."BARR_CODIGO_DEP"
+    LEFT JOIN gen_distrito dist ON dist."DIST_CODIGO" = l."LOC_DISTRITO"
     ${where} ORDER BY ${orderCol} ${dir}`;
   if (all) {
     const { rows } = await pool.query(select, params);

@@ -80,7 +80,8 @@ export default function PaisesPage() {
 
   const handleSubmit = () => {
     if (!form.pais_desc.trim()) { setError('La descripción es requerida'); return; }
-    modal === 'nuevo' ? createMut.mutate(form) : updateMut.mutate({ id: (modal as Pais).pais_codigo, data: form });
+    const data = { ...form, pais_desc: form.pais_desc.toUpperCase(), pais_nacionalidad: form.pais_nacionalidad?.toUpperCase() || '' };
+    modal === 'nuevo' ? createMut.mutate(data) : updateMut.mutate({ id: (modal as Pais).pais_codigo, data });
   };
 
   const isPending = createMut.isPending || updateMut.isPending;
@@ -138,12 +139,12 @@ export default function PaisesPage() {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Descripción <span className="text-red-500">*</span></label>
             <input value={form.pais_desc} onChange={(e) => setForm({ ...form, pais_desc: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm uppercase focus:outline-none focus:ring-2 focus:ring-primary-500" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Nacionalidad</label>
             <input value={form.pais_nacionalidad} onChange={(e) => setForm({ ...form, pais_nacionalidad: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm uppercase focus:outline-none focus:ring-2 focus:ring-primary-500"
               placeholder="Ej: Paraguayo, Argentino" />
           </div>
         </FormModal>

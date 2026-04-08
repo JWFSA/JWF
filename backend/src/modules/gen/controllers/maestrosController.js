@@ -83,7 +83,7 @@ const updateProfesion      = async (req, res, next) => { try { res.json(await s.
 const deleteProfesion      = async (req, res, next) => { try { await s.deleteProfesion(Number(req.params.id)); res.status(204).end(); } catch (e) { next(e); } };
 
 // ─── DISTRITOS ──────────────────────────────────────────────────────────────
-const getDistritos         = async (req, res, next) => { try { res.json(await s.getDistritos({ all: req.query.all === 'true', page: parseInt(req.query.page) || 1, limit: parseInt(req.query.limit) || 20, search: req.query.search || '', sortField: req.query.sortField || '', sortDir: req.query.sortDir || 'asc' })); } catch (e) { next(e); } };
+const getDistritos         = async (req, res, next) => { try { res.json(await s.getDistritos({ all: req.query.all === 'true', page: parseInt(req.query.page) || 1, limit: parseInt(req.query.limit) || 20, search: req.query.search || '', sortField: req.query.sortField || '', sortDir: req.query.sortDir || 'asc', pais: req.query.pais ? Number(req.query.pais) : null })); } catch (e) { next(e); } };
 const createDistrito       = async (req, res, next) => { try { if (!req.body.dist_desc) return res.status(400).json({ message: 'La descripción es requerida' }); res.status(201).json(await s.createDistrito(req.body)); } catch (e) { next(e); } };
 const updateDistrito       = async (req, res, next) => { try { res.json(await s.updateDistrito(Number(req.params.id), req.body)); } catch (e) { next(e); } };
 const deleteDistrito       = async (req, res, next) => { try { await s.deleteDistrito(Number(req.params.id)); res.status(204).end(); } catch (e) { next(e); } };
@@ -95,7 +95,7 @@ const updateMotivoAnulacion = async (req, res, next) => { try { res.json(await s
 const deleteMotivoAnulacion = async (req, res, next) => { try { await s.deleteMotivoAnulacion(Number(req.params.id)); res.status(204).end(); } catch (e) { next(e); } };
 
 // ─── LOCALIDADES ────────────────────────────────────────────────────────────
-const getLocalidades       = async (req, res, next) => { try { res.json(await s.getLocalidades({ all: req.query.all === 'true', page: parseInt(req.query.page) || 1, limit: parseInt(req.query.limit) || 20, search: req.query.search || '', sortField: req.query.sortField || '', sortDir: req.query.sortDir || 'asc', dep: req.query.dep ? Number(req.query.dep) : null })); } catch (e) { next(e); } };
+const getLocalidades       = async (req, res, next) => { try { res.json(await s.getLocalidades({ all: req.query.all === 'true', page: parseInt(req.query.page) || 1, limit: parseInt(req.query.limit) || 20, search: req.query.search || '', sortField: req.query.sortField || '', sortDir: req.query.sortDir || 'asc', dep: req.query.dep ? Number(req.query.dep) : null, distrito: req.query.distrito ? Number(req.query.distrito) : null })); } catch (e) { next(e); } };
 const createLocalidad      = async (req, res, next) => { try { if (!req.body.loc_desc) return res.status(400).json({ message: 'La descripción es requerida' }); res.status(201).json(await s.createLocalidad(req.body)); } catch (e) { next(e); } };
 const updateLocalidad      = async (req, res, next) => { try { res.json(await s.updateLocalidad(Number(req.params.id), req.body)); } catch (e) { next(e); } };
 const deleteLocalidad      = async (req, res, next) => { try { await s.deleteLocalidad(Number(req.params.id)); res.status(204).end(); } catch (e) { next(e); } };

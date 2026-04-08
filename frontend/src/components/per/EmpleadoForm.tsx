@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { getCargos, getCategorias, getAreas, getSecciones, getTurnos, getTiposSalario, getEmpleados } from '@/services/per';
-import { getEmpresas, getSucursales, getPaises, getLocalidades, getBarrios, getDepartamentos } from '@/services/gen';
+import { getEmpresas, getSucursales, getPaises, getDepartamentos, getDistritos, getLocalidades, getBarrios } from '@/services/gen';
 import { getCentrosCosto } from '@/services/cnt';
 import { getCuentasBancarias } from '@/services/fin';
 import type { Empleado } from '@/types/per';
@@ -76,6 +76,8 @@ const schema = z.object({
   empl_dir: optStr,
   empl_dir2: optStr,
   empl_dir3: optStr,
+  empl_pais_dir: coerceNum,
+  empl_distrito: coerceNum,
   empl_localidad: coerceNum,
   empl_barrio: coerceNum,
   empl_nro_casa: coerceNum,
@@ -109,6 +111,17 @@ const SN_OPTS    = [{ v: 'S', l: 'Sí' }, { v: 'N', l: 'No' }];
 
 const input = 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500';
 const errCls = 'text-xs text-red-500 mt-1';
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-6">
+      <h2 className="text-sm font-semibold text-gray-700 mb-4 uppercase tracking-wide">{title}</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        {children}
+      </div>
+    </div>
+  );
+}
 
 export default function EmpleadoForm({ initial, onSave, isPending, error }: Props) {
   const router = useRouter();
@@ -165,6 +178,8 @@ export default function EmpleadoForm({ initial, onSave, isPending, error }: Prop
     empl_dir: initial?.empl_dir ?? '',
     empl_dir2: initial?.empl_dir2 ?? '',
     empl_dir3: initial?.empl_dir3 ?? '',
+    empl_pais_dir: initial?.empl_pais_dir ?? null,
+    empl_distrito: initial?.empl_distrito ?? null,
     empl_localidad: initial?.empl_localidad ?? null,
     empl_barrio: initial?.empl_barrio ?? null,
     empl_nro_casa: initial?.empl_nro_casa ?? null,
@@ -199,9 +214,25 @@ export default function EmpleadoForm({ initial, onSave, isPending, error }: Prop
   const { data: ctasBcoData }   = useQuery({ queryKey: ['cuentas-bancarias', { all: true }], queryFn: () => getCuentasBancarias({ all: true }) });
   const { data: empleadosData } = useQuery({ queryKey: ['empleados', { all: true }],     queryFn: () => getEmpleados({ all: true }) });
   const { data: paisesData }    = useQuery({ queryKey: ['paises'],                       queryFn: () => getPaises() });
-  const { data: localidadesData } = useQuery({ queryKey: ['localidades', { all: true }], queryFn: () => getLocalidades({ all: true }) });
-  const { data: barriosData }   = useQuery({ queryKey: ['barrios', { all: true }],       queryFn: () => getBarrios({ all: true }) });
   const { data: deptosData }   = useQuery({ queryKey: ['departamentos'],                  queryFn: () => getDepartamentos() });
+  const watchedPaisDir = watch('empl_pais_dir');
+  const watchedDistrito = watch('empl_distrito');
+  const watchedLocalidad = watch('empl_localidad');
+  const { data: distritosData } = useQuery({
+    queryKey: ['distritos', { all: true, pais: watchedPaisDir }],
+    queryFn: () => getDistritos({ all: true, pais: watchedPaisDir || undefined } as any),
+    enabled: !!watchedPaisDir,
+  });
+  const { data: localidadesData } = useQuery({
+    queryKey: ['localidades', { all: true, distrito: watchedDistrito }],
+    queryFn: () => getLocalidades({ all: true, distrito: watchedDistrito || undefined } as any),
+    enabled: !!watchedDistrito,
+  });
+  const { data: barriosData } = useQuery({
+    queryKey: ['barrios-gen', { all: true, loc: watchedLocalidad }],
+    queryFn: () => getBarrios({ all: true, loc: watchedLocalidad || undefined } as any),
+    enabled: !!watchedLocalidad,
+  });
 
   const cargos     = cargosData?.data  ?? [];
   const categs     = categsData?.data  ?? [];
@@ -214,9 +245,10 @@ export default function EmpleadoForm({ initial, onSave, isPending, error }: Prop
   const ctasBco    = ctasBcoData?.data  ?? [];
   const empleados  = empleadosData?.data ?? [];
   const paises       = paisesData ?? [];
+  const deptos       = deptosData ?? [];
+  const distritos    = distritosData?.data ?? [];
   const localidades  = localidadesData?.data ?? [];
   const barrios      = barriosData?.data ?? [];
-  const deptos       = deptosData ?? [];
 
   const onSubmit = async (data: FormData) => {
     const clean: Record<string, unknown> = {};
@@ -269,15 +301,6 @@ export default function EmpleadoForm({ initial, onSave, isPending, error }: Prop
         {items.map((i) => <option key={i.code} value={i.code}>{i.desc}</option>)}
       </select>
       {errors[name] && <p className={errCls}>{errors[name]?.message as string}</p>}
-    </div>
-  );
-
-  const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-6">
-      <h2 className="text-sm font-semibold text-gray-700 mb-4 uppercase tracking-wide">{title}</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {children}
-      </div>
     </div>
   );
 
@@ -357,11 +380,44 @@ export default function EmpleadoForm({ initial, onSave, isPending, error }: Prop
 
       {/* 7. Contacto */}
       <Section title="Contacto">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">País</label>
+          <select {...register('empl_pais_dir', { setValueAs: (v: string) => (v === '' ? null : Number(v)) })}
+            onChange={(e) => { setValue('empl_pais_dir', e.target.value === '' ? null : Number(e.target.value), { shouldFocus: false }); setValue('empl_distrito', null, { shouldFocus: false }); setValue('empl_localidad', null, { shouldFocus: false }); setValue('empl_barrio', null, { shouldFocus: false }); }}
+            className={input}>
+            <option value="">— Seleccione —</option>
+            {paises.map((p: any) => <option key={p.pais_codigo} value={p.pais_codigo}>{p.pais_desc}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Distrito</label>
+          <select {...register('empl_distrito', { setValueAs: (v: string) => (v === '' ? null : Number(v)) })}
+            onChange={(e) => { setValue('empl_distrito', e.target.value === '' ? null : Number(e.target.value), { shouldFocus: false }); setValue('empl_localidad', null, { shouldFocus: false }); setValue('empl_barrio', null, { shouldFocus: false }); }}
+            disabled={!watchedPaisDir} className={input}>
+            <option value="">— Seleccione —</option>
+            {distritos.map((d: any) => <option key={d.dist_codigo} value={d.dist_codigo}>{d.dist_desc}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Localidad</label>
+          <select {...register('empl_localidad', { setValueAs: (v: string) => (v === '' ? null : Number(v)) })}
+            onChange={(e) => { setValue('empl_localidad', e.target.value === '' ? null : Number(e.target.value), { shouldFocus: false }); setValue('empl_barrio', null, { shouldFocus: false }); }}
+            disabled={!watchedDistrito} className={input}>
+            <option value="">— Seleccione —</option>
+            {localidades.map((l: any) => <option key={l.loc_codigo} value={l.loc_codigo}>{l.loc_desc}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Barrio</label>
+          <select {...register('empl_barrio', { setValueAs: (v: string) => (v === '' ? null : Number(v)) })}
+            disabled={!watchedLocalidad} className={input}>
+            <option value="">— Seleccione —</option>
+            {barrios.map((b: any) => <option key={b.barr_codigo} value={b.barr_codigo}>{b.barr_desc}</option>)}
+          </select>
+        </div>
         {field('Dirección principal', 'empl_dir', { placeholder: 'Calle y número', span: true })}
         {field('Dirección 2', 'empl_dir2', { placeholder: 'Dirección adicional' })}
         {field('Dirección 3', 'empl_dir3', { placeholder: 'Dirección adicional' })}
-        {fkSelect('Localidad', 'empl_localidad', localidades.map((l) => ({ code: l.loc_codigo, desc: l.loc_desc })))}
-        {fkSelect('Barrio', 'empl_barrio', barrios.map((b) => ({ code: b.barr_codigo, desc: b.barr_desc })))}
         {field('Nro. casa', 'empl_nro_casa', { type: 'number' })}
         {field('Teléfono', 'empl_tel', { placeholder: '021-000000' })}
         {field('Celular', 'empl_tel_celular', { placeholder: '0981-000000' })}

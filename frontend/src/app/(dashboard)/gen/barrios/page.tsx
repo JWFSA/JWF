@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getBarrios, createBarrio, updateBarrio, deleteBarrio, getDepartamentos, getLocalidades } from '@/services/gen';
+import { getBarrios, createBarrio, updateBarrio, deleteBarrio, getDistritos, getLocalidades } from '@/services/gen';
 import type { Barrio } from '@/types/gen';
 import DataTable from '@/components/ui/DataTable';
 import FormModal from '@/components/ui/FormModal';
@@ -14,7 +14,7 @@ const COLUMNS = [
   { key: 'cod',  header: 'Cód.',         sortKey: 'cod',  headerClassName: 'w-16', cell: (r: Barrio) => r.barr_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
   { key: 'desc', header: 'Descripción',  sortKey: 'desc',                           cell: (r: Barrio) => r.barr_desc, cellClassName: 'font-medium text-gray-800' },
   { key: 'loc',  header: 'Localidad',    sortKey: 'loc',  headerClassName: 'hidden sm:table-cell', cell: (r: Barrio) => r.loc_desc || '—', cellClassName: 'hidden sm:table-cell text-sm text-gray-500' },
-  { key: 'dep',  header: 'Departamento', headerClassName: 'hidden md:table-cell',   cell: (r: Barrio) => r.dpto_desc || '—', cellClassName: 'hidden md:table-cell text-sm text-gray-500' },
+  { key: 'dist', header: 'Distrito',      headerClassName: 'hidden md:table-cell',   cell: (r: Barrio) => r.dist_desc || '—', cellClassName: 'hidden md:table-cell text-sm text-gray-500' },
 ];
 
 export default function BarriosPage() {
@@ -27,7 +27,7 @@ export default function BarriosPage() {
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [modal, setModal] = useState(false);
   const [editing, setEditing] = useState<Barrio | null>(null);
-  const [form, setForm] = useState({ barr_desc: '', barr_codigo_loc: '', barr_codigo_dep: '' });
+  const [form, setForm] = useState({ barr_desc: '', barr_codigo_loc: '', barr_distrito: '' });
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -40,8 +40,13 @@ export default function BarriosPage() {
     queryFn: () => getBarrios({ page, limit, search: debouncedSearch, sortField, sortDir }),
   });
 
-  const { data: deptos } = useQuery({ queryKey: ['departamentos'], queryFn: getDepartamentos });
-  const { data: locData } = useQuery({ queryKey: ['localidades', { all: true }], queryFn: () => getLocalidades({ all: true }) });
+  const { data: distData } = useQuery({ queryKey: ['distritos', { all: true }], queryFn: () => getDistritos({ all: true }) });
+  const distritos = distData?.data ?? [];
+  const { data: locData } = useQuery({
+    queryKey: ['localidades', { all: true, distrito: form.barr_distrito }],
+    queryFn: () => getLocalidades({ all: true, distrito: form.barr_distrito || undefined } as any),
+    enabled: !!form.barr_distrito,
+  });
   const localidades = locData?.data ?? [];
 
   const items      = data?.data ?? [];
@@ -53,13 +58,13 @@ export default function BarriosPage() {
   const updateMut = useMutation({ mutationFn: ({ id, data }: { id: number; data: Partial<Barrio> }) => updateBarrio(id, data), onSuccess: () => { inv(); closeModal(); }, onError: (e: any) => setError(e?.response?.data?.message ?? 'Error') });
   const deleteMut = useMutation({ mutationFn: deleteBarrio, onSuccess: inv });
 
-  const openNew  = () => { setEditing(null); setForm({ barr_desc: '', barr_codigo_loc: '', barr_codigo_dep: '' }); setError(''); setModal(true); };
-  const openEdit = (r: Barrio) => { setEditing(r); setForm({ barr_desc: r.barr_desc, barr_codigo_loc: r.barr_codigo_loc?.toString() ?? '', barr_codigo_dep: r.barr_codigo_dep?.toString() ?? '' }); setError(''); setModal(true); };
+  const openNew  = () => { setEditing(null); setForm({ barr_desc: '', barr_codigo_loc: '', barr_distrito: '' }); setError(''); setModal(true); };
+  const openEdit = (r: Barrio) => { setEditing(r); setForm({ barr_desc: r.barr_desc, barr_codigo_loc: r.barr_codigo_loc?.toString() ?? '', barr_distrito: r.barr_distrito?.toString() ?? '' }); setError(''); setModal(true); };
   const closeModal = () => { setModal(false); setEditing(null); };
 
   const handleSubmit = () => {
     if (!form.barr_desc.trim()) { setError('La descripción es requerida'); return; }
-    const payload = { barr_desc: form.barr_desc, barr_codigo_loc: form.barr_codigo_loc ? Number(form.barr_codigo_loc) : null, barr_codigo_dep: form.barr_codigo_dep ? Number(form.barr_codigo_dep) : null };
+    const payload = { barr_desc: form.barr_desc.toUpperCase(), barr_codigo_loc: form.barr_codigo_loc ? Number(form.barr_codigo_loc) : null, barr_codigo_dep: form.barr_distrito ? Number(form.barr_distrito) : null };
     if (editing) updateMut.mutate({ id: editing.barr_codigo, data: payload });
     else createMut.mutate(payload);
   };
@@ -91,21 +96,21 @@ export default function BarriosPage() {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Descripción <span className="text-red-500">*</span></label>
-              <input value={form.barr_desc} onChange={(e) => setForm((f) => ({ ...f, barr_desc: e.target.value }))} placeholder="Ej: Villa Morra" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
+              <input value={form.barr_desc} onChange={(e) => setForm((f) => ({ ...f, barr_desc: e.target.value }))} placeholder="Ej: Villa Morra" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm uppercase focus:outline-none focus:ring-2 focus:ring-primary-500" />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Localidad</label>
-                <select value={form.barr_codigo_loc} onChange={(e) => setForm((f) => ({ ...f, barr_codigo_loc: e.target.value }))} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
-                  <option value="">— Sin localidad —</option>
-                  {localidades.map((l: any) => <option key={l.loc_codigo} value={l.loc_codigo}>{l.loc_desc}</option>)}
+                <label className="block text-sm font-medium text-gray-700 mb-1">Distrito</label>
+                <select value={form.barr_distrito} onChange={(e) => setForm((f) => ({ ...f, barr_distrito: e.target.value, barr_codigo_loc: '' }))} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
+                  <option value="">— Seleccione —</option>
+                  {distritos.map((d: any) => <option key={d.dist_codigo} value={d.dist_codigo}>{d.dist_desc}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Departamento</label>
-                <select value={form.barr_codigo_dep} onChange={(e) => setForm((f) => ({ ...f, barr_codigo_dep: e.target.value }))} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
-                  <option value="">— Sin departamento —</option>
-                  {(deptos ?? []).map((d: any) => <option key={d.dpto_codigo} value={d.dpto_codigo}>{d.dpto_desc}</option>)}
+                <label className="block text-sm font-medium text-gray-700 mb-1">Localidad</label>
+                <select value={form.barr_codigo_loc} onChange={(e) => setForm((f) => ({ ...f, barr_codigo_loc: e.target.value }))} disabled={!form.barr_distrito} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
+                  <option value="">— Seleccione —</option>
+                  {localidades.map((l: any) => <option key={l.loc_codigo} value={l.loc_codigo}>{l.loc_desc}</option>)}
                 </select>
               </div>
             </div>

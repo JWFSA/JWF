@@ -334,13 +334,18 @@ const getBarrios = async ({ page = 1, limit = 20, search = '', all = false, sort
   page  = Math.max(1, page);
   limit = Math.max(1, Math.min(1000, limit));
   const params = search ? [`%${search}%`] : [];
-  const where  = search ? `WHERE "BA_DESC" ILIKE $1` : '';
-  const countRes = await pool.query(`SELECT COUNT(*) FROM fac_barrio ${where}`, params);
+  const where  = search ? `WHERE b."BA_DESC" ILIKE $1` : '';
+  const countRes = await pool.query(`SELECT COUNT(*) FROM fac_barrio b ${where}`, params);
   const total = parseInt(countRes.rows[0].count);
-  const allowedSort = { cod: '"BA_CODIGO"', desc: '"BA_DESC"' };
+  const allowedSort = { cod: 'b."BA_CODIGO"', desc: 'b."BA_DESC"' };
   const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
   const orderBy = allowedSort[sortField] ? `${allowedSort[sortField]} ${dir}` : '"BA_DESC" ASC';
-  const select = `SELECT "BA_CODIGO" AS ba_codigo, "BA_DESC" AS ba_desc, "BA_LOCALIDAD" AS ba_localidad FROM fac_barrio ${where} ORDER BY ${orderBy}`;
+  const select = `SELECT b."BA_CODIGO" AS ba_codigo, b."BA_DESC" AS ba_desc, b."BA_LOCALIDAD" AS ba_localidad,
+    l."LOC_DESC" AS loc_desc, l."LOC_DISTRITO" AS loc_distrito, d."DIST_DESC" AS dist_desc
+    FROM fac_barrio b
+    LEFT JOIN gen_localidad l ON l."LOC_CODIGO" = b."BA_LOCALIDAD"
+    LEFT JOIN gen_distrito d ON d."DIST_CODIGO" = l."LOC_DISTRITO"
+    ${where} ORDER BY ${orderBy}`;
   if (all) {
     const { rows } = await pool.query(select, params);
     return { data: rows, pagination: { total: rows.length, page: 1, limit: rows.length, totalPages: 1 } };

@@ -124,6 +124,8 @@ export interface Profesion {
 export interface Distrito {
   dist_codigo: number;
   dist_desc: string;
+  dist_pais: number | null;
+  pais_desc?: string;
 }
 
 export interface MotivoAnulacion {
@@ -145,8 +147,8 @@ export interface Barrio {
   barr_desc: string;
   barr_codigo_loc: number | null;
   loc_desc?: string;
-  barr_codigo_dep: number | null;
-  dpto_desc?: string;
+  barr_distrito: number | null;
+  dist_desc?: string;
 }
 
 export interface AuthUser {

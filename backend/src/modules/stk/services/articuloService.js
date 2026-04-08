@@ -51,12 +51,34 @@ const getById = async (id) => {
             a."ART_LINEA" AS art_linea, l."LIN_DESC" AS lin_desc,
             a."ART_MARCA" AS art_marca, m."MARC_DESC" AS marc_desc,
             a."ART_RUBRO" AS art_rubro, r."RUB_DESC" AS rub_desc,
+            a."ART_GRUPO" AS art_grupo,
             a."ART_EST" AS art_est, a."ART_CODIGO_FABRICA" AS art_codigo_fabrica,
-            a."ART_TIPO" AS art_tipo
+            a."ART_TIPO" AS art_tipo,
+            a."ART_IMPU" AS art_impu, a."ART_IND_IMP" AS art_ind_imp,
+            a."ART_TIPO_COMISION" AS art_tipo_comision,
+            a."ART_IND_VENTA" AS art_ind_venta,
+            a."ART_COD_ALFANUMERICO" AS art_cod_alfanumerico,
+            a."ART_FACTOR_CONVERSION" AS art_factor_conversion,
+            a."ART_CLASIFICACION" AS art_clasificacion, cl."CLAS_DESC" AS clas_desc,
+            a."ART_PAIS" AS art_pais, p."PAIS_DESC" AS pais_desc,
+            a."ART_PROV" AS art_prov, pv."PROV_RAZON_SOCIAL" AS prov_nom,
+            a."ART_EMPAQUE" AS art_empaque,
+            a."ART_CONTENIDO" AS art_contenido,
+            a."ART_DATOS_TEC" AS art_datos_tec,
+            a."ART_COLOR" AS art_color,
+            a."ART_MED_BASE" AS art_med_base,
+            a."ART_MED_ALTO" AS art_med_alto,
+            a."ART_MED_TOTAL" AS art_med_total,
+            a."ART_MAX_PORC_DCTO_VTA" AS art_max_porc_dcto_vta,
+            a."ART_KG_UNID" AS art_kg_unid,
+            a."ART_PORC_AUM_COSTO" AS art_porc_aum_costo
      FROM stk_articulo a
      LEFT JOIN stk_linea l ON l."LIN_CODIGO" = a."ART_LINEA"
      LEFT JOIN stk_marca m ON m."MARC_CODIGO" = a."ART_MARCA"
      LEFT JOIN stk_rubro r ON r."RUB_CODIGO" = a."ART_RUBRO"
+     LEFT JOIN stk_clasificacion cl ON cl."CLAS_CODIGO" = a."ART_CLASIFICACION"
+     LEFT JOIN gen_pais p ON p."PAIS_CODIGO" = a."ART_PAIS"
+     LEFT JOIN fin_proveedor pv ON pv."PROV_CODIGO" = a."ART_PROV"
      WHERE a."ART_CODIGO" = $1`,
     [id]
   );
@@ -73,8 +95,13 @@ const create = async (data) => {
   await pool.query(
     `INSERT INTO stk_articulo
        ("ART_CODIGO", "ART_DESC", "ART_DESC_ABREV", "ART_UNID_MED",
-        "ART_LINEA", "ART_MARCA", "ART_RUBRO", "ART_EST", "ART_CODIGO_FABRICA", "ART_TIPO")
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+        "ART_LINEA", "ART_MARCA", "ART_RUBRO", "ART_GRUPO", "ART_EST", "ART_CODIGO_FABRICA", "ART_TIPO",
+        "ART_IMPU", "ART_IND_IMP", "ART_TIPO_COMISION", "ART_IND_VENTA",
+        "ART_COD_ALFANUMERICO", "ART_FACTOR_CONVERSION", "ART_CLASIFICACION",
+        "ART_PAIS", "ART_PROV", "ART_EMPAQUE", "ART_CONTENIDO", "ART_DATOS_TEC",
+        "ART_COLOR", "ART_MED_BASE", "ART_MED_ALTO", "ART_MED_TOTAL",
+        "ART_MAX_PORC_DCTO_VTA", "ART_KG_UNID", "ART_PORC_AUM_COSTO")
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30)`,
     [
       codigo,
       data.art_desc,
@@ -83,9 +110,29 @@ const create = async (data) => {
       data.art_linea || null,
       data.art_marca || null,
       data.art_rubro || null,
+      data.art_grupo || null,
       data.art_est || 'A',
       data.art_codigo_fabrica || null,
       data.art_tipo || 1,
+      data.art_impu || null,
+      data.art_ind_imp || null,
+      data.art_tipo_comision || null,
+      data.art_ind_venta || 'S',
+      data.art_cod_alfanumerico || null,
+      data.art_factor_conversion || null,
+      data.art_clasificacion || null,
+      data.art_pais || null,
+      data.art_prov || null,
+      data.art_empaque || null,
+      data.art_contenido || null,
+      data.art_datos_tec || null,
+      data.art_color || null,
+      data.art_med_base || null,
+      data.art_med_alto || null,
+      data.art_med_total || null,
+      data.art_max_porc_dcto_vta || null,
+      data.art_kg_unid || null,
+      data.art_porc_aum_costo || null,
     ]
   );
 
@@ -96,14 +143,22 @@ const update = async (id, data) => {
   const fields = [];
   const params = [];
 
-  if (data.art_desc !== undefined)          { params.push(data.art_desc);          fields.push(`"ART_DESC" = $${params.length}`); }
-  if (data.art_desc_abrev !== undefined)    { params.push(data.art_desc_abrev);    fields.push(`"ART_DESC_ABREV" = $${params.length}`); }
-  if (data.art_unid_med !== undefined)      { params.push(data.art_unid_med);      fields.push(`"ART_UNID_MED" = $${params.length}`); }
-  if (data.art_linea !== undefined)         { params.push(data.art_linea);         fields.push(`"ART_LINEA" = $${params.length}`); }
-  if (data.art_marca !== undefined)         { params.push(data.art_marca);         fields.push(`"ART_MARCA" = $${params.length}`); }
-  if (data.art_rubro !== undefined)         { params.push(data.art_rubro);         fields.push(`"ART_RUBRO" = $${params.length}`); }
-  if (data.art_est !== undefined)           { params.push(data.art_est);           fields.push(`"ART_EST" = $${params.length}`); }
-  if (data.art_codigo_fabrica !== undefined){ params.push(data.art_codigo_fabrica);fields.push(`"ART_CODIGO_FABRICA" = $${params.length}`); }
+  const map = {
+    art_desc: '"ART_DESC"', art_desc_abrev: '"ART_DESC_ABREV"', art_unid_med: '"ART_UNID_MED"',
+    art_linea: '"ART_LINEA"', art_marca: '"ART_MARCA"', art_rubro: '"ART_RUBRO"', art_grupo: '"ART_GRUPO"',
+    art_est: '"ART_EST"', art_codigo_fabrica: '"ART_CODIGO_FABRICA"', art_tipo: '"ART_TIPO"',
+    art_impu: '"ART_IMPU"', art_ind_imp: '"ART_IND_IMP"',
+    art_tipo_comision: '"ART_TIPO_COMISION"', art_ind_venta: '"ART_IND_VENTA"',
+    art_cod_alfanumerico: '"ART_COD_ALFANUMERICO"', art_factor_conversion: '"ART_FACTOR_CONVERSION"',
+    art_clasificacion: '"ART_CLASIFICACION"', art_pais: '"ART_PAIS"', art_prov: '"ART_PROV"',
+    art_empaque: '"ART_EMPAQUE"', art_contenido: '"ART_CONTENIDO"', art_datos_tec: '"ART_DATOS_TEC"',
+    art_color: '"ART_COLOR"', art_med_base: '"ART_MED_BASE"', art_med_alto: '"ART_MED_ALTO"',
+    art_med_total: '"ART_MED_TOTAL"', art_max_porc_dcto_vta: '"ART_MAX_PORC_DCTO_VTA"',
+    art_kg_unid: '"ART_KG_UNID"', art_porc_aum_costo: '"ART_PORC_AUM_COSTO"',
+  };
+  for (const [k, col] of Object.entries(map)) {
+    if (data[k] !== undefined) { params.push(data[k]); fields.push(`${col} = $${params.length}`); }
+  }
 
   if (fields.length === 0) return getById(id);
 

@@ -13,9 +13,32 @@ export interface Articulo {
   marc_desc?: string;
   art_rubro: number | null;
   rub_desc?: string;
+  art_grupo: number | null;
   art_est: 'A' | 'I';
   art_codigo_fabrica: string | null;
   art_tipo?: number;
+  art_impu: number | null;
+  art_ind_imp: string | null;
+  art_tipo_comision: string | null;
+  art_ind_venta: string | null;
+  art_cod_alfanumerico: string | null;
+  art_factor_conversion: number | null;
+  art_clasificacion: number | null;
+  clas_desc?: string;
+  art_pais: number | null;
+  pais_desc?: string;
+  art_prov: number | null;
+  prov_razon_social?: string;
+  art_empaque: string | null;
+  art_contenido: number | null;
+  art_datos_tec: string | null;
+  art_color: string | null;
+  art_med_base: number | null;
+  art_med_alto: number | null;
+  art_med_total: number | null;
+  art_max_porc_dcto_vta: number | null;
+  art_kg_unid: number | null;
+  art_porc_aum_costo: number | null;
 }
 
 export interface Deposito {

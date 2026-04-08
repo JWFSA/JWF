@@ -103,6 +103,8 @@ const getById = async (legajo) => {
             e."EMPL_IND_ANTICIPOS" AS empl_ind_anticipos,
             e."EMPL_IND_TRAB_SAB" AS empl_ind_trab_sab,
             e."EMPL_DIR" AS empl_dir, e."EMPL_DIR2" AS empl_dir2, e."EMPL_DIR3" AS empl_dir3,
+            e."EMPL_PAIS_DIR" AS empl_pais_dir, paisdir."PAIS_DESC" AS pais_dir_desc,
+            e."EMPL_DISTRITO" AS empl_distrito, distdir."DIST_DESC" AS distrito_desc,
             e."EMPL_LOCALIDAD" AS empl_localidad, loc."LOC_DESC" AS loc_desc,
             e."EMPL_BARRIO" AS empl_barrio, barr."BARR_DESC" AS barr_desc,
             e."EMPL_NRO_CASA" AS empl_nro_casa,
@@ -130,6 +132,8 @@ const getById = async (legajo) => {
      LEFT JOIN fin_cuenta_bancaria cb ON cb."CTA_CODIGO" = e."EMPL_CTA_BCO" AND cb."CTA_EMPR" = e."EMPL_EMPRESA"
      LEFT JOIN per_tipo_salario ts ON ts."PTIPO_SAL_CODIGO" = e."EMPL_TIPO_SALARIO"
      LEFT JOIN gen_pais pais     ON pais."PAIS_CODIGO"  = CAST(e."EMPL_NACIONALIDAD" AS numeric)
+     LEFT JOIN gen_pais paisdir  ON paisdir."PAIS_CODIGO" = e."EMPL_PAIS_DIR"
+     LEFT JOIN gen_distrito distdir ON distdir."DIST_CODIGO" = e."EMPL_DISTRITO"
      LEFT JOIN gen_localidad loc ON loc."LOC_CODIGO"    = CAST(e."EMPL_LOCALIDAD" AS numeric)
      LEFT JOIN gen_barrio barr   ON barr."BARR_CODIGO"  = e."EMPL_BARRIO"
      WHERE e."EMPL_LEGAJO" = $1`,
@@ -156,7 +160,7 @@ const create = async (data) => {
       "EMPL_TIPO_HORAR","EMPL_TIEMPO_ALM","EMPL_DESC_TIEMP_ALM","EMPL_CALC_HR_EXT",
       "EMPL_LIM_LLEG_TEMP","EMPL_IMP_LLEG_HORA",
       "EMPL_COBRA_COMISION","EMPL_BONIF_FLIAR","EMPL_IND_ANTICIPOS","EMPL_IND_TRAB_SAB",
-      "EMPL_DIR","EMPL_DIR2","EMPL_DIR3","EMPL_LOCALIDAD","EMPL_BARRIO","EMPL_NRO_CASA",
+      "EMPL_DIR","EMPL_DIR2","EMPL_DIR3","EMPL_PAIS_DIR","EMPL_DISTRITO","EMPL_LOCALIDAD","EMPL_BARRIO","EMPL_NRO_CASA",
       "EMPL_TEL","EMPL_TEL_CELULAR","EMPL_TEL_CORPORAT",
       "EMPL_MAIL_PARTICULAR","EMPL_MAIL_LABORAL","EMPL_NOMBRE_EMERGENCIA",
       "EMPL_FEC_INGRESO_IPS","EMPL_SITUACION_IPS",
@@ -165,7 +169,7 @@ const create = async (data) => {
      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,
              $21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,
              $39,$40,$41,$42,$43,$44,$45,$46,$47,$48,$49,$50,$51,$52,$53,$54,$55,$56,
-             $57,$58,$59,$60,$61,$62,$63)`,
+             $57,$58,$59,$60,$61,$62,$63,$64,$65)`,
     [
       legajo,
       data.empl_nombre || null, data.empl_ape || null,
@@ -191,6 +195,7 @@ const create = async (data) => {
       data.empl_cobra_comision || 'N', data.empl_bonif_fliar || 'N',
       data.empl_ind_anticipos || 'N', data.empl_ind_trab_sab || 'N',
       data.empl_dir || null, data.empl_dir2 || null, data.empl_dir3 || null,
+      data.empl_pais_dir || null, data.empl_distrito || null,
       data.empl_localidad || null, data.empl_barrio || null, data.empl_nro_casa || null,
       data.empl_tel || null, data.empl_tel_celular || null, data.empl_tel_corporat || null,
       data.empl_mail_particular || null, data.empl_mail_laboral || null,
@@ -254,6 +259,8 @@ const update = async (legajo, data) => {
     empl_dir:             '"EMPL_DIR"',
     empl_dir2:            '"EMPL_DIR2"',
     empl_dir3:            '"EMPL_DIR3"',
+    empl_pais_dir:        '"EMPL_PAIS_DIR"',
+    empl_distrito:        '"EMPL_DISTRITO"',
     empl_localidad:       '"EMPL_LOCALIDAD"',
     empl_barrio:          '"EMPL_BARRIO"',
     empl_nro_casa:        '"EMPL_NRO_CASA"',

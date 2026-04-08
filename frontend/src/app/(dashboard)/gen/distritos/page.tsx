@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getDistritos, createDistrito, updateDistrito, deleteDistrito } from '@/services/gen';
+import { getDistritos, createDistrito, updateDistrito, deleteDistrito, getPaises } from '@/services/gen';
 import type { Distrito } from '@/types/gen';
 import DataTable from '@/components/ui/DataTable';
 import FormModal from '@/components/ui/FormModal';
@@ -13,6 +13,7 @@ import TablePagination from '@/components/ui/TablePagination';
 const COLUMNS = [
   { key: 'cod',  header: 'Cód.',        sortKey: 'cod',  headerClassName: 'w-16', cell: (r: Distrito) => r.dist_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
   { key: 'desc', header: 'Descripción', sortKey: 'desc',                           cell: (r: Distrito) => r.dist_desc, cellClassName: 'font-medium text-gray-800' },
+  { key: 'pais', header: 'País',        sortKey: 'pais', headerClassName: 'hidden sm:table-cell', cell: (r: Distrito) => r.pais_desc || '—', cellClassName: 'hidden sm:table-cell text-sm text-gray-500' },
 ];
 
 export default function DistritosPage() {
@@ -25,7 +26,7 @@ export default function DistritosPage() {
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [modal, setModal] = useState(false);
   const [editing, setEditing] = useState<Distrito | null>(null);
-  const [form, setForm] = useState({ dist_desc: '' });
+  const [form, setForm] = useState({ dist_desc: '', dist_pais: '' });
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -38,6 +39,9 @@ export default function DistritosPage() {
     queryFn: () => getDistritos({ page, limit, search: debouncedSearch, sortField, sortDir }),
   });
 
+  const { data: paisesData } = useQuery({ queryKey: ['paises'], queryFn: getPaises });
+  const paises = Array.isArray(paisesData) ? paisesData : [];
+
   const items      = data?.data ?? [];
   const pagination = data?.pagination;
   const handleSortChange = (f: string, d: 'asc' | 'desc') => { setSortField(f); setSortDir(d); setPage(1); };
@@ -47,14 +51,15 @@ export default function DistritosPage() {
   const updateMut = useMutation({ mutationFn: ({ id, data }: { id: number; data: Partial<Distrito> }) => updateDistrito(id, data), onSuccess: () => { inv(); closeModal(); }, onError: (e: any) => setError(e?.response?.data?.message ?? 'Error') });
   const deleteMut = useMutation({ mutationFn: deleteDistrito, onSuccess: inv });
 
-  const openNew  = () => { setEditing(null); setForm({ dist_desc: '' }); setError(''); setModal(true); };
-  const openEdit = (r: Distrito) => { setEditing(r); setForm({ dist_desc: r.dist_desc }); setError(''); setModal(true); };
+  const openNew  = () => { setEditing(null); setForm({ dist_desc: '', dist_pais: '' }); setError(''); setModal(true); };
+  const openEdit = (r: Distrito) => { setEditing(r); setForm({ dist_desc: r.dist_desc, dist_pais: r.dist_pais?.toString() ?? '' }); setError(''); setModal(true); };
   const closeModal = () => { setModal(false); setEditing(null); };
 
   const handleSubmit = () => {
     if (!form.dist_desc.trim()) { setError('La descripción es requerida'); return; }
-    if (editing) updateMut.mutate({ id: editing.dist_codigo, data: form });
-    else createMut.mutate(form);
+    const payload = { dist_desc: form.dist_desc.toUpperCase(), dist_pais: form.dist_pais ? Number(form.dist_pais) : null };
+    if (editing) updateMut.mutate({ id: editing.dist_codigo, data: payload });
+    else createMut.mutate(payload);
   };
 
   return (
@@ -81,9 +86,18 @@ export default function DistritosPage() {
       </div>
       {modal && (
         <FormModal title={editing ? 'Editar distrito' : 'Nuevo distrito'} onClose={closeModal} onSubmit={handleSubmit} isPending={createMut.isPending || updateMut.isPending} error={error}>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Descripción <span className="text-red-500">*</span></label>
-            <input value={form.dist_desc} onChange={(e) => setForm({ dist_desc: e.target.value })} placeholder="Ej: Asunción" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">País</label>
+              <select value={form.dist_pais} onChange={(e) => setForm((f) => ({ ...f, dist_pais: e.target.value }))} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
+                <option value="">— Seleccione —</option>
+                {paises.map((p: any) => <option key={p.pais_codigo} value={p.pais_codigo}>{p.pais_desc}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Descripción <span className="text-red-500">*</span></label>
+              <input value={form.dist_desc} onChange={(e) => setForm((f) => ({ ...f, dist_desc: e.target.value }))} placeholder="Ej: Central" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm uppercase focus:outline-none focus:ring-2 focus:ring-primary-500" />
+            </div>
           </div>
         </FormModal>
       )}

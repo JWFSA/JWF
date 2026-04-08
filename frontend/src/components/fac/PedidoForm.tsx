@@ -464,12 +464,6 @@ export default function PedidoForm({ initial, onSave, isPending, error, tipo = '
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
           </div>
 
-          {/* Concepto */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Concepto</label>
-            <input value={form.ped_concepto ?? ''} onChange={(e) => set('ped_concepto', e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
-          </div>
 
           {/* Tasa U$ */}
           <div>

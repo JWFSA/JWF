@@ -263,6 +263,10 @@ export interface Empleado {
   empl_dir: string | null;
   empl_dir2: string | null;
   empl_dir3: string | null;
+  empl_pais_dir: number | null;
+  pais_dir_desc?: string;
+  empl_distrito: number | null;
+  distrito_desc?: string;
   empl_localidad: number | null;
   loc_desc?: string;
   empl_barrio: number | null;
