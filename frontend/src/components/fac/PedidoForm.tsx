@@ -323,26 +323,26 @@ export default function PedidoForm({ initial, onSave, isPending, error, tipo = '
               className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600" />
           </div>
 
-          {/* Estado */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
-            <select value={form.ped_estado ?? 'P'} onChange={(e) => set('ped_estado', e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
-              <option value="P">Pendiente</option>
-              <option value="A">Aprobado</option>
-              <option value="C">Cerrado</option>
-            </select>
-          </div>
+          {/* Estado (solo visible en edición, no editable) */}
+          {initial && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+              <input readOnly tabIndex={-1} value={form.ped_estado === 'A' ? 'Aprobado' : form.ped_estado === 'C' ? 'Cerrado' : 'Pendiente'}
+                className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600" />
+            </div>
+          )}
 
-          {/* De Produccion */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">De Producción</label>
-            <select value={form.ped_ind_prd ?? 'N'} onChange={(e) => set('ped_ind_prd', e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
-              <option value="N">No</option>
-              <option value="S">Sí</option>
-            </select>
-          </div>
+          {/* De Produccion (solo en edición) */}
+          {initial && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">De Producción</label>
+              <select value={form.ped_ind_prd ?? 'N'} onChange={(e) => set('ped_ind_prd', e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
+                <option value="N">No</option>
+                <option value="S">Sí</option>
+              </select>
+            </div>
+          )}
 
           {/* Moneda */}
           <div>
