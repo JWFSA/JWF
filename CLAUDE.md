@@ -676,6 +676,16 @@ Todo componente que use `DataTable` debe implementar ordenamiento asc/desc en to
 
 **En ambos casos:** agregar `sortKey` a cada columna ordenable en `COLUMNS`.
 
+### Frontend — Campos readonly/disabled (OBLIGATORIO)
+Los campos no editables nunca deben recibir focus ni interacción por teclado:
+
+- **Estilo visual:** `className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600"`
+- **Input readonly:** usar `readOnly` (no `disabled`). Ejemplo: `<input readOnly value={...} className="..." />`
+- **Select no editable:** usar `disabled`. Ejemplo: `<select disabled value={...} className="...">`
+- **`tabIndex={-1}`:** agregar en campos readonly/disabled para que el Tab los salte
+- **CSS global** (`globals.css`): ya aplica `pointer-events: none` y anula focus/ring en `input[readonly]`, `select[disabled]`, `textarea[readonly]`
+- **Nunca** usar clases de focus (`focus:ring-*`, `focus:outline-*`) en campos readonly/disabled
+
 ### Frontend — Responsive (OBLIGATORIO)
 Todos los componentes deben ser responsive. Reglas:
 

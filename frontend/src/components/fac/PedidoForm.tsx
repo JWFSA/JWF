@@ -117,7 +117,7 @@ function ItemDetailPanel({ it, idx, updateItem }: { it: PedidoDet; idx: number; 
 
           {/* Facturacion */}
           <div className="col-span-full mt-2"><span className="text-[10px] font-bold text-gray-600 uppercase">Facturaci&oacute;n</span></div>
-          <div><label className={lbl}>Cant.Fact.</label><input type="number" step="0.01" value={it.pdet_cant_fact ?? ''} readOnly className={`${inp} bg-gray-100`} /></div>
+          <div><label className={lbl}>Cant.Fact.</label><input type="number" step="0.01" value={it.pdet_cant_fact ?? ''} readOnly tabIndex={-1} className={`${inp} bg-gray-100`} /></div>
           <div><label className={lbl}>Docs FA</label><input type="number" className={`${inp} bg-gray-100`} value={it.pdet_cant_doc_fa ?? ''} readOnly /></div>
           <div><label className={lbl}>Docs NC</label><input type="number" className={`${inp} bg-gray-100`} value={it.pdet_cant_doc_nc ?? ''} readOnly /></div>
           <div><label className={lbl}>Imp.Factu.</label><input type="number" className={`${inp} bg-gray-100`} value={it.pdet_imp_factu ?? ''} readOnly /></div>
@@ -312,15 +312,15 @@ export default function PedidoForm({ initial, onSave, isPending, error, tipo = '
           {initial?.ped_nro && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Número</label>
-              <input readOnly value={initial.ped_nro} className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600" />
+              <input readOnly tabIndex={-1} value={initial.ped_nro} className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600" />
             </div>
           )}
 
           {/* Fecha */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Fecha <span className="text-red-500">*</span></label>
-            <input type="date" value={form.ped_fecha ?? ''} onChange={(e) => set('ped_fecha', e.target.value)}
-              required className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
+            <input type="date" value={form.ped_fecha ?? ''} readOnly
+              className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600" />
           </div>
 
           {/* Estado */}
@@ -389,21 +389,21 @@ export default function PedidoForm({ initial, onSave, isPending, error, tipo = '
           {/* Tipo de venta (readonly, viene del cliente) */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de venta</label>
-            <input readOnly value={form.ped_ind_tipo === 'C' ? 'Contado' : form.ped_ind_tipo === 'R' ? 'Crédito' : ''}
+            <input readOnly tabIndex={-1} value={form.ped_ind_tipo === 'C' ? 'Contado' : form.ped_ind_tipo === 'R' ? 'Crédito' : ''}
               className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600" />
           </div>
 
           {/* Cond. de venta (readonly, viene del cliente) */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Cond. de venta</label>
-            <input readOnly value={form.ped_cond_venta ?? ''}
+            <input readOnly tabIndex={-1} value={form.ped_cond_venta ?? ''}
               className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600" />
           </div>
 
           {/* Vendedor (readonly, viene del cliente) */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Vendedor</label>
-            <select value={form.ped_vendedor ?? ''} disabled
+            <select value={form.ped_vendedor ?? ''} disabled tabIndex={-1}
               className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600">
               <option value="">— Sin vendedor —</option>
               {vendedores.map((v) => (
@@ -417,17 +417,17 @@ export default function PedidoForm({ initial, onSave, isPending, error, tipo = '
           {/* Contacto (readonly, viene del cliente) */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Contacto</label>
-            <input readOnly value={form.ped_contacto ?? ''}
+            <input readOnly tabIndex={-1} value={form.ped_contacto ?? ''}
               className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
-            <input readOnly value={form.ped_tel ?? ''}
+            <input readOnly tabIndex={-1} value={form.ped_tel ?? ''}
               className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">RUC</label>
-            <input readOnly value={form.ped_ruc ?? ''}
+            <input readOnly tabIndex={-1} value={form.ped_ruc ?? ''}
               className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600" />
           </div>
 
@@ -602,27 +602,27 @@ export default function PedidoForm({ initial, onSave, isPending, error, tipo = '
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Operador</label>
-              <input readOnly value={initial.ped_operador ?? ''} className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600" />
+              <input readOnly tabIndex={-1} value={initial.ped_operador ?? ''} className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Login Grabación</label>
-              <input readOnly value={initial.ped_login ?? ''} className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600" />
+              <input readOnly tabIndex={-1} value={initial.ped_login ?? ''} className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Fecha Grabación</label>
-              <input readOnly value={formatDate(initial.ped_fec_grab)} className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600" />
+              <input readOnly tabIndex={-1} value={formatDate(initial.ped_fec_grab)} className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Login Autorización</label>
-              <input readOnly value={initial.ped_login_auto ?? ''} className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600" />
+              <input readOnly tabIndex={-1} value={initial.ped_login_auto ?? ''} className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Fecha Autorización</label>
-              <input readOnly value={formatDate(initial.ped_fech_auto)} className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600" />
+              <input readOnly tabIndex={-1} value={formatDate(initial.ped_fech_auto)} className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Procesado</label>
-              <input readOnly value={initial.ped_procesado === 'S' ? 'Sí' : 'No'} className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600" />
+              <input readOnly tabIndex={-1} value={initial.ped_procesado === 'S' ? 'Sí' : 'No'} className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600" />
             </div>
           </div>
         </Section>

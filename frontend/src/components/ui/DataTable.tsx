@@ -108,14 +108,15 @@ export default function DataTable<T>({
             </tr>
           ) : (
             rows.map((row) => (
-              <tr key={getRowKey(row)} className="hover:bg-gray-50 transition">
+              <tr key={getRowKey(row)} className={cn('hover:bg-gray-50 transition', onEdit && 'cursor-pointer')}
+                onClick={() => onEdit?.(row)}>
                 {columns.map((col) => (
                   <td key={col.key} className={cn('px-4 py-3', col.cellClassName)}>
                     {col.cell(row)}
                   </td>
                 ))}
                 {hasActions && (
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
                     <div className="flex justify-end gap-2">
                       {extraActions && extraActions(row)}
                       {onEdit && (
