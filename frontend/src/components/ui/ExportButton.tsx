@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Download } from 'lucide-react';
 import * as XLSX from 'xlsx';
+import { showInfo, showError } from '@/lib/swal';
 
 export interface ExportColumn {
   header: string;
@@ -28,7 +29,7 @@ export default function ExportButton({ fetchData, columns, filename, format = 'x
     try {
       const result = await fetchData();
       const rows = result.data ?? [];
-      if (!rows.length) { alert('No hay datos para exportar'); return; }
+      if (!rows.length) { showInfo('No hay datos para exportar'); return; }
 
       const headers = columns.map((c) => c.header);
       const cleanNum = (v: unknown) => {
@@ -57,7 +58,7 @@ export default function ExportButton({ fetchData, columns, filename, format = 'x
       }
     } catch (e) {
       console.error('Error al exportar:', e);
-      alert('Error al exportar los datos');
+      showError('Error al exportar los datos');
     } finally {
       setLoading(false);
     }

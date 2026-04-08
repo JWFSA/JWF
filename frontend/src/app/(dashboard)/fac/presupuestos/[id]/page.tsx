@@ -7,6 +7,7 @@ import { getPresupuesto, updatePresupuesto, convertirPresupuesto } from '@/servi
 import type { Pedido } from '@/types/fac';
 import PedidoForm from '@/components/fac/PedidoForm';
 import { ArrowRightLeft, Printer } from 'lucide-react';
+import { confirmAction } from '@/lib/swal';
 
 export default function EditarPresupuestoPage() {
   const { id } = useParams<{ id: string }>();
@@ -74,8 +75,8 @@ export default function EditarPresupuestoPage() {
           </button>
           <button
             type="button"
-            onClick={() => {
-              if (confirm('\u00BFConvertir este presupuesto en pedido de venta?')) {
+            onClick={async () => {
+              if (await confirmAction('¿Convertir este presupuesto en pedido de venta?', 'Sí, convertir')) {
                 convertirMut.mutate();
               }
             }}

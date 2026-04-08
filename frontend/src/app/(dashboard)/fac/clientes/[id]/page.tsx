@@ -6,7 +6,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { getCliente, updateCliente, getMarcasCliente, createCampanha, deleteCampanha, getCampanhaNombres } from '@/services/fac';
 import ClienteForm, { type ClienteFormData } from '@/components/fac/ClienteForm';
 import { Plus, Trash2 } from 'lucide-react';
-import Swal from 'sweetalert2';
+import { confirmDelete, showSuccess, showError } from '@/lib/swal';
 
 export default function EditarClientePage() {
   const { id } = useParams<{ id: string }>();
@@ -70,12 +70,12 @@ export default function EditarClientePage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['clientes'] });
       qc.invalidateQueries({ queryKey: ['cliente', id] });
-      Swal.fire({ icon: 'success', title: 'Guardado', text: 'Los cambios se guardaron correctamente.', timer: 2000, showConfirmButton: false });
+      showSuccess('Los cambios se guardaron correctamente.');
     },
     onError: (e: any) => {
       const msg = e?.response?.data?.message ?? 'Error al guardar';
       setError(msg);
-      Swal.fire({ icon: 'error', title: 'Error', text: msg });
+      showError(msg);
     },
   });
 
@@ -174,7 +174,7 @@ export default function EditarClientePage() {
                   )}
                 </div>
                 <button
-                  onClick={() => { if (confirm(`\u00bfEliminar la marca "${m.camp_nombre}"?`)) deleteMarcaMut.mutate(m.camp_nro); }}
+                  onClick={async () => { if (await confirmDelete(`¿Eliminar la marca "${m.camp_nombre}"?`)) deleteMarcaMut.mutate(m.camp_nro); }}
                   className="p-1 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition"
                 >
                   <Trash2 size={14} />

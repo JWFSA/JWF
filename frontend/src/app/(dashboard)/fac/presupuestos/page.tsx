@@ -13,6 +13,7 @@ import TablePagination from '@/components/ui/TablePagination';
 import ExportButton from '@/components/ui/ExportButton';
 import { useFilters } from '@/stores/useFilterStore';
 import { ArrowRightLeft, Copy, Filter, X } from 'lucide-react';
+import { confirmAction } from '@/lib/swal';
 
 const ESTADO: Record<string, { label: string; cls: string }> = {
   P: { label: 'Pendiente', cls: 'bg-yellow-100 text-yellow-700' },
@@ -198,7 +199,7 @@ export default function PresupuestosPage() {
               <button
                 type="button"
                 title="Copiar presupuesto"
-                onClick={() => { if (confirm('\u00BFCopiar este presupuesto?')) copiarMut.mutate(p.ped_clave); }}
+                onClick={async () => { if (await confirmAction('¿Copiar este presupuesto?', 'Sí, copiar')) copiarMut.mutate(p.ped_clave); }}
                 className="p-1 text-gray-400 hover:text-primary-600 rounded transition"
               >
                 <Copy size={14} />
@@ -206,8 +207,8 @@ export default function PresupuestosPage() {
               <button
                 type="button"
                 title="Convertir a pedido"
-                onClick={() => {
-                  if (confirm('\u00BFConvertir este presupuesto en pedido de venta?')) {
+                onClick={async () => {
+                  if (await confirmAction('¿Convertir este presupuesto en pedido de venta?', 'Sí, convertir')) {
                     convertirMut.mutate(p.ped_clave);
                   }
                 }}

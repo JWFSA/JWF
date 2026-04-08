@@ -3,6 +3,7 @@
 import { ChevronUp, ChevronDown, ChevronsUpDown, Pencil, Trash2 } from 'lucide-react';
 import type { Key, ReactNode } from 'react';
 import { cn } from '@/lib/utils';
+import { confirmDelete } from '@/lib/swal';
 
 export interface DataTableColumnDef<T> {
   key: string;
@@ -130,8 +131,8 @@ export default function DataTable<T>({
                       {onDelete && (
                         <button
                           type="button"
-                          onClick={() => {
-                            if (confirm(deleteConfirmMessage)) onDelete(row);
+                          onClick={async () => {
+                            if (await confirmDelete(deleteConfirmMessage)) onDelete(row);
                           }}
                           className="text-gray-400 hover:text-red-500 transition"
                           aria-label="Eliminar"

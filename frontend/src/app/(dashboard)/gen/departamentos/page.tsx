@@ -9,6 +9,7 @@ import PrimaryAddButton from '@/components/ui/PrimaryAddButton';
 import SearchField from '@/components/ui/SearchField';
 import TablePagination from '@/components/ui/TablePagination';
 import { Plus, Pencil, Trash2, ChevronDown } from 'lucide-react';
+import { confirmDelete } from '@/lib/swal';
 
 type DptoModal = null | 'nuevo' | Departamento;
 type SeccModal = null | 'nueva' | Seccion;
@@ -143,7 +144,7 @@ export default function DepartamentosPage() {
                 </button>
                 <div className="flex items-center gap-2 ml-3">
                   <button onClick={() => openEditarDpto(d)} className="text-gray-400 hover:text-primary-600 transition"><Pencil size={14} /></button>
-                  <button onClick={() => { if (confirm('¿Eliminar este departamento?')) deleteDptoMut.mutate(d.dpto_codigo); }} className="text-gray-400 hover:text-red-500 transition"><Trash2 size={14} /></button>
+                  <button onClick={async () => { if (await confirmDelete('¿Eliminar este departamento?')) deleteDptoMut.mutate(d.dpto_codigo); }} className="text-gray-400 hover:text-red-500 transition"><Trash2 size={14} /></button>
                 </div>
               </div>
 
@@ -167,7 +168,7 @@ export default function DepartamentosPage() {
                           </div>
                           <div className="flex items-center gap-2">
                             <button onClick={() => openEditarSecc(s)} className="text-gray-400 hover:text-primary-600 transition"><Pencil size={12} /></button>
-                            <button onClick={() => { if (confirm('¿Eliminar esta sección?')) deleteSeccMut.mutate({ dpto: s.secc_dpto, id: s.secc_codigo }); }} className="text-gray-400 hover:text-red-500 transition"><Trash2 size={12} /></button>
+                            <button onClick={async () => { if (await confirmDelete('¿Eliminar esta sección?')) deleteSeccMut.mutate({ dpto: s.secc_dpto, id: s.secc_codigo }); }} className="text-gray-400 hover:text-red-500 transition"><Trash2 size={12} /></button>
                           </div>
                         </div>
                       ))}

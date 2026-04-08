@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getSolicitudDescuento, aprobarSolicitudItem, rechazarSolicitudItem, aprobarSolicitudTodos, rechazarSolicitudTodos } from '@/services/fac';
 import { formatDate } from '@/lib/utils';
 import { CheckCircle, XCircle, CheckCheck, XOctagon } from 'lucide-react';
+import { confirmAction } from '@/lib/swal';
 
 const ESTADO: Record<string, { label: string; cls: string }> = {
   P: { label: 'Pendiente', cls: 'bg-yellow-100 text-yellow-700' },
@@ -66,14 +67,14 @@ export default function SolicitudDescuentoDetallePage() {
           {hayPendientes && (
             <>
               <button
-                onClick={() => { if (confirm('\u00BFAprobar TODOS los \u00edtems pendientes?')) aprobarTodosMut.mutate(); }}
+                onClick={async () => { if (await confirmAction('¿Aprobar TODOS los ítems pendientes?', 'Sí, aprobar')) aprobarTodosMut.mutate(); }}
                 disabled={aprobarTodosMut.isPending}
                 className="inline-flex items-center gap-1.5 px-3 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 disabled:opacity-50 transition"
               >
                 <CheckCheck size={16} /> Aprobar todos
               </button>
               <button
-                onClick={() => { if (confirm('\u00BFRechazar TODOS los \u00edtems pendientes?')) rechazarTodosMut.mutate(); }}
+                onClick={async () => { if (await confirmAction('¿Rechazar TODOS los ítems pendientes?', 'Sí, rechazar')) rechazarTodosMut.mutate(); }}
                 disabled={rechazarTodosMut.isPending}
                 className="inline-flex items-center gap-1.5 px-3 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50 transition"
               >

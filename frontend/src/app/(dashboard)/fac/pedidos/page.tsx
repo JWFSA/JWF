@@ -13,6 +13,7 @@ import TablePagination from '@/components/ui/TablePagination';
 import ExportButton from '@/components/ui/ExportButton';
 import { useFilters } from '@/stores/useFilterStore';
 import { Receipt, Copy, Filter, X, ArrowRightLeft } from 'lucide-react';
+import { confirmAction } from '@/lib/swal';
 
 const TIPO: Record<string, { label: string; cls: string }> = {
   V: { label: 'Venta',    cls: 'bg-blue-100 text-blue-700' },
@@ -215,13 +216,13 @@ export default function PedidosPage() {
           extraActions={(p) => (
             <>
               <button type="button" title="Copiar"
-                onClick={() => { if (confirm('\u00bfCopiar este registro?')) copiarMut.mutate(p.ped_clave); }}
+                onClick={async () => { if (await confirmAction('¿Copiar este registro?', 'Sí, copiar')) copiarMut.mutate(p.ped_clave); }}
                 className="p-1 text-gray-400 hover:text-primary-600 rounded transition">
                 <Copy size={14} />
               </button>
               {p.ped_tipo !== 'V' && (
                 <button type="button" title="Convertir a venta"
-                  onClick={() => { if (confirm('\u00bfConvertir a pedido de venta?')) convertirMut.mutate(p.ped_clave); }}
+                  onClick={async () => { if (await confirmAction('¿Convertir a pedido de venta?', 'Sí, convertir')) convertirMut.mutate(p.ped_clave); }}
                   className="p-1 text-gray-400 hover:text-orange-600 rounded transition">
                   <ArrowRightLeft size={14} />
                 </button>

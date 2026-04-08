@@ -13,6 +13,7 @@ import DataTable from '@/components/ui/DataTable';
 import SearchField from '@/components/ui/SearchField';
 import TablePagination from '@/components/ui/TablePagination';
 import { ArrowLeft, Plus, Trash2, Save } from 'lucide-react';
+import { confirmDelete } from '@/lib/swal';
 
 const COLUMNS = [
   { key: 'art',    header: 'Artículo',         cell: (d: ListaPrecioDetalle) => d.art_desc,       cellClassName: 'font-medium text-gray-800 text-xs' },
@@ -252,7 +253,7 @@ export default function ListaPrecioDetallePage() {
           rows={items}
           getRowKey={(d) => d.lipr_art}
           onEdit={openEdit}
-          onDelete={(d) => { if (confirm('¿Quitar este artículo de la lista?')) deleteMut.mutate(d.lipr_art); }}
+          onDelete={async (d) => { if (await confirmDelete('¿Quitar este artículo de la lista?')) deleteMut.mutate(d.lipr_art); }}
           tableClassName="w-full text-sm min-w-[400px]"
           columns={COLUMNS}
         />

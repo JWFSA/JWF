@@ -9,6 +9,7 @@ import { formatDate } from '@/lib/utils';
 import type { Pedido } from '@/types/fac';
 import PedidoForm from '@/components/fac/PedidoForm';
 import { Receipt, Printer, CheckCircle, XCircle, TicketPercent, Wrench, Factory } from 'lucide-react';
+import { confirmAction } from '@/lib/swal';
 
 export default function EditarPedidoPage() {
   const { id } = useParams<{ id: string }>();
@@ -95,7 +96,7 @@ export default function EditarPedidoPage() {
             <>
               <button
                 type="button"
-                onClick={() => { if (confirm('\u00BFAprobar este pedido?')) aprobarMut.mutate(); }}
+                onClick={async () => { if (await confirmAction('¿Aprobar este pedido?', 'Sí, aprobar')) aprobarMut.mutate(); }}
                 disabled={aprobarMut.isPending}
                 className="inline-flex items-center gap-1.5 px-3 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 disabled:opacity-50 transition"
               >
@@ -116,13 +117,13 @@ export default function EditarPedidoPage() {
             <TicketPercent size={16} /> Sol. Dto.
           </button>
           <button type="button"
-            onClick={() => { if (confirm('\u00BFGenerar OT desde este pedido?')) crearOTMut.mutate(); }}
+            onClick={async () => { if (await confirmAction('¿Generar OT desde este pedido?', 'Sí, generar')) crearOTMut.mutate(); }}
             disabled={crearOTMut.isPending}
             className="inline-flex items-center gap-1.5 px-3 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 disabled:opacity-50 transition">
             <Wrench size={16} /> Generar OT
           </button>
           <button type="button"
-            onClick={() => { if (confirm('\u00BFGenerar pedido de producci\u00f3n?')) crearPPMut.mutate(); }}
+            onClick={async () => { if (await confirmAction('¿Generar pedido de producción?', 'Sí, generar')) crearPPMut.mutate(); }}
             disabled={crearPPMut.isPending}
             className="inline-flex items-center gap-1.5 px-3 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 disabled:opacity-50 transition">
             <Factory size={16} /> Ped. Prod.
