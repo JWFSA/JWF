@@ -1,10 +1,11 @@
 const pool = require('../../../config/db');
 
-const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc' } = {}) => {
+const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc', cargo = '' } = {}) => {
   const params = search ? [`%${search}%`] : [];
-  const where  = search
-    ? `WHERE (e."EMPL_NOMBRE" ILIKE $1 OR e."EMPL_APE" ILIKE $1 OR CAST(e."EMPL_DOC_IDENT" AS TEXT) ILIKE $1 OR e."EMPL_RUC" ILIKE $1)`
-    : '';
+  const conditions = [];
+  if (search) conditions.push(`(e."EMPL_NOMBRE" ILIKE $1 OR e."EMPL_APE" ILIKE $1 OR CAST(e."EMPL_DOC_IDENT" AS TEXT) ILIKE $1 OR e."EMPL_RUC" ILIKE $1)`);
+  if (cargo) { params.push(Number(cargo)); conditions.push(`e."EMPL_CARGO" = $${params.length}`); }
+  const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
   const { rows: [{ count }] } = await pool.query(
     `SELECT COUNT(*) FROM per_empleado e ${where}`, params
   );

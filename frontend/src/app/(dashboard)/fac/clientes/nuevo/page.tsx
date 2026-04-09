@@ -31,11 +31,14 @@ export default function NuevoClientePage() {
       cli_email2: cli_emails[1]?.trim() || null,
       cli_email3: cli_emails[2]?.trim() || null,
       cli_email4: cli_emails[3]?.trim() || null,
-      cli_zona:     form.cli_zona     || null,
+      cli_zona:     1,
       cli_categ:    form.cli_categ    || null,
       cli_pais:     form.cli_pais     || null,
       cli_vendedor:   form.cli_vendedor   || null,
       cli_cond_venta: form.cli_cond_venta || null,
+      cli_nom_fantasia: form.cli_nom_fantasia?.trim().toUpperCase() || null,
+      cli_pers_representante: form.cli_pers_representante?.trim().toUpperCase() || null,
+      cli_doc_ident_representante: form.cli_doc_ident_representante?.trim() || null,
     });
   };
 

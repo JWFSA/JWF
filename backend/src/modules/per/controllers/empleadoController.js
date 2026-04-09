@@ -9,7 +9,8 @@ module.exports = {
       const search    = req.query.search    || '';
       const sortField = req.query.sortField || '';
       const sortDir   = req.query.sortDir   || 'asc';
-      res.json(await s.getAll({ page, limit, search, all, sortField, sortDir }));
+      const cargo     = req.query.cargo     || '';
+      res.json(await s.getAll({ page, limit, search, all, sortField, sortDir, cargo }));
     } catch (e) { next(e); }
   },
   getById: async (req, res, next) => {

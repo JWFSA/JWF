@@ -89,6 +89,10 @@ export interface Cliente {
   agen_desc?: string;
   cli_comision_agen: number | null;
   cli_cond_venta: string | null;
+  cli_nom_fantasia: string | null;
+  cli_pers_representante: string | null;
+  cli_doc_ident_representante: string | null;
+  cli_ind_exen: 'S' | 'N' | null;
 }
 
 export interface Articulo {

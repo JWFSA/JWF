@@ -71,6 +71,10 @@ export default function EditarClientePage() {
       cli_agencia: cliente.cli_agencia ?? '',
       cli_comision_agen: cliente.cli_comision_agen ?? 0,
       cli_cond_venta: cliente.cli_cond_venta || 'CONTADO',
+      cli_nom_fantasia: cliente.cli_nom_fantasia ?? '',
+      cli_pers_representante: cliente.cli_pers_representante ?? '',
+      cli_doc_ident_representante: cliente.cli_doc_ident_representante ?? '',
+      cli_ind_exen: (cliente.cli_ind_exen || 'N') as 'S' | 'N',
     });
   }, [cliente]);
 
@@ -110,6 +114,7 @@ export default function EditarClientePage() {
     clean.cli_email2 = cli_emails[1]?.trim() || null;
     clean.cli_email3 = cli_emails[2]?.trim() || null;
     clean.cli_email4 = cli_emails[3]?.trim() || null;
+    clean.cli_zona = 1;
     updateMut.mutate(clean as any);
   };
 

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getZonas, getCategorias, getVendedores, getCondiciones, getAgencias } from '@/services/fac';
 import { getPaises, getDistritos, getLocalidades, getBarrios } from '@/services/gen';
+import { getRamos } from '@/services/fin';
 import { Plus, X, Search } from 'lucide-react';
 import MoneyInput from '@/components/ui/MoneyInput';
 
@@ -35,6 +36,10 @@ export interface ClienteFormData {
   cli_agencia: number | '';
   cli_comision_agen: number;
   cli_cond_venta: string;
+  cli_nom_fantasia: string;
+  cli_pers_representante: string;
+  cli_doc_ident_representante: string;
+  cli_ind_exen: 'S' | 'N';
 }
 
 export const emptyCliente: ClienteFormData = {
@@ -50,6 +55,10 @@ export const emptyCliente: ClienteFormData = {
   cli_agencia: '',
   cli_comision_agen: 0,
   cli_cond_venta: 'CONTADO',
+  cli_nom_fantasia: '',
+  cli_pers_representante: '',
+  cli_doc_ident_representante: '',
+  cli_ind_exen: 'N',
 };
 
 interface Props {
@@ -76,6 +85,7 @@ export default function ClienteForm({ form, onChange, error, isPending, onSubmit
 
   const { data: zonasData } = useQuery({ queryKey: ['zonas', { all: true }], queryFn: () => getZonas({ all: true }) });
   const { data: catsData }  = useQuery({ queryKey: ['categorias', { all: true }], queryFn: () => getCategorias({ all: true }) });
+  const { data: ramosData } = useQuery({ queryKey: ['ramos', { all: true }], queryFn: () => getRamos({ all: true }) });
   const { data: paisesData } = useQuery({ queryKey: ['paises'], queryFn: getPaises });
   const { data: vendData } = useQuery({ queryKey: ['vendedores', { all: true }], queryFn: () => getVendedores({ all: true }) });
   const { data: condData } = useQuery({ queryKey: ['condiciones'], queryFn: getCondiciones });
@@ -98,6 +108,7 @@ export default function ClienteForm({ form, onChange, error, isPending, onSubmit
 
   const zonas       = zonasData?.data ?? [];
   const cats        = catsData?.data ?? [];
+  const ramos       = ramosData?.data ?? [];
   const paises      = Array.isArray(paisesData) ? paisesData : [];
   const vendedores  = vendData?.data ?? [];
   const condiciones = condData ?? [];
@@ -142,6 +153,18 @@ export default function ClienteForm({ form, onChange, error, isPending, onSubmit
           <div className="sm:col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-1">Nombre / Razón social <span className="text-red-500">*</span></label>
             <input value={form.cli_nom} onChange={(e) => set({ cli_nom: e.target.value })} className={input} />
+          </div>
+          <div className="sm:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Nombre de fantasía</label>
+            <input value={form.cli_nom_fantasia} onChange={(e) => set({ cli_nom_fantasia: e.target.value })} className={`${input} uppercase`} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Representante legal</label>
+            <input value={form.cli_pers_representante} onChange={(e) => set({ cli_pers_representante: e.target.value })} className={`${input} uppercase`} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">C.I. del representante</label>
+            <input value={form.cli_doc_ident_representante} onChange={(e) => set({ cli_doc_ident_representante: e.target.value })} className={input} />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">RUC / C.I.</label>
@@ -256,17 +279,10 @@ export default function ClienteForm({ form, onChange, error, isPending, onSubmit
         <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Clasificación</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Zona</label>
-            <select value={form.cli_zona} onChange={(e) => set({ cli_zona: e.target.value ? Number(e.target.value) : '' })} className={sel}>
-              <option value="">Sin zona</option>
-              {zonas.map((z) => <option key={z.zona_codigo} value={z.zona_codigo}>{z.zona_desc}</option>)}
-            </select>
-          </div>
-          <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
             <select value={form.cli_categ} onChange={(e) => set({ cli_categ: e.target.value ? Number(e.target.value) : '' })} className={sel}>
               <option value="">Sin categoría</option>
-              {cats.map((c) => <option key={c.fcat_codigo} value={c.fcat_codigo}>{c.fcat_desc}</option>)}
+              {ramos.map((r) => <option key={r.ramo_codigo} value={r.ramo_codigo}>{r.ramo_desc}</option>)}
             </select>
           </div>
           <div>
@@ -382,8 +398,8 @@ export default function ClienteForm({ form, onChange, error, isPending, onSubmit
             <label htmlFor="bloq" className="text-sm text-gray-700">Bloquear por límite de crédito</label>
           </div>
           <div className="flex items-center gap-3">
-            <input type="checkbox" id="potencial" checked={form.cli_ind_potencial === 'S'} onChange={(e) => set({ cli_ind_potencial: e.target.checked ? 'S' : 'N' })} className="h-4 w-4 rounded border-gray-300 text-primary-600" />
-            <label htmlFor="potencial" className="text-sm text-gray-700">Cliente potencial</label>
+            <input type="checkbox" id="exen" checked={form.cli_ind_exen === 'S'} onChange={(e) => set({ cli_ind_exen: e.target.checked ? 'S' : 'N' })} className="h-4 w-4 rounded border-gray-300 text-primary-600" />
+            <label htmlFor="exen" className="text-sm text-gray-700">Exoneración fiscal</label>
           </div>
         </div>
       </section>

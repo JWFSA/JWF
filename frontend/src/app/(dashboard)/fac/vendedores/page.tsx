@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getVendedores, createVendedor, updateVendedor, deleteVendedor, getZonas } from '@/services/fac';
-import { getOperadores, getEmpresas } from '@/services/gen';
+import { getEmpresas } from '@/services/gen';
+import { getEmpleados } from '@/services/per';
 import type { Vendedor } from '@/types/fac';
 import DataTable from '@/components/ui/DataTable';
 import FormModal from '@/components/ui/FormModal';
@@ -44,14 +45,14 @@ export default function VendedoresPage() {
     queryFn: () => getVendedores({ page, limit, search: debouncedSearch, sortField, sortDir }),
   });
 
-  const { data: operadoresData } = useQuery({ queryKey: ['operadores', { all: true }], queryFn: () => getOperadores({ all: true }) });
+  const { data: empleadosData } = useQuery({ queryKey: ['empleados', { all: true, cargo: 4 }], queryFn: () => getEmpleados({ all: true, cargo: 4 } as any) });
   const { data: zonasData }      = useQuery({ queryKey: ['zonas', { all: true }], queryFn: () => getZonas({ all: true }) });
   const { data: empresasData }   = useQuery({ queryKey: ['empresas', { all: true }], queryFn: () => getEmpresas({ all: true }) });
 
   const vendedores  = data?.data ?? [];
   const pagination  = data?.pagination;
   const handleSortChange = (field: string, dir: 'asc' | 'desc') => { setSortField(field); setSortDir(dir); setPage(1); };
-  const operadores  = operadoresData?.data ?? [];
+  const empleados   = empleadosData?.data ?? [];
   const zonas       = zonasData?.data ?? [];
   const empresas    = empresasData?.data ?? [];
 
@@ -65,7 +66,7 @@ export default function VendedoresPage() {
   const deleteMut = useMutation({ mutationFn: deleteVendedor, onSuccess: inv });
 
   const handleSubmit = () => {
-    if (!form.vend_oper) { setError('El operador es requerido'); return; }
+    if (!form.vend_oper) { setError('El empleado es requerido'); return; }
     const payload = { ...form, vend_zona: form.vend_zona || null, vend_empr: form.vend_empr || null } as any;
     modal === 'nuevo' ? createMut.mutate(payload) : updateMut.mutate({ id: (modal as Vendedor).vend_legajo, data: payload });
   };
@@ -99,10 +100,10 @@ export default function VendedoresPage() {
           onClose={() => setModal(null)} onSubmit={handleSubmit}
           isPending={createMut.isPending || updateMut.isPending} error={error}>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Operador <span className="text-red-500">*</span></label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Empleado <span className="text-red-500">*</span></label>
             <select value={form.vend_oper} onChange={(e) => setForm({ ...form, vend_oper: Number(e.target.value) })} className={sel} disabled={modal !== 'nuevo'}>
-              <option value={0}>Seleccionar operador...</option>
-              {operadores.map((o: any) => <option key={o.oper_codigo} value={o.oper_codigo}>{o.oper_nombre} {o.oper_apellido}</option>)}
+              <option value={0}>Seleccionar empleado...</option>
+              {empleados.map((e: any) => <option key={e.empl_legajo} value={e.empl_legajo}>{e.empl_nombre} {e.empl_ape}</option>)}
             </select>
           </div>
           <div>
