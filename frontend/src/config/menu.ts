@@ -1,4 +1,4 @@
-import { Users, Building2, Shield, Globe, Settings, LayoutDashboard, Package, Warehouse, Tag, Layers, BookOpen, DollarSign, MapPin, Map, Code, Ruler, Grid3x3, Building, Percent, ShoppingCart, UserCheck, MapPinned, LayoutList, Handshake, ClipboardList, ListOrdered, Landmark, CreditCard, Briefcase, Truck, FileText, Banknote, Scale, ArrowLeftRight, BarChart3, Receipt, HardHat, UserCog, Network, Columns, Languages, GraduationCap, Award, Brain, Signal, CheckCircle, Wrench, FolderMinus, Heart, Wallet, Stethoscope, MapPinHouse, Ban, Home, CircleDollarSign, ShieldAlert, School, ScrollText, UsersRound, Calculator, ShoppingBag, BookMarked, FolderTree, Calendar, PenLine } from 'lucide-react';
+import { Users, Building2, Shield, Globe, Settings, LayoutDashboard, Package, Warehouse, Tag, Layers, BookOpen, DollarSign, MapPin, Map, Code, Ruler, Grid3x3, Building, Percent, ShoppingCart, UserCheck, MapPinned, LayoutList, Handshake, ClipboardList, ListOrdered, Landmark, CreditCard, Briefcase, Truck, FileText, Banknote, Scale, ArrowLeftRight, BarChart3, Receipt, HardHat, UserCog, Network, Columns, Languages, GraduationCap, Award, Brain, Signal, CheckCircle, Wrench, FolderMinus, Heart, Wallet, Stethoscope, MapPinHouse, Ban, Home, CircleDollarSign, ShieldAlert, School, ScrollText, UsersRound, Calculator, ShoppingBag, BookMarked, FolderTree, Calendar, PenLine, TrendingDown } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 export interface MenuItem {
@@ -47,6 +47,7 @@ export const menu: MenuItem[] = [
       { label: 'Marcas',            href: '/fac/campanhas',     icon: BarChart3 },
       { label: 'Comisiones',       href: '/fac/comisiones',    icon: Percent },
       { label: 'Sol. descuento',   href: '/fac/solicitudes-descuento', icon: ListOrdered },
+      { label: 'Rep. descuentos',  href: '/fac/reportes/descuentos',  icon: TrendingDown },
       { label: 'Listas de precio', href: '/fac/listas-precio', icon: DollarSign },
       { label: 'Zonas',            href: '/fac/zonas',         icon: MapPinned },
       { label: 'Categorías',       href: '/fac/categorias',    icon: LayoutList },

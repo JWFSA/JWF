@@ -102,6 +102,9 @@ router.delete('/campanhas/:cli/:nro',       verifyToken, campanhaController.remo
 // Comisiones (solo lectura)
 router.get('/comisiones',                   verifyToken, comisionController.getAll);
 
+// Reporte de descuentos
+router.get('/reportes/descuentos',                            verifyToken, solicitudDescuentoController.reporteDescuentos);
+
 // Solicitudes de descuento
 router.get('/solicitudes-descuento',                          verifyToken, solicitudDescuentoController.getAll);
 router.get('/solicitudes-descuento/:id',                      verifyToken, solicitudDescuentoController.getById);

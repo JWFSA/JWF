@@ -184,4 +184,74 @@ const procesarTodos = async (clave, accion, login = 'SISTEMA') => {
   return getById(clave);
 };
 
-module.exports = { getAll, getById, create, procesarItem, procesarTodos };
+// ─── REPORTE: Total descuentos por rango de fecha ─────────────────────────
+
+const reporteDescuentos = async ({ fechaDesde, fechaHasta, vendedor = '' } = {}) => {
+  if (!fechaDesde || !fechaHasta) throw { status: 400, message: 'Rango de fechas requerido' };
+
+  const params = [fechaDesde, fechaHasta];
+  let vendedorWhere = '';
+  if (vendedor) {
+    vendedorWhere = ' AND sd."SOD_LOGIN_SOL" ILIKE $3';
+    params.push(`%${vendedor}%`);
+  }
+
+  // Resumen por vendedor
+  const { rows: porVendedor } = await pool.query(
+    `SELECT sd."SOD_LOGIN_SOL" AS vendedor,
+            COUNT(DISTINCT sd."SOD_CLAVE") AS solicitudes,
+            COUNT(d."SODE_ITEM") AS items,
+            SUM(d."SODE_IMP_NETO_ANT") AS total_neto_anterior,
+            SUM(d."SODE_IMP_SOL") AS total_descuento_solicitado,
+            SUM(CASE WHEN d."SODE_ESTADO" = 'A' THEN d."SODE_IMP_SOL" ELSE 0 END) AS total_descuento_aprobado,
+            SUM(CASE WHEN d."SODE_ESTADO" = 'R' THEN d."SODE_IMP_SOL" ELSE 0 END) AS total_descuento_rechazado,
+            SUM(CASE WHEN d."SODE_ESTADO" = 'P' THEN d."SODE_IMP_SOL" ELSE 0 END) AS total_descuento_pendiente,
+            SUM(d."SODE_IMP_NETO_FINAL") AS total_neto_final
+     FROM fac_solicitud_descuento sd
+     JOIN fac_solicitud_descuento_det d ON d."SODE_CLAVE" = sd."SOD_CLAVE"
+     WHERE sd."SOD_FECHA_SOL" BETWEEN $1 AND $2 ${vendedorWhere}
+     GROUP BY sd."SOD_LOGIN_SOL"
+     ORDER BY total_descuento_aprobado DESC`,
+    params
+  );
+
+  // Detalle por solicitud
+  const { rows: detalle } = await pool.query(
+    `SELECT sd."SOD_CLAVE" AS sod_clave,
+            sd."SOD_NRO" AS sod_nro,
+            sd."SOD_FECHA_SOL" AS sod_fecha_sol,
+            sd."SOD_LOGIN_SOL" AS vendedor,
+            p."PED_NRO" AS ped_nro,
+            c."CLI_NOM" AS cliente,
+            COUNT(d."SODE_ITEM") AS items,
+            SUM(d."SODE_IMP_NETO_ANT") AS total_neto_anterior,
+            SUM(d."SODE_IMP_SOL") AS total_descuento_solicitado,
+            SUM(CASE WHEN d."SODE_ESTADO" = 'A' THEN d."SODE_IMP_SOL" ELSE 0 END) AS total_descuento_aprobado,
+            SUM(d."SODE_IMP_NETO_FINAL") AS total_neto_final
+     FROM fac_solicitud_descuento sd
+     JOIN fac_solicitud_descuento_det d ON d."SODE_CLAVE" = sd."SOD_CLAVE"
+     LEFT JOIN fac_pedido p ON p."PED_CLAVE" = sd."SOD_CLAVE_PED"
+     LEFT JOIN fin_cliente c ON c."CLI_CODIGO" = p."PED_CLI"
+     WHERE sd."SOD_FECHA_SOL" BETWEEN $1 AND $2 ${vendedorWhere}
+     GROUP BY sd."SOD_CLAVE", sd."SOD_NRO", sd."SOD_FECHA_SOL", sd."SOD_LOGIN_SOL",
+              p."PED_NRO", c."CLI_NOM"
+     ORDER BY sd."SOD_FECHA_SOL" DESC, sd."SOD_NRO" DESC`,
+    params
+  );
+
+  // Totales generales
+  const totales = porVendedor.reduce((acc, r) => ({
+    solicitudes: acc.solicitudes + Number(r.solicitudes),
+    items: acc.items + Number(r.items),
+    total_neto_anterior: acc.total_neto_anterior + Number(r.total_neto_anterior || 0),
+    total_descuento_solicitado: acc.total_descuento_solicitado + Number(r.total_descuento_solicitado || 0),
+    total_descuento_aprobado: acc.total_descuento_aprobado + Number(r.total_descuento_aprobado || 0),
+    total_descuento_rechazado: acc.total_descuento_rechazado + Number(r.total_descuento_rechazado || 0),
+    total_descuento_pendiente: acc.total_descuento_pendiente + Number(r.total_descuento_pendiente || 0),
+    total_neto_final: acc.total_neto_final + Number(r.total_neto_final || 0),
+  }), { solicitudes: 0, items: 0, total_neto_anterior: 0, total_descuento_solicitado: 0, total_descuento_aprobado: 0, total_descuento_rechazado: 0, total_descuento_pendiente: 0, total_neto_final: 0 });
+
+  return { totales, porVendedor, detalle };
+};
+
+module.exports = { getAll, getById, create, procesarItem, procesarTodos, reporteDescuentos };

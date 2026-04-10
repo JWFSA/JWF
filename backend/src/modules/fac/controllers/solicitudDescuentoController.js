@@ -51,4 +51,12 @@ const procesarTodos = async (req, res, next) => {
   } catch (e) { next(e); }
 };
 
-module.exports = { getAll, getById, create, procesarItem, procesarTodos };
+const reporteDescuentos = async (req, res, next) => {
+  try {
+    const { fechaDesde, fechaHasta, vendedor } = req.query;
+    if (!fechaDesde || !fechaHasta) return res.status(400).json({ message: 'Rango de fechas requerido' });
+    res.json(await s.reporteDescuentos({ fechaDesde, fechaHasta, vendedor }));
+  } catch (e) { next(e); }
+};
+
+module.exports = { getAll, getById, create, procesarItem, procesarTodos, reporteDescuentos };

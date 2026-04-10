@@ -1,5 +1,5 @@
 import api from '@/lib/api';
-import type { Agencia, Barrio, Zona, Categoria, Condicion, Vendedor, Cliente, Articulo, Pedido, ListaPrecio, ListaPrecioDetalle, Factura, FacturaDet, PedidoParaFacturar, Campanha, ComisionFac, SolicitudDescuento, Paginated } from '@/types/fac';
+import type { Agencia, Barrio, Zona, Categoria, Condicion, Vendedor, Cliente, Articulo, Pedido, ListaPrecio, ListaPrecioDetalle, Factura, FacturaDet, PedidoParaFacturar, Campanha, ComisionFac, SolicitudDescuento, ReporteDescuentos, Paginated } from '@/types/fac';
 import type { ListParams } from '@/services/gen';
 
 // Agencias
@@ -105,3 +105,7 @@ export const aprobarSolicitudItem    = (id: number, item: number, data?: Record<
 export const rechazarSolicitudItem   = (id: number, item: number) => api.post<SolicitudDescuento>(`/fac/solicitudes-descuento/${id}/item/${item}/rechazar`).then((r) => r.data);
 export const aprobarSolicitudTodos   = (id: number) => api.post<SolicitudDescuento>(`/fac/solicitudes-descuento/${id}/aprobar`).then((r) => r.data);
 export const rechazarSolicitudTodos  = (id: number) => api.post<SolicitudDescuento>(`/fac/solicitudes-descuento/${id}/rechazar`).then((r) => r.data);
+
+// Reportes
+export const getReporteDescuentos = (params: { fechaDesde: string; fechaHasta: string; vendedor?: string }) =>
+  api.get<ReporteDescuentos>('/fac/reportes/descuentos', { params }).then((r) => r.data);

@@ -428,3 +428,44 @@ export interface SolicitudDescuentoDet {
   sode_imp_neto_ant: number | null;
   sode_imp_neto_final: number | null;
 }
+
+export interface ReporteDescuentoVendedor {
+  vendedor: string;
+  solicitudes: number;
+  items: number;
+  total_neto_anterior: number;
+  total_descuento_solicitado: number;
+  total_descuento_aprobado: number;
+  total_descuento_rechazado: number;
+  total_descuento_pendiente: number;
+  total_neto_final: number;
+}
+
+export interface ReporteDescuentoDetalle {
+  sod_clave: number;
+  sod_nro: number;
+  sod_fecha_sol: string;
+  vendedor: string;
+  ped_nro: number | null;
+  cliente: string | null;
+  items: number;
+  total_neto_anterior: number;
+  total_descuento_solicitado: number;
+  total_descuento_aprobado: number;
+  total_neto_final: number;
+}
+
+export interface ReporteDescuentos {
+  totales: {
+    solicitudes: number;
+    items: number;
+    total_neto_anterior: number;
+    total_descuento_solicitado: number;
+    total_descuento_aprobado: number;
+    total_descuento_rechazado: number;
+    total_descuento_pendiente: number;
+    total_neto_final: number;
+  };
+  porVendedor: ReporteDescuentoVendedor[];
+  detalle: ReporteDescuentoDetalle[];
+}
