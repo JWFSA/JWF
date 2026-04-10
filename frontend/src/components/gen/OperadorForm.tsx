@@ -52,9 +52,9 @@ export default function OperadorForm({ initial, onSubmit, isLoading }: Props) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await onSubmit({
-      nombre,
-      apellido: apellido || null,
-      login,
+      nombre: nombre.toUpperCase(),
+      apellido: apellido ? apellido.toUpperCase() : null,
+      login: login.toUpperCase(),
       ...((!isEdit || password) && { password }),
       email: email || null,
       indAdmin,
@@ -78,7 +78,7 @@ export default function OperadorForm({ initial, onSubmit, isLoading }: Props) {
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
               required
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 uppercase"
             />
           </div>
           <div>
@@ -87,7 +87,7 @@ export default function OperadorForm({ initial, onSubmit, isLoading }: Props) {
               type="text"
               value={apellido}
               onChange={(e) => setApellido(e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 uppercase"
             />
           </div>
           <div>
@@ -98,7 +98,7 @@ export default function OperadorForm({ initial, onSubmit, isLoading }: Props) {
               onChange={(e) => setLogin(e.target.value)}
               required
               disabled={isEdit}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-gray-50 disabled:text-gray-400"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-gray-50 disabled:text-gray-400 uppercase"
             />
           </div>
           <div>
