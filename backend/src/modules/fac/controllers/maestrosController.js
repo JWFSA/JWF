@@ -22,6 +22,7 @@ const getVendedores    = async (req, res, next) => { try { res.json(await s.getV
 const createVendedor   = async (req, res, next) => { try { if (!req.body.vend_oper) return res.status(400).json({ message: 'El operador es requerido' }); res.status(201).json(await s.createVendedor(req.body)); } catch (e) { next(e); } };
 const updateVendedor   = async (req, res, next) => { try { res.json(await s.updateVendedor(Number(req.params.id), req.body)); } catch (e) { next(e); } };
 const deleteVendedor   = async (req, res, next) => { try { await s.deleteVendedor(Number(req.params.id)); res.status(204).end(); } catch (e) { next(e); } };
+const getOperadoresVendedores = async (req, res, next) => { try { res.json(await s.getOperadoresVendedores()); } catch (e) { next(e); } };
 
 // Listas de precio
 const getListasPrecio   = async (req, res, next) => { try { res.json(await s.getListasPrecio({ all: req.query.all === 'true', page: parseInt(req.query.page) || 1, limit: parseInt(req.query.limit) || 20, search: req.query.search || '', sortField: req.query.sortField || '', sortDir: req.query.sortDir || 'asc' })); } catch (e) { next(e); } };
@@ -49,7 +50,7 @@ module.exports = {
   getZonas, createZona, updateZona, deleteZona,
   getCategorias, createCategoria, updateCategoria, deleteCategoria,
   getCondiciones, createCondicion, deleteCondicion,
-  getVendedores, createVendedor, updateVendedor, deleteVendedor,
+  getVendedores, getOperadoresVendedores, createVendedor, updateVendedor, deleteVendedor,
   getListasPrecio, createListaPrecio, updateListaPrecio, deleteListaPrecio,
   getListaPrecioItems, upsertListaPrecioItem, deleteListaPrecioItem,
   getBarrios, createBarrio, updateBarrio, deleteBarrio,

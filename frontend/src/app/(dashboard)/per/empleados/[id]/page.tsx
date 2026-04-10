@@ -1,18 +1,16 @@
 'use client';
 
-import { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getEmpleado, updateEmpleado } from '@/services/per';
 import type { Empleado } from '@/types/per';
 import EmpleadoForm from '@/components/per/EmpleadoForm';
+import { showSuccess, showError } from '@/lib/swal';
 
 export default function EditarEmpleadoPage() {
   const router = useRouter();
   const { id } = useParams<{ id: string }>();
   const qc = useQueryClient();
-  const [error, setError] = useState('');
-
   const { data: empleado, isLoading } = useQuery({
     queryKey: ['empleados', id],
     queryFn: () => getEmpleado(Number(id)),
@@ -22,9 +20,12 @@ export default function EditarEmpleadoPage() {
     mutationFn: (data: Partial<Empleado>) => updateEmpleado(Number(id), data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['empleados'] });
+      showSuccess('Empleado actualizado correctamente');
       router.push('/per/empleados');
     },
-    onError: (e: any) => setError(e?.response?.data?.message ?? 'Error al guardar'),
+    onError: (e: any) => {
+      showError(e?.response?.data?.message ?? 'Error al guardar');
+    },
   });
 
   if (isLoading) return <div className="p-6 text-sm text-gray-500">Cargando...</div>;
@@ -41,7 +42,6 @@ export default function EditarEmpleadoPage() {
       <EmpleadoForm
         initial={empleado}
         isPending={mut.isPending}
-        error={error}
         onSave={async (data) => { mut.mutate(data as Partial<Empleado>); }}
       />
     </div>

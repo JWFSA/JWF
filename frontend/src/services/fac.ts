@@ -43,6 +43,7 @@ export const deleteListaPrecioItem   = (id: number, art: number) => api.delete(`
 
 // Vendedores
 export const getVendedores    = (params?: ListParams) => api.get<Paginated<Vendedor>>('/fac/vendedores', { params }).then((r) => r.data);
+export const getOperadoresVendedores = () => api.get<{ oper_codigo: number; oper_nombre: string; oper_apellido: string; empl_situacion: string | null }[]>('/fac/vendedores/operadores-elegibles').then((r) => r.data);
 export const createVendedor   = (data: Partial<Vendedor>) => api.post<Vendedor>('/fac/vendedores', data).then((r) => r.data);
 export const updateVendedor   = (id: number, data: Partial<Vendedor>) => api.put<Vendedor>(`/fac/vendedores/${id}`, data).then((r) => r.data);
 export const deleteVendedor   = (id: number) => api.delete(`/fac/vendedores/${id}`);

@@ -137,9 +137,11 @@ const getVendedores = async ({ page = 1, limit = 20, search = '', all = false, s
     v."VEND_ZONA" AS vend_zona, z."ZONA_DESC" AS zona_desc,
     v."VEND_EMPR" AS vend_empr, e."EMPR_RAZON_SOCIAL" AS empr_razon_social,
     v."VEND_PORC_COMISION_VTA" AS vend_porc_comision_vta,
-    o."OPER_NOMBRE" AS oper_nombre, o."OPER_APELLIDO" AS oper_apellido
+    o."OPER_NOMBRE" AS oper_nombre, o."OPER_APELLIDO" AS oper_apellido,
+    emp."EMPL_SITUACION" AS empl_situacion
     FROM fac_vendedor v
     JOIN gen_operador o ON o."OPER_CODIGO" = v."VEND_OPER"
+    LEFT JOIN per_empleado emp ON emp."EMPL_LEGAJO" = v."VEND_LEGAJO"
     LEFT JOIN fac_zona z ON z."ZONA_CODIGO" = v."VEND_ZONA"
     LEFT JOIN gen_empresa e ON e."EMPR_CODIGO" = v."VEND_EMPR"
     ${where} ORDER BY ${orderBy}`;
@@ -166,6 +168,29 @@ const getVendedor = async (legajo) => {
      WHERE v."VEND_LEGAJO" = $1`, [legajo]);
   if (!rows.length) throw { status: 404, message: 'Vendedor no encontrado' };
   return rows[0];
+};
+
+const getOperadoresVendedores = async () => {
+  const { rows } = await pool.query(
+    `-- Operadores que YA son vendedores (cualquier cargo)
+     SELECT DISTINCT o."OPER_CODIGO" AS oper_codigo,
+            o."OPER_NOMBRE" AS oper_nombre, o."OPER_APELLIDO" AS oper_apellido,
+            e."EMPL_SITUACION" AS empl_situacion
+     FROM fac_vendedor v
+     JOIN gen_operador o ON o."OPER_CODIGO" = v."VEND_OPER"
+     LEFT JOIN per_empleado e ON e."EMPL_LEGAJO" = v."VEND_LEGAJO"
+     UNION
+     -- Empleados con cargo comercial que AUN no son vendedores
+     SELECT o."OPER_CODIGO" AS oper_codigo,
+            o."OPER_NOMBRE" AS oper_nombre, o."OPER_APELLIDO" AS oper_apellido,
+            e."EMPL_SITUACION" AS empl_situacion
+     FROM per_empleado e
+     JOIN gen_operador o ON UPPER(TRIM(o."OPER_NOMBRE")) = UPPER(TRIM(e."EMPL_NOMBRE" || ' ' || COALESCE(e."EMPL_APE",'')))
+     WHERE e."EMPL_CARGO" IN (4, 33)
+       AND NOT EXISTS (SELECT 1 FROM fac_vendedor v WHERE v."VEND_OPER" = o."OPER_CODIGO")
+     ORDER BY oper_nombre ASC`
+  );
+  return rows;
 };
 
 const createVendedor = async (data) => {
@@ -440,7 +465,7 @@ module.exports = {
   getZonas, getZona, createZona, updateZona, deleteZona,
   getCategorias, getCategoria, createCategoria, updateCategoria, deleteCategoria,
   getCondiciones, createCondicion, deleteCondicion,
-  getVendedores, getVendedor, createVendedor, updateVendedor, deleteVendedor,
+  getVendedores, getVendedor, getOperadoresVendedores, createVendedor, updateVendedor, deleteVendedor,
   getListasPrecio, getListaPrecio, createListaPrecio, updateListaPrecio, deleteListaPrecio,
   getListaPrecioItems, upsertListaPrecioItem, deleteListaPrecioItem,
   getBarrios, getBarrio, createBarrio, updateBarrio, deleteBarrio,

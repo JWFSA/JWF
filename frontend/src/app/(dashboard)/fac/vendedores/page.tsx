@@ -2,9 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getVendedores, createVendedor, updateVendedor, deleteVendedor, getZonas } from '@/services/fac';
+import { getVendedores, getOperadoresVendedores, createVendedor, updateVendedor, deleteVendedor, getZonas } from '@/services/fac';
 import { getEmpresas } from '@/services/gen';
-import { getEmpleados } from '@/services/per';
 import type { Vendedor } from '@/types/fac';
 import DataTable from '@/components/ui/DataTable';
 import FormModal from '@/components/ui/FormModal';
@@ -21,6 +20,17 @@ const COLUMNS = [
   { key: 'zona',     header: 'Zona',       sortKey: 'zona', headerClassName: 'hidden md:table-cell', cell: (v: Vendedor) => v.zona_desc ?? '—', cellClassName: 'text-gray-500 hidden md:table-cell' },
   { key: 'empresa',  header: 'Empresa',    headerClassName: 'hidden lg:table-cell', cell: (v: Vendedor) => v.empr_razon_social ?? '—', cellClassName: 'text-gray-500 hidden lg:table-cell' },
   { key: 'comision', header: '% Comisión', headerClassName: 'hidden md:table-cell text-right', cell: (v: Vendedor) => `${v.vend_porc_comision_vta}%`, cellClassName: 'hidden md:table-cell text-right text-gray-500' },
+  { key: 'sit', header: 'Situación', headerClassName: 'hidden lg:table-cell w-24',
+    cell: (v: Vendedor) => {
+      const sit = v.empl_situacion ?? '—';
+      return (
+        <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${sit === 'A' ? 'bg-green-100 text-green-700' : sit === 'I' ? 'bg-gray-100 text-gray-500' : ''}`}>
+          {sit === 'A' ? 'Activo' : sit === 'I' ? 'Inactivo' : '—'}
+        </span>
+      );
+    },
+    cellClassName: 'hidden lg:table-cell',
+  },
 ];
 
 export default function VendedoresPage() {
@@ -45,14 +55,14 @@ export default function VendedoresPage() {
     queryFn: () => getVendedores({ page, limit, search: debouncedSearch, sortField, sortDir }),
   });
 
-  const { data: empleadosData } = useQuery({ queryKey: ['empleados', { all: true, cargo: 4 }], queryFn: () => getEmpleados({ all: true, cargo: 4 } as any) });
+  const { data: operadoresData } = useQuery({ queryKey: ['operadores-vendedores'], queryFn: () => getOperadoresVendedores() });
   const { data: zonasData }      = useQuery({ queryKey: ['zonas', { all: true }], queryFn: () => getZonas({ all: true }) });
   const { data: empresasData }   = useQuery({ queryKey: ['empresas', { all: true }], queryFn: () => getEmpresas({ all: true }) });
 
   const vendedores  = data?.data ?? [];
   const pagination  = data?.pagination;
   const handleSortChange = (field: string, dir: 'asc' | 'desc') => { setSortField(field); setSortDir(dir); setPage(1); };
-  const empleados   = empleadosData?.data ?? [];
+  const operadores  = operadoresData ?? [];
   const zonas       = zonasData?.data ?? [];
   const empresas    = empresasData?.data ?? [];
 
@@ -103,7 +113,13 @@ export default function VendedoresPage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Empleado <span className="text-red-500">*</span></label>
             <select value={form.vend_oper} onChange={(e) => setForm({ ...form, vend_oper: Number(e.target.value) })} className={sel} disabled={modal !== 'nuevo'}>
               <option value={0}>Seleccionar empleado...</option>
-              {empleados.map((e: any) => <option key={e.empl_legajo} value={e.empl_legajo}>{e.empl_nombre} {e.empl_ape}</option>)}
+              {operadores.filter((o) => {
+                const yaEsVendedor = vendedores.some((v) => v.vend_oper === o.oper_codigo);
+                if (modal === 'nuevo') return o.empl_situacion !== 'I' && !yaEsVendedor;
+                return o.oper_codigo === form.vend_oper;
+              }).map((o) => (
+                <option key={o.oper_codigo} value={o.oper_codigo}>{o.oper_nombre} {o.oper_apellido ?? ''}{o.empl_situacion === 'I' ? ' (Inactivo)' : ''}</option>
+              ))}
             </select>
           </div>
           <div>

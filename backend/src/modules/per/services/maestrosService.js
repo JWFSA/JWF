@@ -8,7 +8,8 @@ const getCargos = async ({ page = 1, limit = 20, search = '', all = false, sortF
   const { rows: [{ count }] } = await pool.query(`SELECT COUNT(*) FROM per_cargo ${where}`, params);
   const total = parseInt(count);
   const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
-  const orderBy = sortField === 'desc' ? `"CAR_DESC" ${dir}` : `"CAR_CODIGO" ${dir}`;
+  const allowedSort = { desc: '"CAR_DESC"', codigo: '"CAR_CODIGO"' };
+  const orderBy = Object.hasOwn(allowedSort, sortField) ? `${allowedSort[sortField]} ${dir}` : `"CAR_DESC" ASC`;
   const select = `SELECT "CAR_CODIGO" AS car_codigo, "CAR_DESC" AS car_desc FROM per_cargo ${where} ORDER BY ${orderBy}`;
   if (all) {
     const { rows } = await pool.query(select, params);

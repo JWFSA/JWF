@@ -1,10 +1,16 @@
 const pool = require('../../../config/db');
 
-const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc', cargo = '' } = {}) => {
+const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortField = '', sortDir = 'asc', cargo = '', situacion = '', area = '' } = {}) => {
   const params = search ? [`%${search}%`] : [];
   const conditions = [];
   if (search) conditions.push(`(e."EMPL_NOMBRE" ILIKE $1 OR e."EMPL_APE" ILIKE $1 OR CAST(e."EMPL_DOC_IDENT" AS TEXT) ILIKE $1 OR e."EMPL_RUC" ILIKE $1)`);
-  if (cargo) { params.push(Number(cargo)); conditions.push(`e."EMPL_CARGO" = $${params.length}`); }
+  if (cargo) {
+    const cargos = String(cargo).split(',').map(Number).filter(Number.isFinite);
+    if (cargos.length === 1) { params.push(cargos[0]); conditions.push(`e."EMPL_CARGO" = $${params.length}`); }
+    else if (cargos.length > 1) { const placeholders = cargos.map((c) => { params.push(c); return `$${params.length}`; }); conditions.push(`e."EMPL_CARGO" IN (${placeholders.join(',')})`); }
+  }
+  if (situacion) { params.push(situacion); conditions.push(`e."EMPL_SITUACION" = $${params.length}`); }
+  if (area) { params.push(Number(area)); conditions.push(`e."EMPL_AREA" = $${params.length}`); }
   const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
   const { rows: [{ count }] } = await pool.query(
     `SELECT COUNT(*) FROM per_empleado e ${where}`, params
@@ -278,8 +284,18 @@ const update = async (legajo, data) => {
     empl_obj_hmes:        '"EMPL_OBJ_HMES"',
     empl_observa:         '"EMPL_OBSERVA"',
   };
+  // Campos FK donde 0 debe interpretarse como null
+  const fkZeroAsNull = new Set([
+    'empl_cargo', 'empl_categ', 'empl_area', 'empl_seccion', 'empl_turno',
+    'empl_sucursal', 'empl_ccosto', 'empl_cod_jefe', 'empl_departamento',
+    'empl_pais_dir', 'empl_distrito', 'empl_localidad', 'empl_barrio',
+    'empl_tipo_salario', 'empl_cta_bco', 'empl_nacionalidad', 'empl_motivo_salida',
+  ]);
   for (const [k, col] of Object.entries(map)) {
-    if (data[k] !== undefined) { params.push(data[k]); fields.push(`${col} = $${params.length}`); }
+    if (data[k] !== undefined) {
+      const val = fkZeroAsNull.has(k) && (data[k] === 0 || data[k] === '0') ? null : data[k];
+      params.push(val); fields.push(`${col} = $${params.length}`);
+    }
   }
   if (fields.length) {
     params.push(legajo);

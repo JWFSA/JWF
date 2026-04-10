@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { createOperador } from '@/services/gen';
 import OperadorForm from '@/components/gen/OperadorForm';
+import { showSuccess, showError } from '@/lib/swal';
 
 export default function NuevoOperadorPage() {
   const router = useRouter();
@@ -13,7 +14,11 @@ export default function NuevoOperadorPage() {
     mutationFn: createOperador,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['operadores'] });
+      showSuccess('Operador creado correctamente');
       router.push('/gen/operadores');
+    },
+    onError: (error: { response?: { data?: { message?: string } } }) => {
+      showError(error.response?.data?.message ?? 'Error al crear el operador');
     },
   });
 
@@ -27,11 +32,6 @@ export default function NuevoOperadorPage() {
         onSubmit={mutation.mutateAsync}
         isLoading={mutation.isPending}
       />
-      {mutation.isError && (
-        <p className="mt-3 text-sm text-red-600 text-right">
-          {(mutation.error as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Error al guardar'}
-        </p>
-      )}
     </div>
   );
 }

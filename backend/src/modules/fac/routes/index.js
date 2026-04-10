@@ -47,8 +47,9 @@ router.put('/maestros/agencias/:id',     verifyToken, maestrosController.updateA
 router.delete('/maestros/agencias/:id',  verifyToken, maestrosController.deleteAgencia);
 
 // Vendedores
-router.get('/vendedores',         verifyToken, maestrosController.getVendedores);
-router.post('/vendedores',        verifyToken, maestrosController.createVendedor);
+router.get('/vendedores',                      verifyToken, maestrosController.getVendedores);
+router.get('/vendedores/operadores-elegibles',  verifyToken, maestrosController.getOperadoresVendedores);
+router.post('/vendedores',                     verifyToken, maestrosController.createVendedor);
 router.put('/vendedores/:id',     verifyToken, maestrosController.updateVendedor);
 router.delete('/vendedores/:id',  verifyToken, maestrosController.deleteVendedor);
 

@@ -13,7 +13,7 @@ const login = async (loginOrEmail, password) => {
      FROM auth.usuarios u
      LEFT JOIN gen_operador o ON o."OPER_AUTH_ID" = u."ID"
      WHERE u."EMAIL" = $1
-        OR o."OPER_LOGIN" = UPPER($1)`,
+        OR UPPER(o."OPER_LOGIN") = UPPER($1)`,
     [loginOrEmail]
   );
 

@@ -54,7 +54,7 @@ export default function OperadorForm({ initial, onSubmit, isLoading }: Props) {
     await onSubmit({
       nombre: nombre.toUpperCase(),
       apellido: apellido ? apellido.toUpperCase() : null,
-      login: login.toUpperCase(),
+      login,
       ...((!isEdit || password) && { password }),
       email: email || null,
       indAdmin,
@@ -98,7 +98,7 @@ export default function OperadorForm({ initial, onSubmit, isLoading }: Props) {
               onChange={(e) => setLogin(e.target.value)}
               required
               disabled={isEdit}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-gray-50 disabled:text-gray-400 uppercase"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-gray-50 disabled:text-gray-400"
             />
           </div>
           <div>

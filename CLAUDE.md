@@ -791,6 +791,82 @@ Ubicados en `components/ui/`. Usar siempre estos en vez de reimplementar:
 | `SearchField`       | Input de búsqueda con icono, `w-full sm:w-72`                     |
 | `PrimaryAddButton`  | Botón "Nuevo" con texto largo/corto responsive                    |
 
+### Frontend — Filtros avanzados en listados (OBLIGATORIO)
+Cuando un listado necesita filtros más allá del buscador de texto, usar el patrón de filtros avanzados con `useFilters` store. Referencia: `fac/facturas/page.tsx`.
+
+**Store:** usar `useFilters` de `@/stores/useFilterStore`:
+```tsx
+import { useFilters } from '@/stores/useFilterStore';
+import { Filter, X } from 'lucide-react';
+
+const PAGE_ID = 'mi-pagina';
+const DEFAULTS = { filtro1: '', filtro2: '', search: '' };
+
+// Dentro del componente:
+const [filters, setFilter, clearFilters] = useFilters(PAGE_ID, DEFAULTS);
+const sf = (key: keyof typeof DEFAULTS, value: string) => { setFilter(key, value); setPage(1); };
+```
+
+**Search con debounce** — usar estado local `searchInput` + `useEffect` que sincroniza al store:
+```tsx
+const [searchInput, setSearchInput] = useState(filters.search);
+useEffect(() => {
+  const t = setTimeout(() => sf('search', searchInput), 400);
+  return () => clearTimeout(t);
+}, [searchInput]);
+```
+
+**Contador de filtros activos** — excluir `search` del conteo:
+```tsx
+const activeFilters = [filters.filtro1, filters.filtro2].filter(Boolean).length;
+const [showFilters, setShowFilters] = useState(activeFilters > 0);
+```
+
+**Botón toggle en header** — junto a ExportButton y PrimaryAddButton:
+```tsx
+<button onClick={() => setShowFilters(!showFilters)}
+  className={`inline-flex items-center gap-1.5 border text-sm font-medium px-3 py-2 rounded-lg transition shrink-0 ${activeFilters > 0 ? 'border-primary-300 bg-primary-50 text-primary-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}`}>
+  <Filter size={16} />
+  <span className="hidden sm:inline">Filtros</span>
+  {activeFilters > 0 && <span className="bg-primary-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">{activeFilters}</span>}
+</button>
+```
+
+**Panel colapsable** — entre header y tabla, con grid responsive y botón "Limpiar filtros":
+```tsx
+{showFilters && (
+  <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-4">
+    <div className="flex items-center justify-between mb-3">
+      <h3 className="text-sm font-semibold text-gray-700">Filtros avanzados</h3>
+      {activeFilters > 0 && (
+        <button onClick={() => { clearFilters(); setSearchInput(''); }} className="text-xs text-gray-500 hover:text-red-500 flex items-center gap-1">
+          <X size={14} /> Limpiar filtros
+        </button>
+      )}
+    </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+      {/* Selectores con label + className sel */}
+    </div>
+  </div>
+)}
+```
+
+**Clase para inputs/selects del panel:** `const sel = 'border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500';`
+
+**Query params** — construir objeto dinámico solo con filtros activos:
+```tsx
+const queryParams: any = { page, limit, search: filters.search, sortField, sortDir };
+if (filters.filtro1) queryParams.filtro1 = filters.filtro1;
+if (filters.filtro2) queryParams.filtro2 = filters.filtro2;
+```
+
+**Reglas:**
+- Los filtros se persisten en el store (navegar y volver los mantiene)
+- `search` siempre va por debounce, no directo
+- Los dropdowns se cargan con `{ all: true }` via React Query
+- Al cambiar cualquier filtro, resetear `page` a 1
+- Grid del panel: `grid-cols-1 sm:grid-cols-2 md:grid-cols-3` (ajustar cols según cantidad de filtros; usar `lg:grid-cols-6` si hay 5+ filtros)
+
 ### Frontend — Pantallas (patrón estándar)
 - Lista con búsqueda server-side (debounce 400ms) + paginación server-side + botón "Nuevo"
 - Formulario en página separada (`/nuevo`) o modal según complejidad

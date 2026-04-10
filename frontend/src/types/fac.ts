@@ -44,6 +44,7 @@ export interface Vendedor {
   vend_empr: number | null;
   empr_razon_social?: string;
   vend_porc_comision_vta: number;
+  empl_situacion?: string | null;
 }
 
 export interface Cliente {
