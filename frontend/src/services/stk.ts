@@ -123,3 +123,4 @@ export const getCotizaciones   = (params?: ListParams) => api.get<Paginated<Coti
 export const createCotizacion  = (data: Partial<Cotizacion>) => api.post<Cotizacion>('/stk/cotizaciones', data).then((r) => r.data);
 export const updateCotizacion  = (fec: string, mon: number, data: Partial<Cotizacion>) => api.put<Cotizacion>(`/stk/cotizaciones/${fec}/${mon}`, data).then((r) => r.data);
 export const deleteCotizacion  = (fec: string, mon: number) => api.delete(`/stk/cotizaciones/${fec}/${mon}`);
+export const syncCotizaciones  = () => api.post<{ fecha: string; actualizadas: number; detalle: { moneda: string; mon_codigo: number; venta: number; compra: number }[] }>('/stk/cotizaciones/sync').then((r) => r.data);

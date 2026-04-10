@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { getClientes, getVendedores, getCondiciones, getArticulos, getMarcasCliente } from '@/services/fac';
+import { getClientes, getVendedores, getCondiciones, getArticulos, getMarcasCliente, getListasPrecio, getPrecioArticulo } from '@/services/fac';
 import { getMonedas } from '@/services/gen';
 import type { Pedido, PedidoDet, Articulo } from '@/types/fac';
 import { Search, Plus, Trash2, ChevronDown, ChevronRight } from 'lucide-react';
@@ -230,6 +230,12 @@ export default function PedidoForm({ initial, onSave, isPending, error, tipo = '
     enabled: artDropOpen && debouncedArtSearch.length >= 2,
   });
 
+  const { data: listasData } = useQuery({
+    queryKey: ['listas-precio', { all: true }],
+    queryFn: () => getListasPrecio({ all: true }),
+  });
+  const listasPrecio = (listasData?.data ?? []).filter((l) => l.lipe_estado === 'A');
+
   const set = (k: keyof Pedido, v: unknown) => setForm((f) => ({ ...f, [k]: v }));
 
   const selectCliente = (c: { cli_codigo: number; cli_nom: string; cli_ruc?: string | null; cli_tel?: string | null; cli_dir2?: string | null; cli_pers_contacto?: string | null; cli_vendedor?: number | null; cli_tipo_vta?: string | null; cli_cond_venta?: string | null }) => {
@@ -248,7 +254,25 @@ export default function PedidoForm({ initial, onSave, isPending, error, tipo = '
     setCliDropOpen(false);
   };
 
-  const addArticulo = (art: Articulo) => {
+  const addArticulo = async (art: Articulo) => {
+    let precio = 0;
+    let precioLista: number | null = null;
+    let listPrecio: number | null = null;
+    let porcDcto = 0;
+
+    const listaId = form.ped_list_precio;
+    const monPed = form.ped_mon ?? 1;
+
+    if (listaId) {
+      try {
+        const r = await getPrecioArticulo(listaId, art.art_codigo, monPed);
+        precio = r.precio;
+        precioLista = r.precio_lista;
+        listPrecio = listaId;
+        porcDcto = r.dcto || 0;
+      } catch { /* artículo no está en la lista — precio 0 */ }
+    }
+
     setItems((prev) => [
       ...prev,
       {
@@ -257,9 +281,12 @@ export default function PedidoForm({ initial, onSave, isPending, error, tipo = '
         art_unid_med: art.art_unid_med,
         pdet_um_ped: art.art_unid_med || 'U',
         pdet_cant_ped: 1,
-        pdet_precio: 0,
-        pdet_porc_dcto: 0,
+        pdet_precio: precio,
+        pdet_porc_dcto: porcDcto,
         pdet_desc_larga: art.art_desc,
+        pdet_precio_lista: precioLista,
+        pdet_list_precio: listPrecio,
+        pdet_fec_ini_cont: new Date().toISOString().split('T')[0],
       },
     ]);
     setArtSearch('');
@@ -302,6 +329,13 @@ export default function PedidoForm({ initial, onSave, isPending, error, tipo = '
   const condiciones = condData ?? [];
   const monedas = monData ?? [];
   const marcas = marcasData ?? [];
+
+  // Auto-cargar tasa U$ desde gen_moneda (siempre la del dólar, moneda 2)
+  useEffect(() => {
+    if (!monedas.length) return;
+    const usd = monedas.find((m) => Number(m.mon_codigo) === 2);
+    if (usd) set('ped_tasa_us', Number(usd.mon_tasa_vta) || 0);
+  }, [monedas]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -468,9 +502,8 @@ export default function PedidoForm({ initial, onSave, isPending, error, tipo = '
           {/* Tasa U$ */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Tasa U$</label>
-            <input type="number" step="0.000001" value={form.ped_tasa_us ?? 0}
-              onChange={(e) => set('ped_tasa_us', parseFloat(e.target.value) || 0)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
+            <input readOnly tabIndex={-1} value={form.ped_tasa_us ?? 0}
+              className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600" />
           </div>
 
           {/* Observaciones */}
@@ -558,8 +591,15 @@ export default function PedidoForm({ initial, onSave, isPending, error, tipo = '
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Lista Precio</label>
-            <input type="number" value={form.ped_list_precio ?? ''} onChange={(e) => set('ped_list_precio', e.target.value ? Number(e.target.value) : null)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
+            <select value={form.ped_list_precio ?? ''} onChange={(e) => set('ped_list_precio', e.target.value ? Number(e.target.value) : null)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
+              <option value="">— Sin lista —</option>
+              {listasPrecio.map((l) => (
+                <option key={l.lipe_nro_lista_precio} value={l.lipe_nro_lista_precio}>
+                  {l.lipe_nro_lista_precio} - {l.lipe_desc}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">% Dto. General</label>

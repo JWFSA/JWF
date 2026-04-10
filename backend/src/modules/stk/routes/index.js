@@ -96,6 +96,7 @@ router.delete('/maestros/inserciones/:id',  verifyToken, maestrosController.dele
 
 // Cotizaciones
 router.get('/cotizaciones',                verifyToken, cotizacionController.getAll);
+router.post('/cotizaciones/sync',          verifyToken, cotizacionController.syncCambiosChaco);
 router.post('/cotizaciones',               verifyToken, cotizacionController.create);
 router.put('/cotizaciones/:fec/:mon',      verifyToken, cotizacionController.update);
 router.delete('/cotizaciones/:fec/:mon',   verifyToken, cotizacionController.remove);

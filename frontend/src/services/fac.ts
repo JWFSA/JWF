@@ -58,6 +58,11 @@ export const deleteCliente = (id: number) => api.delete(`/fac/clientes/${id}`);
 // Artículos
 export const getArticulos = (params?: ListParams) => api.get<Paginated<Articulo>>('/fac/articulos', { params }).then((r) => r.data);
 
+// Precio artículo (lookup para pedidos)
+export interface PrecioArticuloResult { precio: number; precio_lista: number; mon_lista: number; tasa: number | null; dcto: number; dctob: number; }
+export const getPrecioArticulo = (lista: number, art: number, monPed: number) =>
+  api.get<PrecioArticuloResult>('/fac/precio-articulo', { params: { lista, art, monPed } }).then((r) => r.data);
+
 // Pedidos
 export const getPedidos    = (params?: ListParams) => api.get<Paginated<Pedido>>('/fac/pedidos', { params }).then((r) => r.data);
 export const getPedido     = (id: number) => api.get<Pedido>(`/fac/pedidos/${id}`).then((r) => r.data);

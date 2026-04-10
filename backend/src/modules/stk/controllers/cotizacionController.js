@@ -34,4 +34,10 @@ module.exports = {
       res.status(204).end();
     } catch (e) { next(e); }
   },
+
+  syncCambiosChaco: async (_req, res, next) => {
+    try {
+      res.json(await s.syncFromCambiosChaco());
+    } catch (e) { next(e); }
+  },
 };

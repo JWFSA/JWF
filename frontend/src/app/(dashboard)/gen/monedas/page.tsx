@@ -12,12 +12,15 @@ import DataTable from '@/components/ui/DataTable';
 
 const empty = { mon_desc: '', mon_simbolo: '', mon_tasa_comp: 0, mon_tasa_vta: 0 };
 
+const fmtTasa = (n?: number | null) =>
+  n != null ? Number(n).toLocaleString('es-PY', { minimumFractionDigits: 0, maximumFractionDigits: 4 }) : '—';
+
 const COLUMNS = [
   { key: 'codigo',    header: 'Código',      sortKey: 'codigo',    headerClassName: 'w-24', cell: (m: Moneda) => m.mon_codigo, cellClassName: 'font-mono text-xs text-gray-500' },
   { key: 'desc',      header: 'Descripción', sortKey: 'desc',      cell: (m: Moneda) => m.mon_desc, cellClassName: 'font-medium text-gray-800' },
   { key: 'simbolo',   header: 'Símbolo',     sortKey: 'simbolo',   headerClassName: 'w-16', cell: (m: Moneda) => m.mon_simbolo, cellClassName: 'text-gray-500' },
-  { key: 'tasa_comp', header: 'Tasa compra', sortKey: 'tasa_comp', headerClassName: 'text-right hidden md:table-cell', cell: (m: Moneda) => m.mon_tasa_comp?.toLocaleString(), cellClassName: 'text-right text-gray-600 hidden md:table-cell' },
-  { key: 'tasa_vta',  header: 'Tasa venta',  sortKey: 'tasa_vta',  headerClassName: 'text-right hidden md:table-cell', cell: (m: Moneda) => m.mon_tasa_vta?.toLocaleString(), cellClassName: 'text-right text-gray-600 hidden md:table-cell' },
+  { key: 'tasa_comp', header: 'Tasa compra', sortKey: 'tasa_comp', headerClassName: 'text-right hidden md:table-cell', cell: (m: Moneda) => fmtTasa(m.mon_tasa_comp), cellClassName: 'text-right tabular-nums text-gray-600 hidden md:table-cell' },
+  { key: 'tasa_vta',  header: 'Tasa venta',  sortKey: 'tasa_vta',  headerClassName: 'text-right hidden md:table-cell', cell: (m: Moneda) => fmtTasa(m.mon_tasa_vta), cellClassName: 'text-right tabular-nums text-gray-600 hidden md:table-cell' },
 ];
 
 function sortMonedas(list: Moneda[], field: string, dir: 'asc' | 'desc'): Moneda[] {

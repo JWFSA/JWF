@@ -46,6 +46,17 @@ const createAgencia  = async (req, res, next) => { try { if (!req.body.agen_desc
 const updateAgencia  = async (req, res, next) => { try { res.json(await s.updateAgencia(Number(req.params.id), req.body)); } catch (e) { next(e); } };
 const deleteAgencia  = async (req, res, next) => { try { await s.deleteAgencia(Number(req.params.id)); res.status(204).end(); } catch (e) { next(e); } };
 
+// Precio artículo (lookup para pedidos)
+const getPrecioArticulo = async (req, res, next) => {
+  try {
+    const { lista, art, monPed } = req.query;
+    if (!lista || !art) return res.status(400).json({ message: 'lista y art son requeridos' });
+    const result = await s.getPrecioArticulo(Number(lista), Number(art), Number(monPed) || 1);
+    if (!result) return res.status(404).json({ message: 'Artículo no encontrado en la lista de precio' });
+    res.json(result);
+  } catch (e) { next(e); }
+};
+
 module.exports = {
   getZonas, createZona, updateZona, deleteZona,
   getCategorias, createCategoria, updateCategoria, deleteCategoria,
@@ -55,4 +66,5 @@ module.exports = {
   getListaPrecioItems, upsertListaPrecioItem, deleteListaPrecioItem,
   getBarrios, createBarrio, updateBarrio, deleteBarrio,
   getAgencias, createAgencia, updateAgencia, deleteAgencia,
+  getPrecioArticulo,
 };

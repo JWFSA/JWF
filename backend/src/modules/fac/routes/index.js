@@ -34,6 +34,9 @@ router.get('/maestros/listas-precio/:id/items',                verifyToken, maes
 router.post('/maestros/listas-precio/:id/items',               verifyToken, maestrosController.upsertListaPrecioItem);
 router.delete('/maestros/listas-precio/:id/items/:art',        verifyToken, maestrosController.deleteListaPrecioItem);
 
+// Precio artículo (lookup para pedidos)
+router.get('/precio-articulo', verifyToken, maestrosController.getPrecioArticulo);
+
 // Barrios
 router.get('/maestros/barrios',         verifyToken, maestrosController.getBarrios);
 router.post('/maestros/barrios',        verifyToken, maestrosController.createBarrio);

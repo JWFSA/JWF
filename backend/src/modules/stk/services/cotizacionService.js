@@ -83,4 +83,73 @@ const remove = async (fec, mon) => {
   if (!rowCount) throw { status: 404, message: 'Cotización no encontrada' };
 };
 
-module.exports = { getAll, create, update, remove };
+// Mapeo de ISO code (Cambios Chaco) → código moneda interno (gen_moneda)
+const ISO_TO_MON = { USD: 2, BRL: 4, EUR: 5, GBP: 6 };
+
+const syncFromCambiosChaco = async () => {
+  const res = await fetch('http://www.cambioschaco.com.py/api/branch_office/1/exchange', {
+    signal: AbortSignal.timeout(15000),
+  });
+  if (!res.ok) throw { status: 502, message: `Cambios Chaco respondió ${res.status}` };
+  const json = await res.json();
+  if (!json.items?.length) throw { status: 502, message: 'Respuesta vacía de Cambios Chaco' };
+
+  const today = new Date().toISOString().split('T')[0];
+  const client = await pool.connect();
+  const synced = [];
+
+  try {
+    await client.query('BEGIN');
+
+    for (const item of json.items) {
+      const monCodigo = ISO_TO_MON[item.isoCode];
+      if (!monCodigo) continue;
+      if (!item.salePrice && !item.purchasePrice) continue;
+
+      const vta = item.salePrice || null;
+      const com = item.purchasePrice || null;
+
+      // UPSERT en stk_cotizacion
+      const { rows: existing } = await client.query(
+        'SELECT 1 FROM stk_cotizacion WHERE "COT_FEC" = $1 AND "COT_MON" = $2',
+        [today, monCodigo]
+      );
+      if (existing.length) {
+        await client.query(
+          `UPDATE stk_cotizacion SET "COT_TASA" = $1, "COT_TASA_COM" = $2
+           WHERE "COT_FEC" = $3 AND "COT_MON" = $4`,
+          [vta, com, today, monCodigo]
+        );
+      } else {
+        await client.query(
+          `INSERT INTO stk_cotizacion ("COT_FEC","COT_MON","COT_TASA","COT_TASA_COM","COT_TASA_VTA_CNT","COT_TASA_COM_CNT")
+           VALUES ($1,$2,$3,$4,NULL,NULL)`,
+          [today, monCodigo, vta, com]
+        );
+      }
+
+      // Actualizar tasas vigentes en gen_moneda
+      await client.query(
+        `UPDATE gen_moneda SET "MON_TASA_OFIC_VTA" = COALESCE($1, "MON_TASA_OFIC_VTA"),
+                               "MON_TASA_OFIC_COMP" = COALESCE($2, "MON_TASA_OFIC_COMP"),
+                               "MON_TASA_VTA" = COALESCE($1, "MON_TASA_VTA"),
+                               "MON_TASA_COMP" = COALESCE($2, "MON_TASA_COMP")
+         WHERE "MON_CODIGO" = $3`,
+        [vta, com, monCodigo]
+      );
+
+      synced.push({ moneda: item.isoCode, mon_codigo: monCodigo, venta: vta, compra: com });
+    }
+
+    await client.query('COMMIT');
+  } catch (e) {
+    await client.query('ROLLBACK');
+    throw e;
+  } finally {
+    client.release();
+  }
+
+  return { fecha: today, actualizadas: synced.length, detalle: synced };
+};
+
+module.exports = { getAll, create, update, remove, syncFromCambiosChaco };

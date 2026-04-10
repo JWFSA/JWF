@@ -461,6 +461,63 @@ const deleteAgencia = async (codigo) => {
   await pool.query('DELETE FROM fac_agencia WHERE "AGEN_CODIGO" = $1', [codigo]);
 };
 
+// ─── PRECIO ARTÍCULO (lookup para pedidos) ──────────────────────────────────
+
+const getPrecioArticulo = async (lista, art, monPed = 1) => {
+  // 1. Buscar precio en la lista
+  const { rows } = await pool.query(
+    `SELECT d."LIPR_PRECIO_UNITARIO" AS precio, d."LIPR_DCTO" AS dcto, d."LIPR_DCTOB" AS dctob,
+            l."LIPE_MON" AS mon_lista
+     FROM fac_lista_precio_det d
+     JOIN fac_lista_precio l ON l."LIPE_EMPR" = d."LIPR_EMPR"
+       AND l."LIPE_NRO_LISTA_PRECIO" = d."LIPR_NRO_LISTA_PRECIO"
+     WHERE d."LIPR_EMPR" = 1
+       AND d."LIPR_NRO_LISTA_PRECIO" = $1
+       AND d."LIPR_ART" = $2`,
+    [lista, art]
+  );
+  if (!rows.length) return null;
+
+  const precioLista = parseFloat(rows[0].precio);
+  const monLista = parseInt(rows[0].mon_lista);
+  const dcto = parseFloat(rows[0].dcto) || 0;
+  const dctob = parseFloat(rows[0].dctob) || 0;
+
+  // 2. Si misma moneda, devolver directo
+  if (monLista === monPed) {
+    return { precio: precioLista, precio_lista: precioLista, mon_lista: monLista, tasa: null, dcto, dctob };
+  }
+
+  // 3. Obtener tasas para conversión (moneda base = 1, tasa implícita = 1)
+  const getTasa = async (mon) => {
+    if (mon === 1) return 1;
+    const res = await pool.query(
+      `SELECT "COT_TASA" AS tasa FROM stk_cotizacion WHERE "COT_MON" = $1 ORDER BY "COT_FEC" DESC LIMIT 1`,
+      [mon]
+    );
+    return res.rows.length ? parseFloat(res.rows[0].tasa) : null;
+  };
+
+  const tasaLista = await getTasa(monLista);
+  const tasaPed = await getTasa(monPed);
+
+  if (!tasaLista || !tasaPed) {
+    return { precio: precioLista, precio_lista: precioLista, mon_lista: monLista, tasa: null, dcto, dctob };
+  }
+
+  // Convertir: precio en moneda lista → moneda pedido
+  const precioConvertido = precioLista * tasaLista / tasaPed;
+
+  return {
+    precio: Math.round(precioConvertido * 100) / 100,
+    precio_lista: precioLista,
+    mon_lista: monLista,
+    tasa: tasaLista,
+    dcto,
+    dctob,
+  };
+};
+
 module.exports = {
   getZonas, getZona, createZona, updateZona, deleteZona,
   getCategorias, getCategoria, createCategoria, updateCategoria, deleteCategoria,
@@ -470,4 +527,5 @@ module.exports = {
   getListaPrecioItems, upsertListaPrecioItem, deleteListaPrecioItem,
   getBarrios, getBarrio, createBarrio, updateBarrio, deleteBarrio,
   getAgencias, getAgencia, createAgencia, updateAgencia, deleteAgencia,
+  getPrecioArticulo,
 };

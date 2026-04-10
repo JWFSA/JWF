@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getCotizaciones, createCotizacion, updateCotizacion, deleteCotizacion } from '@/services/stk';
+import { getCotizaciones, createCotizacion, deleteCotizacion, syncCotizaciones } from '@/services/stk';
 import { getMonedas } from '@/services/gen';
 import { formatDate } from '@/lib/utils';
 import type { Cotizacion } from '@/types/stk';
@@ -10,7 +10,7 @@ import DataTable from '@/components/ui/DataTable';
 import SearchField from '@/components/ui/SearchField';
 import TablePagination from '@/components/ui/TablePagination';
 import ExportButton from '@/components/ui/ExportButton';
-import { Plus, X } from 'lucide-react';
+import { Plus, X, RefreshCw } from 'lucide-react';
 
 const fmtTasa = (n?: number | null) => n != null ? Number(n).toLocaleString('es-PY', { minimumFractionDigits: 2, maximumFractionDigits: 4 }) : '—';
 
@@ -31,11 +31,7 @@ export default function CotizacionesPage() {
   const [newTasaCom, setNewTasaCom] = useState('');
   const [formError, setFormError] = useState('');
 
-  // Edición inline
-  const [editing, setEditing] = useState<string | null>(null);
-  const [editTasa, setEditTasa] = useState('');
-
-  useEffect(() => {
+useEffect(() => {
     const t = setTimeout(() => { setDebouncedSearch(search); setPage(1); }, 400);
     return () => clearTimeout(t);
   }, [search]);
@@ -67,29 +63,24 @@ export default function CotizacionesPage() {
     onError: (e: any) => setFormError(e?.response?.data?.message ?? 'Error al guardar'),
   });
 
-  const updateMut = useMutation({
-    mutationFn: ({ fec, mon, data }: { fec: string; mon: number; data: Partial<Cotizacion> }) =>
-      updateCotizacion(fec, mon, data),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['cotizaciones'] });
-      setEditing(null);
-    },
-  });
-
   const deleteMut = useMutation({
     mutationFn: ({ fec, mon }: { fec: string; mon: number }) => deleteCotizacion(fec, mon),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['cotizaciones'] }),
   });
 
-  const startEdit = (c: Cotizacion) => {
-    const key = `${c.cot_fec}-${c.cot_mon}`;
-    setEditing(key);
-    setEditTasa(String(c.cot_tasa));
-  };
-
-  const saveEdit = (c: Cotizacion) => {
-    updateMut.mutate({ fec: c.cot_fec, mon: c.cot_mon, data: { cot_tasa: Number(editTasa) } });
-  };
+  const [syncMsg, setSyncMsg] = useState('');
+  const syncMut = useMutation({
+    mutationFn: syncCotizaciones,
+    onSuccess: (r) => {
+      qc.invalidateQueries({ queryKey: ['cotizaciones'] });
+      setSyncMsg(`${r.actualizadas} moneda(s) actualizada(s): ${r.detalle.map((d) => d.moneda).join(', ')}`);
+      setTimeout(() => setSyncMsg(''), 6000);
+    },
+    onError: (e: any) => {
+      setSyncMsg(e?.response?.data?.message ?? 'Error al sincronizar');
+      setTimeout(() => setSyncMsg(''), 6000);
+    },
+  });
 
   const COLUMNS = [
     { key: 'fecha', header: 'Fecha', sortKey: 'fecha', headerClassName: 'w-32',
@@ -99,23 +90,7 @@ export default function CotizacionesPage() {
         <span>{c.mon_desc ?? `Mon. ${c.cot_mon}`} {c.mon_simbolo && <span className="text-gray-400 text-xs ml-1">({c.mon_simbolo})</span>}</span>
       ), cellClassName: 'font-medium text-gray-800' },
     { key: 'tasa', header: 'Tasa venta', sortKey: 'tasa', headerClassName: 'text-right w-36',
-      cell: (c: Cotizacion) => {
-        const key = `${c.cot_fec}-${c.cot_mon}`;
-        if (editing === key) {
-          return (
-            <div className="flex items-center gap-1 justify-end">
-              <input type="number" step="0.0001" value={editTasa}
-                onChange={(e) => setEditTasa(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') saveEdit(c); if (e.key === 'Escape') setEditing(null); }}
-                className="w-28 border border-primary-300 rounded px-2 py-1 text-xs text-right focus:outline-none focus:ring-1 focus:ring-primary-500"
-                autoFocus />
-              <button onClick={() => saveEdit(c)} className="text-green-600 text-xs font-medium hover:underline">OK</button>
-              <button onClick={() => setEditing(null)} className="text-gray-400 text-xs hover:underline">Esc</button>
-            </div>
-          );
-        }
-        return <span className="cursor-pointer hover:text-primary-600" onClick={() => startEdit(c)}>{fmtTasa(c.cot_tasa)}</span>;
-      }, cellClassName: 'text-right tabular-nums' },
+      cell: (c: Cotizacion) => fmtTasa(c.cot_tasa), cellClassName: 'text-right tabular-nums' },
     { key: 'tasa_com', header: 'Tasa compra', headerClassName: 'text-right w-36 hidden md:table-cell',
       cell: (c: Cotizacion) => fmtTasa(c.cot_tasa_com), cellClassName: 'text-right tabular-nums text-gray-400 hidden md:table-cell' },
   ];
@@ -134,6 +109,11 @@ export default function CotizacionesPage() {
             { header: 'Tasa venta', value: (r) => r.cot_tasa },
             { header: 'Tasa compra', value: (r) => r.cot_tasa_com },
           ]} />
+          <button onClick={() => syncMut.mutate()} disabled={syncMut.isPending}
+            className="inline-flex items-center gap-1.5 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 disabled:opacity-50 transition">
+            <RefreshCw size={16} className={syncMut.isPending ? 'animate-spin' : ''} />
+            <span className="hidden sm:inline">{syncMut.isPending ? 'Sincronizando…' : 'Sincronizar'}</span>
+          </button>
           <button onClick={() => setShowForm(!showForm)}
             className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 transition">
             {showForm ? <X size={16} /> : <Plus size={16} />}
@@ -141,6 +121,12 @@ export default function CotizacionesPage() {
           </button>
         </div>
       </div>
+
+      {syncMsg && (
+        <div className={`rounded-lg px-4 py-2.5 text-sm mb-4 ${syncMut.isError ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-green-50 text-green-700 border border-green-200'}`}>
+          {syncMsg}
+        </div>
+      )}
 
       {/* Form nueva cotización */}
       {showForm && (
@@ -193,7 +179,6 @@ export default function CotizacionesPage() {
           isLoading={isLoading}
           rows={cotizaciones}
           getRowKey={(c) => `${c.cot_fec}-${c.cot_mon}`}
-          onEdit={(c) => startEdit(c)}
           onDelete={(c) => deleteMut.mutate({ fec: c.cot_fec, mon: c.cot_mon })}
           deleteConfirmMessage="¿Eliminar esta cotización?"
           tableClassName="w-full text-sm min-w-[500px]"

@@ -172,6 +172,7 @@ Cada vez que se cree una nueva página de listado, agregarla aquí. Usar esta li
 | `stk/articulos` | Artículos | `desc` asc |
 | `stk/clasificaciones` | Clasificaciones | `desc` asc |
 | `stk/choferes` | Choferes | `nombre` asc |
+| `stk/cotizaciones` | Cotizaciones | `fecha` desc |
 | `fac/facturas` | Facturas | `fecha` desc |
 | `fac/clientes` | Clientes | `nom` asc |
 | `fac/vendedores` | Vendedores | `nom` asc |
@@ -386,6 +387,7 @@ Cada vez que se cree una nueva página de listado, agregarla aquí. Usar esta li
 | GET    | `/comisiones`                     | Listar comisiones              | Sí   |
 | GET    | `/solicitudes-descuento`          | Listar solicitudes             | Sí   |
 | GET    | `/solicitudes-descuento/:id`      | Detalle + ítems                | Sí   |
+| GET    | `/precio-articulo?lista=&art=&monPed=` | Precio artículo (lookup) | Sí   |
 | GET    | `/maestros/zonas`                 | CRUD zonas                     | Sí   |
 | GET    | `/maestros/categorias`            | CRUD categorías                | Sí   |
 | GET    | `/maestros/condiciones`           | CRUD condiciones de venta      | Sí   |
@@ -423,6 +425,11 @@ Cada vez que se cree una nueva página de listado, agregarla aquí. Usar esta li
 | GET    | `/maestros/unidades-medida`   | CRUD unidades de medida        | Sí   |
 | GET    | `/maestros/clasificaciones`   | CRUD clasificaciones           | Sí   |
 | GET    | `/maestros/choferes`          | CRUD choferes                  | Sí   |
+| GET    | `/cotizaciones`               | Listar cotizaciones            | Sí   |
+| POST   | `/cotizaciones`               | Crear cotización               | Sí   |
+| POST   | `/cotizaciones/sync`          | Sincronizar desde Cambios Chaco | Sí  |
+| PUT    | `/cotizaciones/:fec/:mon`     | Actualizar cotización          | Sí   |
+| DELETE | `/cotizaciones/:fec/:mon`     | Eliminar cotización            | Sí   |
 
 ## Módulo PER — Endpoints API
 
