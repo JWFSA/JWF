@@ -19,7 +19,7 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      const data = await login({ ...form, login: form.login.toUpperCase() });
+      const data = await login(form);
       localStorage.setItem('jwf_token', data.token);
       localStorage.setItem('jwf_user', JSON.stringify(data.user));
       router.push('/dashboard');
@@ -56,7 +56,7 @@ export default function LoginPage() {
               type="text"
               value={form.login}
               onChange={(e) => setForm({ ...form, login: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm uppercase focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               placeholder="Login"
               required
               autoFocus

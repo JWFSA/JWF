@@ -96,36 +96,59 @@ const create = async (data) => {
 
   if (!password) throw { status: 400, message: 'La contraseña es requerida' };
 
-  const { rows: existing } = await pool.query(
-    'SELECT "OPER_CODIGO" FROM gen_operador WHERE "OPER_LOGIN" = $1',
-    [login]
-  );
-  if (existing.length > 0) throw { status: 409, message: 'El login ya existe' };
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
 
-  const { rows: maxRow } = await pool.query(
-    'SELECT COALESCE(MAX("OPER_CODIGO"), 0) + 1 AS next FROM gen_operador'
-  );
-  const codigo = maxRow[0].next;
-  const hash = await bcrypt.hash(password, 10);
+    const { rows: existing } = await client.query(
+      'SELECT "OPER_CODIGO" FROM gen_operador WHERE "OPER_LOGIN" = $1',
+      [login]
+    );
+    if (existing.length > 0) throw { status: 409, message: 'El login ya existe' };
 
-  await pool.query(
-    `INSERT INTO gen_operador
-      ("OPER_CODIGO", "OPER_NOMBRE", "OPER_APELLIDO", "OPER_LOGIN", "OPER_DESC_ABREV",
-       "OPER_PASSWORD", "OPER_EMAIL", "OPER_IND_ADMIN", "OPER_EMPR", "OPER_SUC",
-       "OPER_DEP", "OPER_DPTO", "OPER_SEC", "OPER_MAX_SESSIONS", "OPER_IND_DESC")
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,'N')`,
-    [
-      codigo, nombre, apellido || null, login,
-      (login || '').substring(0, 4).toUpperCase(),
-      hash, email || null, indAdmin || 'N',
-      empr || null, suc || null, dep || null, dpto || null,
-      sec || null, maxSessions || 1,
-    ]
-  );
+    const { rows: maxRow } = await client.query(
+      'SELECT COALESCE(MAX("OPER_CODIGO"), 0) + 1 AS next FROM gen_operador'
+    );
+    const codigo = maxRow[0].next;
+    const hash = await bcrypt.hash(password, 10);
 
-  if (roles?.length) await assignRoles(codigo, roles);
+    const fullName = [nombre, apellido].filter(Boolean).join(' ');
+    const authEmail = email || `${login.toLowerCase()}@operador.local`;
 
-  return getById(codigo);
+    const { rows: authRows } = await client.query(
+      `INSERT INTO auth.usuarios ("NOMBRE", "EMAIL", "PASSWORD", "ACTIVO")
+       VALUES ($1, $2, $3, true)
+       RETURNING "ID"`,
+      [fullName, authEmail, hash]
+    );
+    const authId = authRows[0].ID;
+
+    await client.query(
+      `INSERT INTO gen_operador
+        ("OPER_CODIGO", "OPER_NOMBRE", "OPER_APELLIDO", "OPER_LOGIN", "OPER_DESC_ABREV",
+         "OPER_PASSWORD", "OPER_EMAIL", "OPER_IND_ADMIN", "OPER_EMPR", "OPER_SUC",
+         "OPER_DEP", "OPER_DPTO", "OPER_SEC", "OPER_MAX_SESSIONS", "OPER_IND_DESC",
+         "OPER_AUTH_ID")
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,'N',$15)`,
+      [
+        codigo, nombre, apellido || null, login,
+        (login || '').substring(0, 4).toUpperCase(),
+        hash, email || null, indAdmin || 'N',
+        empr || null, suc || null, dep || null, dpto || null,
+        sec || null, maxSessions || 1, authId,
+      ]
+    );
+
+    if (roles?.length) await assignRoles(codigo, roles);
+
+    await client.query('COMMIT');
+    return getById(codigo);
+  } catch (e) {
+    await client.query('ROLLBACK');
+    throw e;
+  } finally {
+    client.release();
+  }
 };
 
 const update = async (codigo, data) => {
