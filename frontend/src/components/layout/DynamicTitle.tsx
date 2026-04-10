@@ -72,7 +72,17 @@ export default function DynamicTitle() {
 
   useEffect(() => {
     const pageTitle = resolveTitle(pathname);
-    document.title = pageTitle === 'JWF' ? 'JWF' : `${pageTitle} | JWF`;
+    const title = pageTitle === 'JWF' ? 'JWF' : `${pageTitle} | JWF`;
+    document.title = title;
+
+    // Observe <title> to re-apply if Next.js hydration overwrites it
+    const el = document.querySelector('title');
+    if (!el) return;
+    const obs = new MutationObserver(() => {
+      if (document.title !== title) document.title = title;
+    });
+    obs.observe(el, { childList: true, characterData: true, subtree: true });
+    return () => obs.disconnect();
   }, [pathname]);
 
   return null;
