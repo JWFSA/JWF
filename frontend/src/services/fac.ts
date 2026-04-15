@@ -41,6 +41,24 @@ export const getListaPrecioItems     = (id: number, params?: ListParams) => api.
 export const upsertListaPrecioItem   = (id: number, data: Partial<ListaPrecioDetalle>) => api.post(`/fac/maestros/listas-precio/${id}/items`, data).then((r) => r.data);
 export const deleteListaPrecioItem   = (id: number, art: number) => api.delete(`/fac/maestros/listas-precio/${id}/items/${art}`);
 
+// Precios por plan (BASIC/GURU/PREMIUM) para artículos pantalla DOOH (ART_LINEA = 12)
+export type PlanPantalla = 'BASIC' | 'GURU' | 'PREMIUM';
+export interface PrecioPlan {
+  precio_unitario: number;
+  inserciones_mes: number;
+}
+export interface ListaPrecioPantalla {
+  lppd_art: number;
+  art_desc: string;
+  art_unid_med: string | null;
+  precios: Partial<Record<PlanPantalla, PrecioPlan>>;
+}
+export const getPreciosPantalla      = (listaId: number, params?: { search?: string }) => api.get<ListaPrecioPantalla[]>(`/fac/maestros/listas-precio/${listaId}/pantallas`, { params }).then((r) => r.data);
+export const getPreciosPantallaByArt = (listaId: number, art: number) => api.get<Partial<Record<PlanPantalla, PrecioPlan>>>(`/fac/maestros/listas-precio/${listaId}/pantallas/${art}`).then((r) => r.data);
+export const upsertPrecioPantalla    = (listaId: number, art: number, plan: PlanPantalla, data: { precio_unitario: number; inserciones_mes?: number }) => api.put(`/fac/maestros/listas-precio/${listaId}/pantallas/${art}/${plan}`, data).then((r) => r.data);
+export const deletePrecioPantalla    = (listaId: number, art: number, plan: PlanPantalla) => api.delete(`/fac/maestros/listas-precio/${listaId}/pantallas/${art}/${plan}`);
+export const deleteAllPreciosPantalla = (listaId: number, art: number) => api.delete(`/fac/maestros/listas-precio/${listaId}/pantallas/${art}`);
+
 // Vendedores
 export const getVendedores    = (params?: ListParams) => api.get<Paginated<Vendedor>>('/fac/vendedores', { params }).then((r) => r.data);
 export const getOperadoresVendedores = () => api.get<{ oper_codigo: number; oper_nombre: string; oper_apellido: string; empl_situacion: string | null }[]>('/fac/vendedores/operadores-elegibles').then((r) => r.data);

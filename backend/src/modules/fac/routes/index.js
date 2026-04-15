@@ -6,6 +6,7 @@ const pedidoController              = require('../controllers/pedidoController')
 const campanhaController            = require('../controllers/campanhaController');
 const comisionController            = require('../controllers/comisionController');
 const solicitudDescuentoController  = require('../controllers/solicitudDescuentoController');
+const listaPrecioPantallaController = require('../controllers/listaPrecioPantallaController');
 
 // Zonas
 router.get('/maestros/zonas',         verifyToken, maestrosController.getZonas);
@@ -33,6 +34,13 @@ router.delete('/maestros/listas-precio/:id',                   verifyToken, maes
 router.get('/maestros/listas-precio/:id/items',                verifyToken, maestrosController.getListaPrecioItems);
 router.post('/maestros/listas-precio/:id/items',               verifyToken, maestrosController.upsertListaPrecioItem);
 router.delete('/maestros/listas-precio/:id/items/:art',        verifyToken, maestrosController.deleteListaPrecioItem);
+
+// Precios por plan (BASIC / GURU / PREMIUM) de artículos pantalla DOOH (ART_LINEA = 12)
+router.get('/maestros/listas-precio/:id/pantallas',                     verifyToken, listaPrecioPantallaController.getByLista);
+router.get('/maestros/listas-precio/:id/pantallas/:art',                verifyToken, listaPrecioPantallaController.getByArticulo);
+router.put('/maestros/listas-precio/:id/pantallas/:art/:plan',          verifyToken, listaPrecioPantallaController.upsert);
+router.delete('/maestros/listas-precio/:id/pantallas/:art/:plan',       verifyToken, listaPrecioPantallaController.remove);
+router.delete('/maestros/listas-precio/:id/pantallas/:art',             verifyToken, listaPrecioPantallaController.removeAllOfArticulo);
 
 // Precio artículo (lookup para pedidos)
 router.get('/precio-articulo', verifyToken, maestrosController.getPrecioArticulo);

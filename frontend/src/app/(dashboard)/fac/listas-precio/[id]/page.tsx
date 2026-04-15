@@ -14,6 +14,7 @@ import SearchField from '@/components/ui/SearchField';
 import TablePagination from '@/components/ui/TablePagination';
 import { ArrowLeft, Plus, Trash2, Save } from 'lucide-react';
 import { confirmDelete } from '@/lib/swal';
+import PreciosPorPlanSection from './PreciosPorPlanSection';
 
 const COLUMNS = [
   { key: 'art',    header: 'Artículo',         cell: (d: ListaPrecioDetalle) => d.art_desc,       cellClassName: 'font-medium text-gray-800 text-xs' },
@@ -243,9 +244,14 @@ export default function ListaPrecioDetallePage() {
         </div>
       )}
 
+      {/* Precios por plan para pantallas DOOH (ART_LINEA = 12) */}
+      <PreciosPorPlanSection listaId={listaId} />
+
       {/* Tabla de artículos */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
         <div className="p-4 border-b border-gray-100">
+          <h2 className="text-sm font-semibold text-gray-800 mb-1">Artículos regulares</h2>
+          <p className="text-xs text-gray-500 mb-3">Un precio unitario por artículo</p>
           <SearchField value={search} onChange={setSearch} placeholder="Buscar artículo en la lista..." />
         </div>
         <DataTable
