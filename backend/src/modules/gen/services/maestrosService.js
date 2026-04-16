@@ -678,6 +678,15 @@ const updatePlanPantalla = async (codigo, data) => {
   if (!fields.length) return getPlanPantalla(codigo);
   params.push(codigo);
   await pool.query(`UPDATE gen_plan_pantalla SET ${fields.join(', ')} WHERE "PLAN_CODIGO" = $${params.length}`, params);
+
+  // Si cambiaron las inserciones, propagar a todos los precios existentes de este plan
+  if (data.plan_inserciones !== undefined) {
+    await pool.query(
+      `UPDATE fac_lista_precio_pantalla_det SET "LPPD_INSERCIONES_MES" = $1 WHERE "LPPD_PLAN" = $2`,
+      [data.plan_inserciones, codigo]
+    );
+  }
+
   return getPlanPantalla(codigo);
 };
 
