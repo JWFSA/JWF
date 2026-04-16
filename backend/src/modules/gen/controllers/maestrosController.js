@@ -106,6 +106,17 @@ const createBarrio         = async (req, res, next) => { try { if (!req.body.bar
 const updateBarrio         = async (req, res, next) => { try { res.json(await s.updateBarrio(Number(req.params.id), req.body)); } catch (e) { next(e); } };
 const deleteBarrio         = async (req, res, next) => { try { await s.deleteBarrio(Number(req.params.id)); res.status(204).end(); } catch (e) { next(e); } };
 
+// ─── PLANES PANTALLA (DOOH) ─────────────────────────────────────────────────
+const getPlanesPantalla    = async (req, res, next) => { try { res.json(await s.getPlanesPantalla()); } catch (e) { next(e); } };
+const createPlanPantalla   = async (req, res, next) => {
+  try {
+    if (!req.body.plan_codigo || !req.body.plan_nombre) return res.status(400).json({ message: 'plan_codigo y plan_nombre son requeridos' });
+    res.status(201).json(await s.createPlanPantalla(req.body));
+  } catch (e) { next(e); }
+};
+const updatePlanPantalla   = async (req, res, next) => { try { res.json(await s.updatePlanPantalla(req.params.id, req.body)); } catch (e) { next(e); } };
+const deletePlanPantalla   = async (req, res, next) => { try { await s.deletePlanPantalla(req.params.id); res.status(204).end(); } catch (e) { next(e); } };
+
 module.exports = {
   getMonedas, createMoneda, updateMoneda, deleteMoneda,
   getPaises, createPais, updatePais, deletePais,
@@ -121,4 +132,5 @@ module.exports = {
   getMotivosAnulacion, createMotivoAnulacion, updateMotivoAnulacion, deleteMotivoAnulacion,
   getLocalidades, createLocalidad, updateLocalidad, deleteLocalidad,
   getBarrios, createBarrio, updateBarrio, deleteBarrio,
+  getPlanesPantalla, createPlanPantalla, updatePlanPantalla, deletePlanPantalla,
 };

@@ -624,6 +624,70 @@ const deleteBarrio = async (id) => {
   await pool.query(`DELETE FROM gen_barrio WHERE "BARR_CODIGO" = $1`, [id]);
 };
 
+// ─── PLANES PANTALLA (DOOH) ─────────────────────────────────────────────────
+
+const getPlanesPantalla = async () => {
+  const { rows } = await pool.query(
+    `SELECT "PLAN_CODIGO" AS plan_codigo, "PLAN_NOMBRE" AS plan_nombre,
+            "PLAN_INSERCIONES" AS plan_inserciones, "PLAN_DESCRIPCION" AS plan_descripcion,
+            "PLAN_ORDEN" AS plan_orden, "PLAN_ACTIVO" AS plan_activo
+     FROM gen_plan_pantalla ORDER BY "PLAN_ORDEN", "PLAN_CODIGO"`
+  );
+  return rows;
+};
+
+const getPlanPantalla = async (codigo) => {
+  const { rows } = await pool.query(
+    `SELECT "PLAN_CODIGO" AS plan_codigo, "PLAN_NOMBRE" AS plan_nombre,
+            "PLAN_INSERCIONES" AS plan_inserciones, "PLAN_DESCRIPCION" AS plan_descripcion,
+            "PLAN_ORDEN" AS plan_orden, "PLAN_ACTIVO" AS plan_activo
+     FROM gen_plan_pantalla WHERE "PLAN_CODIGO" = $1`, [codigo]
+  );
+  if (!rows.length) throw { status: 404, message: 'Plan no encontrado' };
+  return rows[0];
+};
+
+const createPlanPantalla = async (data) => {
+  if (!data.plan_codigo || !data.plan_nombre) throw { status: 400, message: 'plan_codigo y plan_nombre son requeridos' };
+  const codigo = data.plan_codigo.toUpperCase().trim();
+  // Validar que no exista
+  const { rows: existing } = await pool.query('SELECT 1 FROM gen_plan_pantalla WHERE "PLAN_CODIGO" = $1', [codigo]);
+  if (existing.length) throw { status: 409, message: `El plan "${codigo}" ya existe` };
+  // Obtener siguiente orden
+  const { rows: maxOrd } = await pool.query('SELECT COALESCE(MAX("PLAN_ORDEN"), 0) + 1 AS next FROM gen_plan_pantalla');
+  await pool.query(
+    `INSERT INTO gen_plan_pantalla ("PLAN_CODIGO","PLAN_NOMBRE","PLAN_INSERCIONES","PLAN_DESCRIPCION","PLAN_ORDEN","PLAN_ACTIVO")
+     VALUES ($1,$2,$3,$4,$5,$6)`,
+    [codigo, data.plan_nombre, data.plan_inserciones || 280, data.plan_descripcion || null, data.plan_orden ?? maxOrd[0].next, data.plan_activo ?? 'S']
+  );
+  return getPlanPantalla(codigo);
+};
+
+const updatePlanPantalla = async (codigo, data) => {
+  const fields = []; const params = [];
+  const map = {
+    plan_nombre: '"PLAN_NOMBRE"',
+    plan_inserciones: '"PLAN_INSERCIONES"',
+    plan_descripcion: '"PLAN_DESCRIPCION"',
+    plan_orden: '"PLAN_ORDEN"',
+    plan_activo: '"PLAN_ACTIVO"',
+  };
+  for (const [k, col] of Object.entries(map)) {
+    if (data[k] !== undefined) { params.push(data[k]); fields.push(`${col} = $${params.length}`); }
+  }
+  if (!fields.length) return getPlanPantalla(codigo);
+  params.push(codigo);
+  await pool.query(`UPDATE gen_plan_pantalla SET ${fields.join(', ')} WHERE "PLAN_CODIGO" = $${params.length}`, params);
+  return getPlanPantalla(codigo);
+};
+
+const deletePlanPantalla = async (codigo) => {
+  // Verificar que no tenga precios asociados
+  const { rows } = await pool.query('SELECT 1 FROM fac_lista_precio_pantalla_det WHERE "LPPD_PLAN" = $1 LIMIT 1', [codigo]);
+  if (rows.length) throw { status: 409, message: 'No se puede eliminar: hay precios asociados a este plan' };
+  await pool.query('DELETE FROM gen_plan_pantalla WHERE "PLAN_CODIGO" = $1', [codigo]);
+};
+
 module.exports = {
   getMonedas, getMoneda, createMoneda, updateMoneda, deleteMoneda,
   getPaises, getPais, createPais, updatePais, deletePais,
@@ -639,4 +703,5 @@ module.exports = {
   getMotivosAnulacion, createMotivoAnulacion, updateMotivoAnulacion, deleteMotivoAnulacion,
   getLocalidades, createLocalidad, updateLocalidad, deleteLocalidad,
   getBarrios, createBarrio, updateBarrio, deleteBarrio,
+  getPlanesPantalla, getPlanPantalla, createPlanPantalla, updatePlanPantalla, deletePlanPantalla,
 };

@@ -6,13 +6,34 @@
 
 const pool = require('../../../config/db');
 
-const PLANES_VALIDOS = ['BASIC', 'GURU', 'PREMIUM'];
-const INSERCIONES_POR_DEFECTO = { BASIC: 280, GURU: 520, PREMIUM: 1040 };
+// Los planes válidos se leen de la tabla maestra gen_plan_pantalla.
+// Cache en memoria para no hacer query cada vez (se refresca al reiniciar el server).
+let _planesCache = null;
 
-function validarPlan(plan) {
-  if (!PLANES_VALIDOS.includes(plan)) {
-    throw { status: 400, message: `Plan inválido. Debe ser uno de: ${PLANES_VALIDOS.join(', ')}` };
+async function cargarPlanes() {
+  if (_planesCache) return _planesCache;
+  const { rows } = await pool.query(
+    `SELECT "PLAN_CODIGO" AS codigo, "PLAN_INSERCIONES" AS inserciones
+     FROM "ERP".gen_plan_pantalla WHERE "PLAN_ACTIVO" = 'S' ORDER BY "PLAN_ORDEN"`
+  );
+  _planesCache = rows;
+  // Refrescar cada 5 min
+  setTimeout(() => { _planesCache = null; }, 5 * 60 * 1000);
+  return rows;
+}
+
+async function validarPlan(plan) {
+  const planes = await cargarPlanes();
+  const codigos = planes.map((p) => p.codigo);
+  if (!codigos.includes(plan)) {
+    throw { status: 400, message: `Plan inválido "${plan}". Planes disponibles: ${codigos.join(', ')}` };
   }
+}
+
+async function insercionesDefault(plan) {
+  const planes = await cargarPlanes();
+  const p = planes.find((x) => x.codigo === plan);
+  return p ? p.inserciones : 280;
 }
 
 // Listar todos los precios-por-plan de una lista, agrupados por artículo.
@@ -70,11 +91,8 @@ const getByArticulo = async (listaId, artCodigo) => {
      WHERE d."LPPD_EMPR" = 1
        AND d."LPPD_NRO_LISTA_PRECIO" = $1
        AND d."LPPD_ART" = $2
-     ORDER BY CASE d."LPPD_PLAN"
-                WHEN 'BASIC' THEN 1
-                WHEN 'GURU' THEN 2
-                WHEN 'PREMIUM' THEN 3
-              END`,
+     LEFT JOIN "ERP".gen_plan_pantalla gpp ON gpp."PLAN_CODIGO" = d."LPPD_PLAN"
+     ORDER BY COALESCE(gpp."PLAN_ORDEN", 999), d."LPPD_PLAN"`,
     [listaId, artCodigo],
   );
 
@@ -90,11 +108,11 @@ const getByArticulo = async (listaId, artCodigo) => {
 
 // Upsert de un precio-por-plan. Si inserciones_mes no viene, usa el default del plan.
 const upsert = async (listaId, artCodigo, { plan, precio_unitario, inserciones_mes }) => {
-  validarPlan(plan);
+  await validarPlan(plan);
   if (precio_unitario == null || isNaN(Number(precio_unitario)) || Number(precio_unitario) < 0) {
     throw { status: 400, message: 'precio_unitario debe ser un número >= 0' };
   }
-  const inserciones = inserciones_mes ?? INSERCIONES_POR_DEFECTO[plan];
+  const inserciones = inserciones_mes ?? await insercionesDefault(plan);
   if (!Number.isInteger(inserciones) || inserciones <= 0) {
     throw { status: 400, message: 'inserciones_mes debe ser un entero positivo' };
   }
@@ -126,7 +144,7 @@ const upsert = async (listaId, artCodigo, { plan, precio_unitario, inserciones_m
 
 // Eliminar un precio-por-plan específico
 const remove = async (listaId, artCodigo, plan) => {
-  validarPlan(plan);
+  await validarPlan(plan);
   await pool.query(
     `DELETE FROM "ERP".fac_lista_precio_pantalla_det
      WHERE "LPPD_EMPR" = 1
@@ -149,8 +167,7 @@ const removeAllOfArticulo = async (listaId, artCodigo) => {
 };
 
 module.exports = {
-  PLANES_VALIDOS,
-  INSERCIONES_POR_DEFECTO,
+  cargarPlanes,
   getByLista,
   getByArticulo,
   upsert,

@@ -12,6 +12,7 @@ const routeTitles: Record<string, string> = {
   '/gen/sistemas': 'Sistemas',
   '/gen/programas': 'Programas',
   '/gen/monedas': 'Monedas',
+  '/gen/planes-pantalla': 'Planes Pantalla',
   '/gen/paises': 'Países',
   '/gen/departamentos': 'Departamentos',
   '/gen/ciudades': 'Ciudades',

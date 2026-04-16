@@ -24,6 +24,7 @@ export const menu: MenuItem[] = [
       { label: 'Sistemas',     href: '/gen/sistemas',     icon: Globe },
       { label: 'Programas',    href: '/gen/programas',    icon: Code },
       { label: 'Monedas',      href: '/gen/monedas',      icon: DollarSign },
+      { label: 'Planes Pantalla', href: '/gen/planes-pantalla', icon: Signal },
       { label: 'Países',         href: '/gen/paises',          icon: MapPin },
       { label: 'Distritos',      href: '/gen/distritos',       icon: MapPinHouse },
       { label: 'Localidades',    href: '/gen/localidades',     icon: Home },

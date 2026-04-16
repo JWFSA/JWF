@@ -35,6 +35,8 @@ export interface DataTableProps<T> {
   onSortChange?: (field: string, dir: 'asc' | 'desc') => void;
   /** Botones extra de acción por fila (se muestran antes de editar/eliminar) */
   extraActions?: (row: T) => ReactNode;
+  /** Click en la fila (independiente de onEdit). Si se define, el click en la fila ejecuta esto en vez de onEdit */
+  onRowClick?: (row: T) => void;
 }
 
 export default function DataTable<T>({
@@ -52,6 +54,7 @@ export default function DataTable<T>({
   sortDir,
   onSortChange,
   extraActions,
+  onRowClick,
 }: DataTableProps<T>) {
   const hasActions = !!(onEdit || onDelete || extraActions);
   const colSpan = columns.length + (hasActions ? 1 : 0);
@@ -108,8 +111,8 @@ export default function DataTable<T>({
             </tr>
           ) : (
             rows.map((row) => (
-              <tr key={getRowKey(row)} className={cn('hover:bg-gray-50 transition', onEdit && 'cursor-pointer')}
-                onClick={() => onEdit?.(row)}>
+              <tr key={getRowKey(row)} className={cn('hover:bg-gray-50 transition', (onRowClick || onEdit) && 'cursor-pointer')}
+                onClick={() => (onRowClick ?? onEdit)?.(row)}>
                 {columns.map((col) => (
                   <td key={col.key} className={cn('px-4 py-3', col.cellClassName)}>
                     {col.cell(row)}

@@ -121,4 +121,10 @@ router.post('/maestros/barrios',        verifyToken, maestrosCtrl.createBarrio);
 router.put('/maestros/barrios/:id',     verifyToken, maestrosCtrl.updateBarrio);
 router.delete('/maestros/barrios/:id',  verifyToken, maestrosCtrl.deleteBarrio);
 
+// Planes Pantalla (DOOH)
+router.get('/maestros/planes-pantalla',         verifyToken, maestrosCtrl.getPlanesPantalla);
+router.post('/maestros/planes-pantalla',        verifyToken, maestrosCtrl.createPlanPantalla);
+router.put('/maestros/planes-pantalla/:id',     verifyToken, maestrosCtrl.updatePlanPantalla);
+router.delete('/maestros/planes-pantalla/:id',  verifyToken, maestrosCtrl.deletePlanPantalla);
+
 module.exports = router;

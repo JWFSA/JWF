@@ -120,6 +120,7 @@ export default function ListasPrecioPage() {
           isLoading={isLoading}
           rows={listas}
           getRowKey={(l) => l.lipe_nro_lista_precio}
+          onRowClick={(l) => router.push(`/fac/listas-precio/${l.lipe_nro_lista_precio}`)}
           onEdit={openEdit}
           onDelete={(l) => deleteMut.mutate(l.lipe_nro_lista_precio)}
           deleteConfirmMessage="¿Eliminar esta lista de precio?"

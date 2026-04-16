@@ -164,3 +164,17 @@ export const getBarrios        = (params?: ListParams) => api.get<Paginated<Barr
 export const createBarrio      = (data: Partial<Barrio>) => api.post<Barrio>('/gen/maestros/barrios', data).then((r) => r.data);
 export const updateBarrio      = (id: number, data: Partial<Barrio>) => api.put<Barrio>(`/gen/maestros/barrios/${id}`, data).then((r) => r.data);
 export const deleteBarrio      = (id: number) => api.delete(`/gen/maestros/barrios/${id}`);
+
+// Planes Pantalla (DOOH)
+export interface PlanPantalla {
+  plan_codigo: string;
+  plan_nombre: string;
+  plan_inserciones: number;
+  plan_descripcion: string | null;
+  plan_orden: number;
+  plan_activo: string; // 'S' o 'N'
+}
+export const getPlanesPantalla      = () => api.get<PlanPantalla[]>('/gen/maestros/planes-pantalla').then((r) => r.data);
+export const createPlanPantalla     = (data: Partial<PlanPantalla>) => api.post<PlanPantalla>('/gen/maestros/planes-pantalla', data).then((r) => r.data);
+export const updatePlanPantalla     = (codigo: string, data: Partial<PlanPantalla>) => api.put<PlanPantalla>(`/gen/maestros/planes-pantalla/${codigo}`, data).then((r) => r.data);
+export const deletePlanPantalla     = (codigo: string) => api.delete(`/gen/maestros/planes-pantalla/${codigo}`);
