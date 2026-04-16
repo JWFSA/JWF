@@ -88,10 +88,10 @@ const getByArticulo = async (listaId, artCodigo) => {
             d."LPPD_PRECIO_UNITARIO"  AS lppd_precio_unitario,
             d."LPPD_INSERCIONES_MES"  AS lppd_inserciones_mes
      FROM "ERP".fac_lista_precio_pantalla_det d
+     LEFT JOIN "ERP".gen_plan_pantalla gpp ON gpp."PLAN_CODIGO" = d."LPPD_PLAN"
      WHERE d."LPPD_EMPR" = 1
        AND d."LPPD_NRO_LISTA_PRECIO" = $1
        AND d."LPPD_ART" = $2
-     LEFT JOIN "ERP".gen_plan_pantalla gpp ON gpp."PLAN_CODIGO" = d."LPPD_PLAN"
      ORDER BY COALESCE(gpp."PLAN_ORDEN", 999), d."LPPD_PLAN"`,
     [listaId, artCodigo],
   );
