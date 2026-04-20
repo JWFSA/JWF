@@ -196,9 +196,12 @@ const reporteDescuentos = async ({ fechaDesde, fechaHasta, vendedor = '' } = {})
     params.push(`%${vendedor}%`);
   }
 
-  // Resumen por vendedor
+  // Resumen por vendedor + moneda
   const { rows: porVendedor } = await pool.query(
     `SELECT sd."SOD_LOGIN_SOL" AS vendedor,
+            p."PED_MON"        AS mon_codigo,
+            m."MON_DESC"       AS mon_desc,
+            m."MON_SIMBOLO"    AS mon_simbolo,
             COUNT(DISTINCT sd."SOD_CLAVE") AS solicitudes,
             COUNT(d."SODE_ITEM") AS items,
             SUM(d."SODE_IMP_NETO_ANT") AS total_neto_anterior,
@@ -209,9 +212,11 @@ const reporteDescuentos = async ({ fechaDesde, fechaHasta, vendedor = '' } = {})
             SUM(d."SODE_IMP_NETO_FINAL") AS total_neto_final
      FROM fac_solicitud_descuento sd
      JOIN fac_solicitud_descuento_det d ON d."SODE_CLAVE" = sd."SOD_CLAVE"
+     LEFT JOIN fac_pedido p ON p."PED_CLAVE" = sd."SOD_CLAVE_PED"
+     LEFT JOIN gen_moneda m ON m."MON_CODIGO" = p."PED_MON"
      WHERE sd."SOD_FECHA_SOL" BETWEEN $1 AND $2 ${vendedorWhere}
-     GROUP BY sd."SOD_LOGIN_SOL"
-     ORDER BY total_descuento_aprobado DESC`,
+     GROUP BY sd."SOD_LOGIN_SOL", p."PED_MON", m."MON_DESC", m."MON_SIMBOLO"
+     ORDER BY sd."SOD_LOGIN_SOL" ASC, p."PED_MON" ASC`,
     params
   );
 
@@ -222,6 +227,9 @@ const reporteDescuentos = async ({ fechaDesde, fechaHasta, vendedor = '' } = {})
             sd."SOD_FECHA_SOL" AS sod_fecha_sol,
             sd."SOD_LOGIN_SOL" AS vendedor,
             p."PED_NRO" AS ped_nro,
+            p."PED_MON" AS mon_codigo,
+            m."MON_DESC" AS mon_desc,
+            m."MON_SIMBOLO" AS mon_simbolo,
             c."CLI_NOM" AS cliente,
             COUNT(d."SODE_ITEM") AS items,
             SUM(d."SODE_IMP_NETO_ANT") AS total_neto_anterior,
@@ -231,27 +239,44 @@ const reporteDescuentos = async ({ fechaDesde, fechaHasta, vendedor = '' } = {})
      FROM fac_solicitud_descuento sd
      JOIN fac_solicitud_descuento_det d ON d."SODE_CLAVE" = sd."SOD_CLAVE"
      LEFT JOIN fac_pedido p ON p."PED_CLAVE" = sd."SOD_CLAVE_PED"
+     LEFT JOIN gen_moneda m ON m."MON_CODIGO" = p."PED_MON"
      LEFT JOIN fin_cliente c ON c."CLI_CODIGO" = p."PED_CLI"
      WHERE sd."SOD_FECHA_SOL" BETWEEN $1 AND $2 ${vendedorWhere}
      GROUP BY sd."SOD_CLAVE", sd."SOD_NRO", sd."SOD_FECHA_SOL", sd."SOD_LOGIN_SOL",
-              p."PED_NRO", c."CLI_NOM"
+              p."PED_NRO", p."PED_MON", m."MON_DESC", m."MON_SIMBOLO", c."CLI_NOM"
      ORDER BY sd."SOD_FECHA_SOL" DESC, sd."SOD_NRO" DESC`,
     params
   );
 
-  // Totales generales
-  const totales = porVendedor.reduce((acc, r) => ({
-    solicitudes: acc.solicitudes + Number(r.solicitudes),
-    items: acc.items + Number(r.items),
-    total_neto_anterior: acc.total_neto_anterior + Number(r.total_neto_anterior || 0),
-    total_descuento_solicitado: acc.total_descuento_solicitado + Number(r.total_descuento_solicitado || 0),
-    total_descuento_aprobado: acc.total_descuento_aprobado + Number(r.total_descuento_aprobado || 0),
-    total_descuento_rechazado: acc.total_descuento_rechazado + Number(r.total_descuento_rechazado || 0),
-    total_descuento_pendiente: acc.total_descuento_pendiente + Number(r.total_descuento_pendiente || 0),
-    total_neto_final: acc.total_neto_final + Number(r.total_neto_final || 0),
-  }), { solicitudes: 0, items: 0, total_neto_anterior: 0, total_descuento_solicitado: 0, total_descuento_aprobado: 0, total_descuento_rechazado: 0, total_descuento_pendiente: 0, total_neto_final: 0 });
+  // Totales agrupados por moneda (para no sumar monedas distintas)
+  const monedasMap = new Map();
+  for (const r of porVendedor) {
+    const key = r.mon_codigo ?? 'null';
+    if (!monedasMap.has(key)) {
+      monedasMap.set(key, {
+        mon_codigo: r.mon_codigo,
+        mon_desc: r.mon_desc,
+        mon_simbolo: r.mon_simbolo,
+        solicitudes: 0, items: 0,
+        total_neto_anterior: 0, total_descuento_solicitado: 0,
+        total_descuento_aprobado: 0, total_descuento_rechazado: 0,
+        total_descuento_pendiente: 0, total_neto_final: 0,
+      });
+    }
+    const acc = monedasMap.get(key);
+    acc.solicitudes += Number(r.solicitudes);
+    acc.items += Number(r.items);
+    acc.total_neto_anterior += Number(r.total_neto_anterior || 0);
+    acc.total_descuento_solicitado += Number(r.total_descuento_solicitado || 0);
+    acc.total_descuento_aprobado += Number(r.total_descuento_aprobado || 0);
+    acc.total_descuento_rechazado += Number(r.total_descuento_rechazado || 0);
+    acc.total_descuento_pendiente += Number(r.total_descuento_pendiente || 0);
+    acc.total_neto_final += Number(r.total_neto_final || 0);
+  }
+  const totalesPorMoneda = Array.from(monedasMap.values())
+    .sort((a, b) => Number(a.mon_codigo ?? 0) - Number(b.mon_codigo ?? 0));
 
-  return { totales, porVendedor, detalle };
+  return { totalesPorMoneda, porVendedor, detalle };
 };
 
 module.exports = { getAll, getById, create, procesarItem, procesarTodos, reporteDescuentos };

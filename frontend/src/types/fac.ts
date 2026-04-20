@@ -432,6 +432,9 @@ export interface SolicitudDescuentoDet {
 
 export interface ReporteDescuentoVendedor {
   vendedor: string;
+  mon_codigo: number | null;
+  mon_desc: string | null;
+  mon_simbolo: string | null;
   solicitudes: number;
   items: number;
   total_neto_anterior: number;
@@ -448,6 +451,9 @@ export interface ReporteDescuentoDetalle {
   sod_fecha_sol: string;
   vendedor: string;
   ped_nro: number | null;
+  mon_codigo: number | null;
+  mon_desc: string | null;
+  mon_simbolo: string | null;
   cliente: string | null;
   items: number;
   total_neto_anterior: number;
@@ -456,17 +462,22 @@ export interface ReporteDescuentoDetalle {
   total_neto_final: number;
 }
 
+export interface ReporteDescuentoTotalMoneda {
+  mon_codigo: number | null;
+  mon_desc: string | null;
+  mon_simbolo: string | null;
+  solicitudes: number;
+  items: number;
+  total_neto_anterior: number;
+  total_descuento_solicitado: number;
+  total_descuento_aprobado: number;
+  total_descuento_rechazado: number;
+  total_descuento_pendiente: number;
+  total_neto_final: number;
+}
+
 export interface ReporteDescuentos {
-  totales: {
-    solicitudes: number;
-    items: number;
-    total_neto_anterior: number;
-    total_descuento_solicitado: number;
-    total_descuento_aprobado: number;
-    total_descuento_rechazado: number;
-    total_descuento_pendiente: number;
-    total_neto_final: number;
-  };
+  totalesPorMoneda: ReporteDescuentoTotalMoneda[];
   porVendedor: ReporteDescuentoVendedor[];
   detalle: ReporteDescuentoDetalle[];
 }
