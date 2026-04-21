@@ -25,7 +25,8 @@ const getAll = async ({ page = 1, limit = 20, search = '', all = false, sortFiel
            c."CLI_VENDEDOR" AS cli_vendedor, c."CLI_TIPO_VTA" AS cli_tipo_vta, c."CLI_COND_VENTA" AS cli_cond_venta,
            c."CLI_MOD_VENTA" AS cli_mod_venta,
            c."CLI_AGENCIA" AS cli_agencia, c."CLI_COMISION_AGEN" AS cli_comision_agen,
-           c."CLI_MON" AS cli_mon, c."CLI_DIR2" AS cli_dir2, c."CLI_PERS_CONTACTO" AS cli_pers_contacto
+           c."CLI_MON" AS cli_mon, c."CLI_DIR2" AS cli_dir2, c."CLI_PERS_CONTACTO" AS cli_pers_contacto,
+           c."CLI_IND_EXEN" AS cli_ind_exen
     FROM fin_cliente c
     LEFT JOIN fac_zona z ON z."ZONA_CODIGO" = c."CLI_ZONA"
     LEFT JOIN fac_categoria cat ON cat."FCAT_CODIGO" = c."CLI_CATEG"

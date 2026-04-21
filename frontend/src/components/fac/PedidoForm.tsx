@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { getClientes, getVendedores, getCondiciones, getArticulos, getMarcasCliente, getListasPrecio, getPrecioArticulo } from '@/services/fac';
+import { getClientes, getCliente, getVendedores, getCondiciones, getArticulos, getMarcasCliente, getListasPrecio, getPrecioArticulo } from '@/services/fac';
 import { getMonedas } from '@/services/gen';
 import type { Pedido, PedidoDet, Articulo } from '@/types/fac';
 import { Search, Plus, Trash2, ChevronDown, ChevronRight } from 'lucide-react';
@@ -47,7 +47,6 @@ const empty: Partial<Pedido> = {
   ped_dias_validez: null,
   ped_tiempo_realiz: '',
   ped_tasa_us: 0,
-  ped_cli_porc_ex: 0,
   ped_porc_dto: 0,
   ped_porc_rgo: 0,
   ped_fto_imp: 1,
@@ -221,6 +220,14 @@ export default function PedidoForm({ initial, onSave, isPending, error, tipo = '
   const { data: marcasData } = useQuery({
     queryKey: ['marcas-cliente', clienteId],
     queryFn: () => getMarcasCliente(clienteId!),
+    enabled: !!clienteId,
+  });
+
+  // Traemos el cliente seleccionado para mostrar su Exoneración fiscal
+  // directamente (no se guarda en el pedido — es un reflejo del cliente).
+  const { data: clienteDet } = useQuery({
+    queryKey: ['cliente-detalle', clienteId],
+    queryFn: () => getCliente(clienteId!),
     enabled: !!clienteId,
   });
 
@@ -482,12 +489,12 @@ export default function PedidoForm({ initial, onSave, isPending, error, tipo = '
             </select>
           </div>
 
-          {/* %Exoneración */}
+          {/* Exoneración fiscal (readonly, viene del cliente) */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">% Exoner.</label>
-            <input type="number" min="0" max="100" step="0.01" value={form.ped_cli_porc_ex ?? 0}
-              onChange={(e) => set('ped_cli_porc_ex', parseFloat(e.target.value) || 0)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Exoneración fiscal</label>
+            <input readOnly tabIndex={-1}
+              value={clienteDet?.cli_ind_exen === 'S' ? 'Sí' : clienteDet ? 'No' : ''}
+              className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600" />
           </div>
 
           {/* Producto */}
