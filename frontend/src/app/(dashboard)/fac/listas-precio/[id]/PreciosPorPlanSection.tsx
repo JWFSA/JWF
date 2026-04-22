@@ -76,28 +76,55 @@ export default function PreciosPorPlanSection({ listaId }: Props) {
     onSuccess: inv,
   });
 
-  // Auto-calcular EXCLUSIVE y CUSTOM cuando cambia BASIC o PREMIUM
-  const DEFAULTS: Record<string, { base: string; factor: number }> = {
-    EXCLUSIVE: { base: 'PREMIUM', factor: 2.5 },
-    CUSTOM:    { base: 'BASIC',   factor: 4 },
-  };
+  // Plan BASIC de la maestra — necesario para calcular el precio por inserción
+  // de CUSTOM. Los planes son DIARIOS: BASIC = 280 ins/día, GURU = 520 ins/día,
+  // etc. Ver CLAUDE.md sección "Modelo de pricing".
+  const planBasic = useMemo(
+    () => planesActivos.find((p) => p.plan_codigo === 'BASIC'),
+    [planesActivos],
+  );
+
+  // Reglas de auto-cálculo de planes derivados cuando se cambia un plan base.
+  //  - EXCLUSIVE = PREMIUM × 2.5     (precio mensual → precio mensual)
+  //  - CUSTOM    = (BASIC / 30) / insercionesBASIC × 4  (mensual → por inserción)
+  //
+  // Un plan "mensual" cobra precio_unitario × meses_contratados.
+  // Un plan "per-inserción" (CUSTOM, inserciones_dia <= 1) cobra precio_unitario × cant_inserciones.
+  // Por eso CUSTOM debe ser precio UNITARIO por inserción, no un múltiplo del mensual.
+  function calcularDerivado(derivado: string, baseVal: number): number | null {
+    if (baseVal <= 0) return null;
+    if (derivado === 'EXCLUSIVE') return Number((baseVal * 2.5).toFixed(2));
+    if (derivado === 'CUSTOM') {
+      const insercionesBasic = planBasic?.plan_inserciones ?? 280;
+      if (insercionesBasic <= 0) return null;
+      // (BASIC mensual / 30 días) / ins/día BASIC × 4 = precio por 1 inserción CUSTOM
+      return Number(((baseVal / 30) / insercionesBasic * 4).toFixed(4));
+    }
+    return null;
+  }
+
+  function planBase(derivado: string): string | null {
+    if (derivado === 'EXCLUSIVE') return 'PREMIUM';
+    if (derivado === 'CUSTOM') return 'BASIC';
+    return null;
+  }
 
   function handlePrecioChange(planCodigo: string, valor: string) {
     const next = { ...addPrecios, [planCodigo]: valor };
-    // Si cambió un plan base, auto-calcular los derivados (solo si el derivado está vacío o era auto-calculado)
-    for (const [derivado, cfg] of Object.entries(DEFAULTS)) {
-      if (planCodigo === cfg.base && planesActivos.some((p) => p.plan_codigo === derivado)) {
-        const baseVal = Number(valor);
-        if (baseVal > 0) {
-          const calc = (baseVal * cfg.factor).toFixed(2);
-          // Solo autorellenar si está vacío o si el valor actual coincide con el cálculo anterior
-          const prev = addPrecios[derivado];
-          const prevBase = Number(addPrecios[cfg.base] || 0);
-          const prevCalc = (prevBase * cfg.factor).toFixed(2);
-          if (!prev || prev === prevCalc) {
-            next[derivado] = calc;
-          }
-        }
+    // Si cambió un plan base, auto-calcular los derivados (solo si el derivado
+    // está vacío o matcheaba el valor previamente calculado — no pisamos un valor
+    // que el usuario haya escrito manualmente).
+    for (const derivado of ['EXCLUSIVE', 'CUSTOM']) {
+      const base = planBase(derivado);
+      if (planCodigo !== base) continue;
+      if (!planesActivos.some((p) => p.plan_codigo === derivado)) continue;
+
+      const calc = calcularDerivado(derivado, Number(valor));
+      if (calc === null) continue;
+      const prev = addPrecios[derivado];
+      const prevCalc = calcularDerivado(derivado, Number(addPrecios[base!] || 0));
+      if (!prev || (prevCalc !== null && prev === String(prevCalc))) {
+        next[derivado] = String(calc);
       }
     }
     setAddPrecios(next);
@@ -242,7 +269,7 @@ export default function PreciosPorPlanSection({ listaId }: Props) {
                   <th key={plan.plan_codigo} className="text-right px-3 py-2.5 text-xs font-semibold uppercase tracking-wide text-gray-500">
                     <div>{plan.plan_nombre}</div>
                     <div className="text-[10px] font-normal text-gray-400 normal-case tabular-nums">
-                      {plan.plan_inserciones} ins/mes
+                      {plan.plan_inserciones} {plan.plan_inserciones <= 1 ? 'por inserción' : 'ins/día'}
                     </div>
                   </th>
                 ))}
@@ -295,7 +322,7 @@ export default function PreciosPorPlanSection({ listaId }: Props) {
               <h3 className="text-sm font-semibold text-gray-800 mb-1">Editar precio</h3>
               <p className="text-xs text-gray-500 mb-1">{editing.artDesc}</p>
               <p className="text-xs text-primary-700 font-medium mb-4 tabular-nums">
-                Plan {planInfo?.plan_nombre ?? editing.plan} · {planInfo?.plan_inserciones ?? '?'} inserciones/mes
+                Plan {planInfo?.plan_nombre ?? editing.plan} · {planInfo?.plan_inserciones ?? '?'} {(planInfo?.plan_inserciones ?? 0) <= 1 ? 'por inserción' : 'inserciones/día'}
               </p>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
