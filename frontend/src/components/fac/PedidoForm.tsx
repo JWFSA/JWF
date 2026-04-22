@@ -750,8 +750,15 @@ export default function PedidoForm({ initial, onSave, isPending, error, tipo = '
                           placeholder="Descripci&oacute;n larga..." />
                       </td>
                       <td className="py-1.5 pr-3">
-                        <input value={it.pdet_um_ped} onChange={(e) => updateItem(idx, 'pdet_um_ped', e.target.value)}
-                          className="w-full border border-gray-200 rounded px-2 py-1 text-xs text-center focus:outline-none focus:ring-1 focus:ring-primary-400" />
+                        <select value={it.pdet_um_ped || 'UN'} onChange={(e) => updateItem(idx, 'pdet_um_ped', e.target.value)}
+                          className="w-full border border-gray-200 rounded px-1 py-1 text-xs text-center focus:outline-none focus:ring-1 focus:ring-primary-400">
+                          <option value="MES">MES</option>
+                          <option value="DIA">DIA</option>
+                          <option value="MT">MT</option>
+                          <option value="M2">M2</option>
+                          <option value="ML">ML</option>
+                          <option value="UN">UN</option>
+                        </select>
                       </td>
                       <td className="py-1.5 pr-3">
                         <input type="number" min="0" step="0.01" value={it.pdet_cant_ped}
