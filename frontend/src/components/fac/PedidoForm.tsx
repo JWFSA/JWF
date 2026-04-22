@@ -588,6 +588,17 @@ export default function PedidoForm({ initial, onSave, isPending, error, tipo = '
       <Section title="Facturaci&oacute;n" defaultOpen={false}>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
+            <select value={form.ped_tipo ?? 'V'} onChange={(e) => set('ped_tipo', e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
+              <option value="V">Venta</option>
+              <option value="C">Contrato</option>
+              <option value="M">Muestra</option>
+              <option value="D">Dise&ntilde;o</option>
+              <option value="I">Interno</option>
+            </select>
+          </div>
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Formato Imp.</label>
             <select value={form.ped_fto_imp ?? ''} onChange={(e) => set('ped_fto_imp', e.target.value !== '' ? Number(e.target.value) : null)}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
